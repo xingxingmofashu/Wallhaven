@@ -10,7 +10,7 @@ struct FullscreenImageView: View {
         ZStack(alignment: .topTrailing) {
             Color.black.ignoresSafeArea()
 
-            CachedAsyncImage(url: url) { image in
+            AsyncImage(url: url) { image in
                 image
                     .resizable()
                     .scaledToFit()

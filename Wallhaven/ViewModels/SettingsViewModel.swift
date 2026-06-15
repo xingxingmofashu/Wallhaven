@@ -38,7 +38,7 @@ final class SettingsViewModel {
     // MARK: - Cache
 
     func clearImageCache() {
-        ImageCache.shared.removeAll()
+        CacheImage.shared.removeAll()
     }
 
     // MARK: - App Info

@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// NSCache-based in-memory image cache (thread-safe)
-final class ImageCache: @unchecked Sendable {
-    static let shared = ImageCache()
+final class CacheImage: @unchecked Sendable {
+    static let shared = CacheImage()
 
     private let cache = NSCache<NSString, UIImage>()
     private let lock  = NSLock()

@@ -19,7 +19,7 @@ xcodebuild -scheme Wallhaven \
 ```
 Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
   Models/                   Wallpaper, SearchResponse, UserSettings, FavoriteWallpaper, SearchFilters, LoadState
-  Services/                 WallhavenAPI (actor), WallhavenError, ImageCache, CachedImageLoader, CachedAsyncImage
+  Services/                 Fetch (actor), Error, Cache/ (CacheImage, ImageLoader, AsyncImage)
   ViewModels/               @Observable ViewModels, one per screen
   Views/
     Components/             WallpaperCell, WallpaperGrid, ErrorView, EmptyResultView
@@ -45,7 +45,7 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 - `WallhavenAPI` is an `actor` — call its methods with `await`.
 - API key stored in `UserDefaults` under key `"wallhaven_api_key"`; read by both `WallhavenAPI` (actor) and `SettingsViewModel`.
 - Local favorites persist via **SwiftData** (`FavoriteWallpaper` model). The `ModelContainer` is configured in `WallhavenApp.swift` and injected as `.modelContainer(...)` on the root scene.
-- Image caching: `ImageCache` (NSCache, 150 MB limit). Use `CachedAsyncImage` (defined in `Services/ImageCache.swift`) instead of the system `AsyncImage` everywhere.
+- Image caching: `CacheImage` (NSCache, 150 MB limit). Use `AsyncImage` (defined in `Services/Cache/AsyncImage.swift`) instead of the system `AsyncImage` everywhere.
 
 ## Known pitfalls caught in this repo
 

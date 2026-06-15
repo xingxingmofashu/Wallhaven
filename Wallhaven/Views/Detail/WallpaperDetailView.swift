@@ -49,7 +49,7 @@ struct WallpaperDetailView: View {
     // MARK: - Hero Image
 
     private var heroImage: some View {
-        CachedAsyncImage(url: viewModel.wallpaper.thumbnailURL) { image in
+        AsyncImage(url: viewModel.wallpaper.thumbnailURL) { image in
             image
                 .resizable()
                 .scaledToFit()

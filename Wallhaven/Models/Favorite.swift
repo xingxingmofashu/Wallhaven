@@ -16,6 +16,8 @@ final class FavoriteWallpaper {
     var ratio: String
     var fileType: String
     var colors: [String]
+    var dimensionX: Int
+    var dimensionY: Int
 
     init(from wallpaper: Wallpaper) {
         self.wallpaperID = wallpaper.id
@@ -28,11 +30,17 @@ final class FavoriteWallpaper {
         self.ratio       = wallpaper.ratio
         self.fileType    = wallpaper.fileType
         self.colors      = wallpaper.colors
+        self.dimensionX  = wallpaper.dimensionX
+        self.dimensionY  = wallpaper.dimensionY
     }
 
     var thumbnailURL: URL? { URL(string: thumbURL) }
 
-    /// Convert back to Wallpaper for reuse with WallpaperCell
+    var aspectRatio: Double {
+        guard dimensionY > 0 else { return 1 }
+        return Double(dimensionX) / Double(dimensionY)
+    }
+
     var asWallpaper: Wallpaper {
         Wallpaper(
             id: wallpaperID,
@@ -44,8 +52,8 @@ final class FavoriteWallpaper {
             source: "",
             purity: purity,
             category: category,
-            dimensionX: 0,
-            dimensionY: 0,
+            dimensionX: dimensionX,
+            dimensionY: dimensionY,
             resolution: resolution,
             ratio: ratio,
             fileSize: 0,

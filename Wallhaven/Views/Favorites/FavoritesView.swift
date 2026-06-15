@@ -57,7 +57,7 @@ struct FavoritesView: View {
                         CellView(wallpaper: fav.asWallpaper)
                     }
                     .buttonStyle(.plain)
-                    .aspectRatio(16/9, contentMode: .fit)
+                    .aspectRatio(fav.aspectRatio, contentMode: .fit)
                     .contextMenu {
                         Button(role: .destructive) {
                             modelContext.delete(fav)

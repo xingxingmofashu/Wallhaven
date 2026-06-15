@@ -4,6 +4,7 @@ struct SearchView: View {
     @State private var viewModel        = SearchViewModel()
     @State private var selectedWallpaper: Wallpaper?
     @State private var showFilter       = false
+    @Environment(NavigationState.self) private var navigationState
 
     var body: some View {
         NavigationStack {
@@ -36,6 +37,12 @@ struct SearchView: View {
                 prompt: "Search wallpapers, tags..."
             )
             .onSubmit(of: .search) {
+                viewModel.search()
+            }
+            .onChange(of: navigationState.shouldSearch) { _, should in
+                guard should else { return }
+                viewModel.filters.query = navigationState.searchQuery
+                navigationState.shouldSearch = false
                 viewModel.search()
             }
             .toolbar {

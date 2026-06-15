@@ -2,21 +2,27 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @State private var navigationState = NavigationState()
+
     var body: some View {
-        TabView {
-            Tab("Home", systemImage: "photo.stack") {
-                HomeView()
-            }
-            Tab("Search", systemImage: "magnifyingglass") {
-                SearchView()
-            }
-            Tab("Favorites", systemImage: "heart") {
-                FavoritesView()
-            }
-            Tab("Settings", systemImage: "gearshape") {
-                SettingsView()
-            }
+        TabView(selection: $navigationState.selectedTab) {
+            HomeView()
+                .tabItem { Label("Home", systemImage: "photo.stack") }
+                .tag(NavigationState.Tab.home)
+
+            SearchView()
+                .tabItem { Label("Search", systemImage: "magnifyingglass") }
+                .tag(NavigationState.Tab.search)
+
+            FavoritesView()
+                .tabItem { Label("Favorites", systemImage: "heart") }
+                .tag(NavigationState.Tab.favorites)
+
+            SettingsView()
+                .tabItem { Label("Settings", systemImage: "gearshape") }
+                .tag(NavigationState.Tab.settings)
         }
+        .environment(navigationState)
     }
 }
 

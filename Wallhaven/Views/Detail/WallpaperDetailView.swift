@@ -8,6 +8,7 @@ struct WallpaperDetailView: View {
     @State private var showShareSheet = false
     @State private var showSaveToast   = false
     @State private var showFavToast    = false
+    @Environment(NavigationState.self) private var navigationState
 
     init(wallpaper: Wallpaper) {
         _viewModel = State(initialValue: WallpaperDetailViewModel(wallpaper: wallpaper))
@@ -197,12 +198,17 @@ struct WallpaperDetailView: View {
                 .foregroundStyle(.secondary)
             FlowLayoutView(spacing: 6) {
                 ForEach(tags) { tag in
-                    Text("#\(tag.name)")
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(.secondarySystemBackground))
-                        .clipShape(Capsule())
+                    Button {
+                        navigationState.searchTag(tag.name)
+                    } label: {
+                        Text("#\(tag.name)")
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }

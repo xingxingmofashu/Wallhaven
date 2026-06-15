@@ -7,10 +7,8 @@ struct FavoritesView: View {
     private var favorites: [FavoriteWallpaper]
 
     @State private var favoritesViewModel = FavoritesViewModel()
-    @State private var selectedFavorite: FavoriteWallpaper?
+    @State private var selectedWallpaper: Wallpaper?
     @State private var showDeleteAlert  = false
-
-    private let columns = [GridItem(.adaptive(minimum: 160, maximum: 220), spacing: 8)]
 
     var body: some View {
         NavigationStack {
@@ -42,35 +40,35 @@ struct FavoritesView: View {
             } message: {
                 Text("This will permanently delete all local favorites. This cannot be undone.")
             }
+            .navigationDestination(item: $selectedWallpaper) { wallpaper in
+                WallpaperDetailView(wallpaper: wallpaper)
+            }
         }
     }
 
     // MARK: - Grid
 
     private var gridView: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(favorites) { fav in
-                    Button {
-                        // No navigation needed for favorites — show context menu only
-                    } label: {
-                        CellView(wallpaper: fav.asWallpaper)
-                    }
-                    .buttonStyle(.plain)
-                    .aspectRatio(fav.aspectRatio, contentMode: .fit)
-                    .contextMenu {
-                        Button(role: .destructive) {
+        GridView(
+            wallpapers: favorites.map(\.asWallpaper),
+            onSelect: { selectedWallpaper = $0 },
+            contextMenu: { wallpaper in
+                AnyView(
+                    Button(role: .destructive) {
+                        let id = wallpaper.id
+                        let descriptor = FetchDescriptor<FavoriteWallpaper>(
+                            predicate: #Predicate { $0.wallpaperID == id }
+                        )
+                        if let fav = try? modelContext.fetch(descriptor).first {
                             modelContext.delete(fav)
                             try? modelContext.save()
-                        } label: {
-                            Label("Remove from Favorites", systemImage: "heart.slash")
                         }
+                    } label: {
+                        Label("Remove from Favorites", systemImage: "heart.slash")
                     }
-                }
+                )
             }
-            .padding(.horizontal, 8)
-            .padding(.top, 8)
-        }
+        )
     }
 
     // MARK: - Empty

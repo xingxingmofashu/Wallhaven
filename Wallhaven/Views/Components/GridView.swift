@@ -6,6 +6,21 @@ struct GridView: View {
     let isLoadingMore: Bool
     let onLoadMore: () -> Void
     let onSelect: (Wallpaper) -> Void
+    let contextMenu: ((Wallpaper) -> AnyView)?
+
+    init(
+        wallpapers: [Wallpaper],
+        isLoadingMore: Bool = false,
+        onLoadMore: @escaping () -> Void = {},
+        onSelect: @escaping (Wallpaper) -> Void = { _ in },
+        contextMenu: ((Wallpaper) -> AnyView)? = nil
+    ) {
+        self.wallpapers = wallpapers
+        self.isLoadingMore = isLoadingMore
+        self.onLoadMore = onLoadMore
+        self.onSelect = onSelect
+        self.contextMenu = contextMenu
+    }
 
     private let spacing: CGFloat = 8
 
@@ -56,6 +71,11 @@ struct GridView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
+                .contextMenu {
+                    if let contextMenu = contextMenu {
+                        contextMenu(wallpaper)
+                    }
+                }
                 .onAppear {
                     if idx >= wallpapers.count - 4, !isLoadingMore {
                         onLoadMore()

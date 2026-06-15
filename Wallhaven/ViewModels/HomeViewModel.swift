@@ -47,7 +47,7 @@ final class HomeViewModel {
         wallpapers  = []
 
         do {
-            let response = try await WallhavenAPI.shared.search(filters: filters, page: 1)
+            let response = try await WallhavenFetch.shared.search(filters: filters, page: 1)
             wallpapers   = response.data
             hasNextPage  = response.meta.hasNextPage
             currentPage  = response.meta.currentPage
@@ -55,7 +55,7 @@ final class HomeViewModel {
         } catch let error as WallhavenError {
             loadState = .failed(error)
         } catch {
-            loadState = .failed(.networkError(error))
+            loadState = .failed(WallhavenError.networkError(error))
         }
     }
 
@@ -65,7 +65,7 @@ final class HomeViewModel {
 
         let nextPage = currentPage + 1
         do {
-            let response = try await WallhavenAPI.shared.search(filters: filters, page: nextPage)
+            let response = try await WallhavenFetch.shared.search(filters: filters, page: nextPage)
             wallpapers  += response.data
             hasNextPage  = response.meta.hasNextPage
             currentPage  = response.meta.currentPage

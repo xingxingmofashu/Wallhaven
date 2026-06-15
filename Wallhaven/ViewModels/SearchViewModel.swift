@@ -60,7 +60,7 @@ final class SearchViewModel {
         let page = currentPage + 1
 
         do {
-            let response = try await WallhavenAPI.shared.search(filters: filters, page: page)
+            let response = try await WallhavenFetch.shared.search(filters: filters, page: page)
 
             // Save seed for random sorting, reuse on pagination to avoid duplicates
             if filters.sorting == .random, let seed = response.meta.seed {
@@ -80,7 +80,7 @@ final class SearchViewModel {
         } catch let error as WallhavenError {
             if reset { loadState = .failed(error) }
         } catch {
-            if reset { loadState = .failed(.networkError(error)) }
+            if reset { loadState = .failed(WallhavenError.networkError(error)) }
         }
     }
 }

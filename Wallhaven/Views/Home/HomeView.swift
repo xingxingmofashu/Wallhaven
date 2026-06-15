@@ -34,7 +34,7 @@ struct HomeView: View {
             )
 
         case .failed(let error):
-            ErrorView(message: error.errorDescription ?? "Unknown error") {
+            ErrorView(message: (error as? LocalizedError)?.errorDescription ?? "Unknown error") {
                 viewModel.refresh()
             }
         }

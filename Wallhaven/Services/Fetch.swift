@@ -1,10 +1,10 @@
 import Foundation
 
-// MARK: - WallhavenAPI
+// MARK: - WallhavenFetch
 
-actor WallhavenAPI {
+actor WallhavenFetch {
 
-    static let shared = WallhavenAPI()
+    static let shared = WallhavenFetch()
 
     private let baseURL = "https://wallhaven.cc/api/v1"
     private let session: URLSession

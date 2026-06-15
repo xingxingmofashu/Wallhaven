@@ -19,7 +19,7 @@ xcodebuild -scheme Wallhaven \
 ```
 Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
   Models/                   Wallpaper, SearchResponse, UserSettings, FavoriteWallpaper, SearchFilters, LoadState
-  Services/                 Fetch (actor), Error, Cache/ (CacheImage, CacheImageLoader, CacheAsyncImage)
+  Services/                 WallhavenFetch (actor), WallhavenError, Cache/ (CacheImage, CacheImageLoader, CacheAsyncImage)
   ViewModels/               @Observable ViewModels, one per screen
   Views/
     Components/             WallpaperCell, WallpaperGrid, ErrorView, EmptyResultView
@@ -33,7 +33,7 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 
 **Deployment target: iOS 26.5** — `IPHONEOS_DEPLOYMENT_TARGET = 26.5`. Do not use APIs gated behind availability checks unless they are available on 26.5.
 
-**Swift concurrency** — `SWIFT_APPROACHABLE_CONCURRENCY = YES` is active. `SWIFT_DEFAULT_ACTOR_ISOLATION` is **not set** — types are not implicitly `@MainActor`. ViewModels are explicitly annotated `@MainActor`. `WallhavenAPI` is an `actor` with its own isolation.
+**Swift concurrency** — `SWIFT_APPROACHABLE_CONCURRENCY = YES` is active. `SWIFT_DEFAULT_ACTOR_ISOLATION` is **not set** — types are not implicitly `@MainActor`. ViewModels are explicitly annotated `@MainActor`. `WallhavenFetch` is an `actor` with its own isolation.
 
 **`GENERATE_INFOPLIST_FILE = YES`** — there is no hand-written `Info.plist`. Add privacy keys or entitlements via `INFOPLIST_KEY_*` entries in both the Debug and Release `XCBuildConfiguration` blocks inside `project.pbxproj`.
 
@@ -42,8 +42,8 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 ## Architecture
 
 - **MVVM** with `@Observable` (not `ObservableObject`).
-- `WallhavenAPI` is an `actor` — call its methods with `await`.
-- API key stored in `UserDefaults` under key `"wallhaven_api_key"`; read by both `WallhavenAPI` (actor) and `SettingsViewModel`.
+- `WallhavenFetch` is an `actor` — call its methods with `await`.
+- API key stored in `UserDefaults` under key `"wallhaven_api_key"`; read by both `WallhavenFetch` (actor) and `SettingsViewModel`.
 - Local favorites persist via **SwiftData** (`FavoriteWallpaper` model). The `ModelContainer` is configured in `WallhavenApp.swift` and injected as `.modelContainer(...)` on the root scene.
 - Image caching: `CacheImage` (NSCache, 150 MB limit). Use `CacheAsyncImage` (defined in `Services/Cache/AsyncImage.swift`) instead of the system `AsyncImage` everywhere.
 

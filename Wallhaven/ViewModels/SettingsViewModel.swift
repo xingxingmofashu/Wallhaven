@@ -26,7 +26,7 @@ final class SettingsViewModel {
         Task {
             defer { isLoadingSettings = false }
             do {
-                userSettings = try await WallhavenAPI.shared.userSettings()
+                userSettings = try await WallhavenFetch.shared.userSettings()
             } catch let e as WallhavenError {
                 settingsError = e.errorDescription
             } catch {

@@ -32,7 +32,7 @@ final class WallpaperDetailViewModel {
         Task {
             defer { isLoadingDetail = false }
             do {
-                let full = try await WallhavenAPI.shared.wallpaper(id: wallpaper.id)
+                let full = try await WallhavenFetch.shared.wallpaper(id: wallpaper.id)
                 wallpaper    = full
                 detailLoaded = true
             } catch {

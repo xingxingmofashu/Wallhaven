@@ -5,5 +5,5 @@ enum LoadState {
     case idle
     case loading
     case loaded
-    case failed(WallhavenError)
+    case failed(Error)
 }

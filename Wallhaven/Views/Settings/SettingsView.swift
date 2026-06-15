@@ -88,9 +88,18 @@ struct SettingsView: View {
 
     private var apiURLSection: some View {
         Section {
+            HStack {
+                Text("Base URL")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(viewModel.apiBaseURL)
+                    .font(.subheadline)
+                    .lineLimit(1)
+            }
+
             if showAPIURLField {
                 HStack {
-                    TextField("API Base URL", text: $tempAPIURL)
+                    TextField("New URL", text: $tempAPIURL)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .keyboardType(.URL)
@@ -100,21 +109,15 @@ struct SettingsView: View {
                     }
                     .fontWeight(.semibold)
                 }
-            } else {
-                HStack {
-                    Label("API URL", systemImage: "link")
-                    Spacer()
-                    Button("Edit") {
-                        tempAPIURL = viewModel.apiBaseURL
-                        showAPIURLField = true
-                    }
-                    .font(.subheadline)
-                }
-
-                Text(viewModel.apiBaseURL)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
+
+            Button(showAPIURLField ? "Cancel" : "Change URL") {
+                withAnimation {
+                    showAPIURLField.toggle()
+                    tempAPIURL = viewModel.apiBaseURL
+                }
+            }
+            .font(.subheadline)
         } header: {
             Text("API Endpoint")
         } footer: {

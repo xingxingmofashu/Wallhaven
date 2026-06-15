@@ -203,6 +203,7 @@ struct WallpaperDetailView: View {
                     } label: {
                         Text("#\(tag.name)")
                             .font(.caption)
+                            .foregroundStyle(.blue)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color(.secondarySystemBackground))

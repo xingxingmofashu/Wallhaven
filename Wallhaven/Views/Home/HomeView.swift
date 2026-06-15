@@ -12,7 +12,7 @@ struct HomeView: View {
                 .task { viewModel.loadInitial() }
                 .refreshable { viewModel.refresh() }
                 .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                    WallpaperDetailView(wallpaper: wallpaper)
+                    DetailView(wallpaper: wallpaper)
                 }
         }
     }

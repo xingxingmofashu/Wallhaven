@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct WallpaperDetailView: View {
+struct DetailView: View {
     @State private var viewModel: DetailViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var showFullscreen = false
@@ -282,6 +282,6 @@ struct WallpaperDetailView: View {
 
 #Preview {
     NavigationStack {
-        WallpaperDetailView(wallpaper: .preview)
+        DetailView(wallpaper: .preview)
     }
 }

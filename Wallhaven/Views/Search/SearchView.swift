@@ -68,11 +68,18 @@ struct SearchView: View {
     // MARK: - Idle
 
     private var idleView: some View {
-        ContentUnavailableView(
-            "Search Wallpapers",
-            systemImage: "magnifyingglass",
-            description: Text("Enter keywords to search, or tap the filter button to set conditions")
-        )
+        VStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 48))
+                .foregroundStyle(.tertiary)
+            Text("Search Wallpapers")
+                .font(.title2.weight(.medium))
+            Text("Enter keywords to search, or tap the filter button to set conditions")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Results

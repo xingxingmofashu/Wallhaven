@@ -23,7 +23,7 @@ Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
   Services/                 WallhavenFetch (actor), WallhavenError, Cache/ (CacheImage, CacheImageLoader, CacheAsyncImage)
   ViewModels/               @Observable ViewModels, one per screen
   Views/
-    Components/             WallpaperCell, WallpaperGrid, ErrorView, EmptyResultView
+    Components/             Cell, Grid, ErrorView, EmptyView
     Home / Search / Detail / Favorites / Settings / ContentView
   Docs/WallhavenAPI.md      Full API reference
 ```

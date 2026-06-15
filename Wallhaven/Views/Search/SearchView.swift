@@ -18,7 +18,7 @@ struct SearchView: View {
 
                 case .loaded:
                     if viewModel.wallpapers.isEmpty {
-                        EmptyResultView()
+                        EmptyView()
                     } else {
                         resultsView
                     }
@@ -79,7 +79,7 @@ struct SearchView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
 
-            WallpaperGrid(
+            Grid(
                 wallpapers: viewModel.wallpapers,
                 isLoadingMore: viewModel.isLoadingMore,
                 onLoadMore: { viewModel.loadMore() },

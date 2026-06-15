@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Single wallpaper thumbnail card
-struct WallpaperCell: View {
+struct Cell: View {
     let wallpaper: Wallpaper
 
     var body: some View {
@@ -73,7 +73,7 @@ struct CategoryBadge: View {
 // MARK: - Preview
 
 #Preview {
-    WallpaperCell(wallpaper: .preview)
+    Cell(wallpaper: .preview)
         .frame(width: 180, height: 120)
         .padding()
 }

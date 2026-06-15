@@ -26,7 +26,7 @@ struct HomeView: View {
             loadingView
 
         case .loaded:
-            WallpaperGrid(
+            Grid(
                 wallpapers: viewModel.wallpapers,
                 isLoadingMore: viewModel.isLoadingMore,
                 onLoadMore: { viewModel.loadMore() },

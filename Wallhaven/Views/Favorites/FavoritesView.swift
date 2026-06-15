@@ -28,7 +28,6 @@ struct FavoritesView: View {
                         } label: {
                             Image(systemName: "trash")
                         }
-                        .tint(.red)
                     }
                 }
             }

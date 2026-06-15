@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct MainTabView: View {
     var body: some View {

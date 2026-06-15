@@ -12,7 +12,7 @@ final class WallpaperDetailViewModel {
     var isSaving      = false          // 保存到相册中
     var saveResult: SaveResult?
 
-    enum SaveResult {
+    enum SaveResult: Equatable {
         case success
         case failure(String)
     }

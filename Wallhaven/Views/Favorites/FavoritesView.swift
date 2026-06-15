@@ -74,7 +74,7 @@ struct FavoritesView: View {
         ContentUnavailableView(
             "还没有收藏",
             systemImage: "heart",
-            description: Text("在壁纸详情页点击"收藏"，壁纸将保存在这里")
+            description: Text("在壁纸详情页点击「收藏」，壁纸将保存在这里")
         )
     }
 }

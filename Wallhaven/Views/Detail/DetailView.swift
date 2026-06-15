@@ -4,66 +4,107 @@ import SwiftData
 struct DetailView: View {
     @State private var viewModel: DetailViewModel
     @Environment(\.modelContext) private var modelContext
-    @State private var showFullscreen = false
-    @State private var showShareSheet = false
-    @State private var showSaveToast   = false
-    @State private var showFavToast    = false
+    @Environment(\.dismiss) private var dismiss
     @Environment(NavigationState.self) private var navigationState
+    @State private var showShareSheet = false
+    @State private var showInfoSheet = false
 
     init(wallpaper: Wallpaper) {
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper))
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                heroImage
-                infoPanel
+        VStack(spacing: 0) {
+            navBar
+            Spacer()
+            centeredImage
+            Spacer()
+        }
+        .background(Color(.systemBackground))
+        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+                Button {
+                    showShareSheet = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.largeTitle)
+                        .foregroundStyle(.primary)
+                }
+            }
+            ToolbarItemGroup(placement: .bottomBar) {
+                Button {
+                    viewModel.toggleFavorite(in: modelContext)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
+                        .font(.largeTitle)
+                        .foregroundStyle(viewModel.isFavorited ? .pink : .primary)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .symbolEffect(.bounce, value: viewModel.isFavorited)
+
+                Button {
+                    showInfoSheet = true
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.largeTitle)
+                        .foregroundStyle(.primary)
+                }
             }
         }
-        .ignoresSafeArea(edges: .top)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar { toolbarItems }
         .task {
             viewModel.checkFavoriteStatus(in: modelContext)
             viewModel.loadDetailIfNeeded()
         }
-        .sheet(isPresented: $showFullscreen) {
-            FullscreenImageView(url: viewModel.wallpaper.fullURL)
-        }
         .sheet(isPresented: $showShareSheet) {
             ShareSheetView(items: viewModel.shareItems)
         }
-        .overlay(alignment: .bottom) {
-            if showSaveToast {
-                saveToastView
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            } else if showFavToast, let toast = viewModel.favoriteToast {
-                favToastView(toast)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .onChange(of: viewModel.saveResult) { _, result in
-            guard result != nil else { return }
-            showSaveToast = true
-            Task {
-                try? await Task.sleep(for: .seconds(2))
-                showSaveToast = false
-            }
-        }
-        .onChange(of: viewModel.favoriteToast) { _, toast in
-            guard toast != nil else { return }
-            showFavToast = true
-            Task {
-                try? await Task.sleep(for: .seconds(1.5))
-                showFavToast = false
-            }
+        .sheet(isPresented: $showInfoSheet) {
+            infoSheet
         }
     }
 
-    // MARK: - Hero Image
+    // MARK: - Nav Bar
 
-    private var heroImage: some View {
+    private var navBar: some View {
+        HStack {
+            Button { dismiss() } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            Spacer()
+            Text(viewModel.wallpaper.id)
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial)
+                .clipShape(Capsule())
+            Spacer()
+            Menu {
+                Button("Open in Browser", systemImage: "safari") {
+                    if let url = URL(string: viewModel.wallpaper.url) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("Copy Link", systemImage: "doc.on.doc") {
+                    UIPasteboard.general.string = viewModel.wallpaper.url
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    // MARK: - Centered Image
+
+    private var centeredImage: some View {
         CacheAsyncImage(url: viewModel.wallpaper.thumbnailURL) { image in
             image
                 .resizable()
@@ -73,210 +114,85 @@ struct DetailView: View {
                 .fill(Color(.systemGray5))
                 .aspectRatio(viewModel.wallpaper.aspectRatio, contentMode: .fit)
         }
-        .onTapGesture { showFullscreen = true }
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                showFullscreen = true
-            } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    .padding(8)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
-            }
-            .padding(12)
-        }
+        .padding(.horizontal, 8)
     }
 
-    // MARK: - Info Panel
+    // MARK: - Info Sheet
 
-    private var infoPanel: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            actionButtons
-            Divider()
-            infoGrid
-
-            if !viewModel.wallpaper.colors.isEmpty {
-                colorRow
-            }
-
-            if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
-                tagSection(tags: tags)
-            }
-
-            if let uploader = viewModel.wallpaper.uploader {
-                uploaderRow(uploader: uploader)
-            }
-        }
-        .padding(16)
-    }
-
-    // MARK: - Action Buttons
-
-    private var actionButtons: some View {
-        HStack(spacing: 12) {
-            Button {
-                viewModel.toggleFavorite(in: modelContext)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
-                    .font(.title3)
-                    .frame(maxWidth: .infinity)
-                    .contentTransition(.symbolEffect(.replace))
-            }
-            .buttonStyle(.bordered)
-            .tint(viewModel.isFavorited ? .pink : .primary)
-            .symbolEffect(.bounce, value: viewModel.isFavorited)
-
-            Button {
-                viewModel.saveToPhotos()
-            } label: {
-                if viewModel.isSaving {
-                    ProgressView().frame(maxWidth: .infinity)
-                } else {
-                    Label("Save", systemImage: "square.and.arrow.down")
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .buttonStyle(.bordered)
-            .disabled(viewModel.isSaving)
-
-            Button {
-                showShareSheet = true
-            } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-        }
-    }
-
-    // MARK: - Info Grid
-
-    private var infoGrid: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible()), GridItem(.flexible())],
-            alignment: .leading,
-            spacing: 10
-        ) {
-            ForEach(viewModel.formattedInfo, id: \.label) { item in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.label)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(item.value)
-                        .font(.subheadline.weight(.medium))
-                }
-            }
-        }
-    }
-
-    // MARK: - Color Row
-
-    private var colorRow: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Dominant Colors")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            HStack(spacing: 8) {
-                ForEach(viewModel.wallpaper.colors, id: \.self) { hex in
-                    let cleanHex = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
-                    Circle()
-                        .fill(Color(hex: cleanHex))
-                        .frame(width: 26, height: 26)
-                        .overlay(Circle().strokeBorder(Color(.systemGray4), lineWidth: 0.5))
-                }
-            }
-        }
-    }
-
-    // MARK: - Tags
-
-    private func tagSection(tags: [Tag]) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Tags")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            FlowLayoutView(spacing: 6) {
-                ForEach(tags) { tag in
-                    Button {
-                        navigationState.searchTag(tag.name)
-                    } label: {
-                        Text("#\(tag.name)")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(Capsule())
+    private var infoSheet: some View {
+        NavigationStack {
+            List {
+                Section("Details") {
+                    ForEach(viewModel.formattedInfo, id: \.label) { item in
+                        HStack {
+                            Text(item.label)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(item.value)
+                                .foregroundStyle(.primary)
+                        }
                     }
-                    .buttonStyle(.plain)
+                }
+
+                if !viewModel.wallpaper.colors.isEmpty {
+                    Section("Colors") {
+                        HStack(spacing: 10) {
+                            ForEach(viewModel.wallpaper.colors, id: \.self) { hex in
+                                let cleanHex = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+                                Circle()
+                                    .fill(Color(hex: cleanHex))
+                                    .frame(width: 30, height: 30)
+                                    .overlay(Circle().strokeBorder(Color(.systemGray4), lineWidth: 0.5))
+                            }
+                        }
+                    }
+                }
+
+                if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
+                    Section("Tags") {
+                        FlowLayoutView(spacing: 6) {
+                            ForEach(tags) { tag in
+                                Button {
+                                    dismiss()
+                                    navigationState.searchTag(tag.name)
+                                } label: {
+                                    Text("#\(tag.name)")
+                                        .font(.caption)
+                                        .foregroundStyle(.blue)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Color(.secondarySystemBackground))
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+
+                if let uploader = viewModel.wallpaper.uploader {
+                    Section("Uploader") {
+                        HStack {
+                            Image(systemName: "person.circle.fill")
+                                .foregroundStyle(.secondary)
+                            Text(uploader.username)
+                            Text("·")
+                                .foregroundStyle(.secondary)
+                            Text(uploader.group)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Info")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { showInfoSheet = false }
                 }
             }
         }
-    }
-
-    // MARK: - Uploader
-
-    private func uploaderRow(uploader: Uploader) -> some View {
-        HStack {
-            Image(systemName: "person.circle.fill")
-                .foregroundStyle(.secondary)
-            Text(uploader.username)
-                .font(.subheadline)
-            Text("·")
-                .foregroundStyle(.secondary)
-            Text(uploader.group)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    // MARK: - Toolbar
-
-    @ToolbarContentBuilder
-    private var toolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
-            if viewModel.isLoadingDetail {
-                ProgressView()
-            }
-        }
-    }
-
-    // MARK: - Toast
-
-    private var saveToastView: some View {
-        let isSuccess: Bool
-        let message: String
-
-        switch viewModel.saveResult {
-        case .success:
-            isSuccess = true
-            message = "Saved to photos"
-        case .failure(let msg):
-            isSuccess = false
-            message = msg
-        case nil:
-            isSuccess = true
-            message = ""
-        }
-
-        return Label(message, systemImage: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(isSuccess ? Color.green : Color.red)
-            .foregroundStyle(.white)
-            .clipShape(Capsule())
-            .padding(.bottom, 30)
-    }
-
-    private func favToastView(_ toast: DetailViewModel.FavoriteToast) -> some View {
-        Label(toast.message, systemImage: toast == .added ? "heart.fill" : "heart.slash")
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(.pink)
-            .foregroundStyle(.white)
-            .clipShape(Capsule())
-            .padding(.bottom, 30)
     }
 }
 

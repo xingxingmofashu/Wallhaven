@@ -2,7 +2,7 @@ import SwiftUI
 
 struct FullscreenImageView: View {
     let url: URL?
-    @Environment(\.dismiss) private var dismiss
+    var onClose: (() -> Void)?
     @State private var scale: CGFloat = 1
     @State private var offset: CGSize = .zero
 
@@ -38,7 +38,7 @@ struct FullscreenImageView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Button {
-                dismiss()
+                onClose?()
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title)

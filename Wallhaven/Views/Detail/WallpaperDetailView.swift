@@ -28,7 +28,7 @@ struct WallpaperDetailView: View {
             FullscreenImageView(url: viewModel.wallpaper.fullURL)
         }
         .sheet(isPresented: $showShareSheet) {
-            ShareSheet(items: viewModel.shareItems)
+            ShareSheetView(items: viewModel.shareItems)
         }
         .overlay(alignment: .bottom) {
             if showSaveToast {
@@ -181,7 +181,7 @@ struct WallpaperDetailView: View {
             Text("Tags")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            FlowLayout(spacing: 6) {
+            FlowLayoutView(spacing: 6) {
                 ForEach(tags) { tag in
                     Text("#\(tag.name)")
                         .font(.caption)

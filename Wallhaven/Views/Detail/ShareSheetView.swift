@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ShareSheet: UIViewControllerRepresentable {
+struct ShareSheetView: UIViewControllerRepresentable {
     let items: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {

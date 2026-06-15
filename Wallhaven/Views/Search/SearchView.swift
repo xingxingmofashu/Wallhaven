@@ -48,7 +48,7 @@ struct SearchView: View {
                 }
             }
             .sheet(isPresented: $showFilter) {
-                FilterSheet(filters: $viewModel.filters) {
+                FilterSheetView(filters: $viewModel.filters) {
                     viewModel.search()
                 }
             }

@@ -18,7 +18,7 @@ xcodebuild -scheme Wallhaven \
 
 ```
 Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
-  Models/                   Wallpaper, SearchResponse, UserSettings, FavoriteWallpaper, SearchFilters, LoadState
+  Models/                   Wallpaper, SearchResponse, UserSettings, Favorite, SearchFilters, LoadState
   Services/                 WallhavenFetch (actor), WallhavenError, Cache/ (CacheImage, CacheImageLoader, CacheAsyncImage)
   ViewModels/               @Observable ViewModels, one per screen
   Views/

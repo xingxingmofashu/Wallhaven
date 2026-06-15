@@ -4,10 +4,10 @@ import SwiftData
 struct WallpaperDetailView: View {
     @State private var viewModel: WallpaperDetailViewModel
     @Environment(\.modelContext) private var modelContext
-    @State private var favoritesViewModel = FavoritesViewModel()
     @State private var showFullscreen = false
     @State private var showShareSheet = false
-    @State private var showSaveToast  = false
+    @State private var showSaveToast   = false
+    @State private var showFavToast    = false
 
     init(wallpaper: Wallpaper) {
         _viewModel = State(initialValue: WallpaperDetailViewModel(wallpaper: wallpaper))
@@ -23,7 +23,10 @@ struct WallpaperDetailView: View {
         .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarItems }
-        .task { viewModel.loadDetailIfNeeded() }
+        .task {
+            viewModel.checkFavoriteStatus(in: modelContext)
+            viewModel.loadDetailIfNeeded()
+        }
         .sheet(isPresented: $showFullscreen) {
             FullscreenImageView(url: viewModel.wallpaper.fullURL)
         }
@@ -32,7 +35,10 @@ struct WallpaperDetailView: View {
         }
         .overlay(alignment: .bottom) {
             if showSaveToast {
-                toastView
+                saveToastView
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if showFavToast, let toast = viewModel.favoriteToast {
+                favToastView(toast)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
@@ -42,6 +48,14 @@ struct WallpaperDetailView: View {
             Task {
                 try? await Task.sleep(for: .seconds(2))
                 showSaveToast = false
+            }
+        }
+        .onChange(of: viewModel.favoriteToast) { _, toast in
+            guard toast != nil else { return }
+            showFavToast = true
+            Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                showFavToast = false
             }
         }
     }
@@ -99,18 +113,20 @@ struct WallpaperDetailView: View {
 
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            let isFav = favoritesViewModel.isFavorite(id: viewModel.wallpaper.id, context: modelContext)
             Button {
-                favoritesViewModel.toggle(wallpaper: viewModel.wallpaper, context: modelContext)
+                viewModel.toggleFavorite(in: modelContext)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
                 Label(
-                    isFav ? "Favorited" : "Favorite",
-                    systemImage: isFav ? "heart.fill" : "heart"
+                    viewModel.isFavorited ? "Favorited" : "Favorite",
+                    systemImage: viewModel.isFavorited ? "heart.fill" : "heart"
                 )
                 .frame(maxWidth: .infinity)
+                .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.bordered)
-            .tint(isFav ? .pink : .primary)
+            .tint(viewModel.isFavorited ? .pink : .primary)
+            .symbolEffect(.bounce, value: viewModel.isFavorited)
 
             Button {
                 viewModel.saveToPhotos()
@@ -223,7 +239,7 @@ struct WallpaperDetailView: View {
 
     // MARK: - Toast
 
-    private var toastView: some View {
+    private var saveToastView: some View {
         let isSuccess: Bool
         let message: String
 
@@ -243,6 +259,16 @@ struct WallpaperDetailView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(isSuccess ? Color.green : Color.red)
+            .foregroundStyle(.white)
+            .clipShape(Capsule())
+            .padding(.bottom, 30)
+    }
+
+    private func favToastView(_ toast: WallpaperDetailViewModel.FavoriteToast) -> some View {
+        Label(toast.message, systemImage: toast == .added ? "heart.fill" : "heart.slash")
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(.pink)
             .foregroundStyle(.white)
             .clipShape(Capsule())
             .padding(.bottom, 30)

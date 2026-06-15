@@ -1,5 +1,6 @@
 import SwiftUI
 import Photos
+import SwiftData
 
 @Observable
 @MainActor
@@ -8,14 +9,27 @@ final class WallpaperDetailViewModel {
     // MARK: - State
 
     var wallpaper: Wallpaper
-    var detailLoaded  = false          // Whether full details with tags have been loaded
+    var detailLoaded    = false
     var isLoadingDetail = false
-    var isSaving      = false          // Saving to photo album
+    var isSaving        = false
     var saveResult: SaveResult?
+    var isFavorited     = false
+    var favoriteToast: FavoriteToast?
 
     enum SaveResult: Equatable {
         case success
         case failure(String)
+    }
+
+    enum FavoriteToast: Equatable {
+        case added, removed
+
+        var message: String {
+            switch self {
+            case .added:   return "Added to favorites"
+            case .removed: return "Removed from favorites"
+            }
+        }
     }
 
     // MARK: - Init
@@ -24,7 +38,7 @@ final class WallpaperDetailViewModel {
         self.wallpaper = wallpaper
     }
 
-    // MARK: - Load Detail (fetch full data with tags)
+    // MARK: - Load Detail
 
     func loadDetailIfNeeded() {
         guard !detailLoaded, !isLoadingDetail else { return }
@@ -41,6 +55,35 @@ final class WallpaperDetailViewModel {
         }
     }
 
+    // MARK: - Favorites
+
+    func checkFavoriteStatus(in context: ModelContext) {
+        let descriptor = FetchDescriptor<FavoriteWallpaper>(
+            predicate: #Predicate { $0.wallpaperID == wallpaper.id }
+        )
+        isFavorited = (try? context.fetchCount(descriptor)) ?? 0 > 0
+    }
+
+    func toggleFavorite(in context: ModelContext) {
+        if isFavorited {
+            let descriptor = FetchDescriptor<FavoriteWallpaper>(
+                predicate: #Predicate { $0.wallpaperID == wallpaper.id }
+            )
+            if let fav = try? context.fetch(descriptor).first {
+                context.delete(fav)
+                try? context.save()
+            }
+            isFavorited = false
+            favoriteToast = .removed
+        } else {
+            let fav = FavoriteWallpaper(from: wallpaper)
+            context.insert(fav)
+            try? context.save()
+            isFavorited = true
+            favoriteToast = .added
+        }
+    }
+
     // MARK: - Save to Photos
 
     func saveToPhotos() {
@@ -54,21 +97,18 @@ final class WallpaperDetailViewModel {
         Task {
             defer { isSaving = false }
             do {
-                // Download original image
                 let (data, _) = try await URLSession.shared.data(from: url)
                 guard let image = UIImage(data: data) else {
                     saveResult = .failure("Invalid image data")
                     return
                 }
 
-                // Request photo library permission
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
                 guard status == .authorized || status == .limited else {
                     saveResult = .failure("Photo library permission required, please enable in Settings")
                     return
                 }
 
-                // Save
                 try await PHPhotoLibrary.shared().performChanges {
                     PHAssetChangeRequest.creationRequestForAsset(from: image)
                 }

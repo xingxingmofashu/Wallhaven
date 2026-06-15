@@ -76,25 +76,25 @@ struct WallpaperDetailView: View {
 
     private var infoPanel: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // 操作按钮行
+            // Action buttons row
             actionButtons
 
             Divider()
 
-            // 基本信息
+            // Basic info
             infoGrid
 
-            // 颜色
+            // Colors
             if !viewModel.wallpaper.colors.isEmpty {
                 colorRow
             }
 
-            // 标签
+            // Tags
             if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
                 tagSection(tags: tags)
             }
 
-            // 上传者
+            // Uploader
             if let uploader = viewModel.wallpaper.uploader {
                 uploaderRow(uploader: uploader)
             }
@@ -106,13 +106,13 @@ struct WallpaperDetailView: View {
 
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            // 收藏
+            // Favorite
             let isFav = favVM.isFavorite(id: viewModel.wallpaper.id, context: modelContext)
             Button {
                 favVM.toggle(wallpaper: viewModel.wallpaper, context: modelContext)
             } label: {
                 Label(
-                    isFav ? "已收藏" : "收藏",
+                    isFav ? "Favorited" : "Favorite",
                     systemImage: isFav ? "heart.fill" : "heart"
                 )
                 .frame(maxWidth: .infinity)
@@ -120,25 +120,25 @@ struct WallpaperDetailView: View {
             .buttonStyle(.bordered)
             .tint(isFav ? .pink : .primary)
 
-            // 保存到相册
+            // Save to photos
             Button {
                 viewModel.saveToPhotos()
             } label: {
                 if viewModel.isSaving {
                     ProgressView().frame(maxWidth: .infinity)
                 } else {
-                    Label("保存", systemImage: "square.and.arrow.down")
+                    Label("Save", systemImage: "square.and.arrow.down")
                         .frame(maxWidth: .infinity)
                 }
             }
             .buttonStyle(.bordered)
             .disabled(viewModel.isSaving)
 
-            // 分享
+            // Share
             Button {
                 showShareSheet = true
             } label: {
-                Label("分享", systemImage: "square.and.arrow.up")
+                Label("Share", systemImage: "square.and.arrow.up")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
@@ -169,7 +169,7 @@ struct WallpaperDetailView: View {
 
     private var colorRow: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("主色调")
+            Text("Dominant Colors")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             HStack(spacing: 8) {
@@ -188,7 +188,7 @@ struct WallpaperDetailView: View {
 
     private func tagSection(tags: [Tag]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("标签")
+            Text("Tags")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             FlowLayout(spacing: 6) {
@@ -240,7 +240,7 @@ struct WallpaperDetailView: View {
         switch viewModel.saveResult {
         case .success:
             isSuccess = true
-            message = "已保存到相册"
+            message = "Saved to photos"
         case .failure(let msg):
             isSuccess = false
             message = msg
@@ -321,7 +321,7 @@ struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
 }
 
-// MARK: - FlowLayout（标签流式布局）
+// MARK: - FlowLayout (tag flow layout)
 
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8

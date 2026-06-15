@@ -1,13 +1,13 @@
 import Foundation
 import SwiftData
 
-/// SwiftData 持久化的本地收藏壁纸
+/// SwiftData persisted local favorite wallpaper
 @Model
 final class FavoriteWallpaper {
     @Attribute(.unique) var wallpaperID: String
     var addedAt: Date
 
-    // 缓存必要字段，离线也能显示
+    // Cache essential fields for offline display
     var thumbURL: String
     var fullPath: String
     var resolution: String

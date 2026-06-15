@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 单张壁纸缩略图卡片
+/// Single wallpaper thumbnail card
 struct WallpaperCell: View {
     let wallpaper: Wallpaper
 
@@ -13,12 +13,10 @@ struct WallpaperCell: View {
             Rectangle()
                 .fill(Color(.systemGray5))
         }
-        .clipped()
         .overlay(alignment: .bottomLeading) {
             badges
                 .padding(6)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     // MARK: - Badges

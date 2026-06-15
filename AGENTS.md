@@ -23,7 +23,7 @@ Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
   ViewModels/               @Observable ViewModels, one per screen
   Views/
     Components/             WallpaperCell, WallpaperGrid, ErrorView
-    Home / Search / Detail / Favorites / Settings / MainTabView
+    Home / Search / Detail / Favorites / Settings / ContentView
   Docs/WallhavenAPI.md      Full API reference
 ```
 
@@ -33,7 +33,7 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 
 **Deployment target: iOS 26.5** — `IPHONEOS_DEPLOYMENT_TARGET = 26.5`. Do not use APIs gated behind availability checks unless they are available on 26.5.
 
-**Swift concurrency** — `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` and `SWIFT_APPROACHABLE_CONCURRENCY = YES` are both active. All types are implicitly `@MainActor`. Explicitly annotate `nonisolated` or `actor` where needed.
+**Swift concurrency** — `SWIFT_APPROACHABLE_CONCURRENCY = YES` is active. `SWIFT_DEFAULT_ACTOR_ISOLATION` is **not set** — types are not implicitly `@MainActor`. ViewModels are explicitly annotated `@MainActor`. `WallhavenAPI` is an `actor` with its own isolation.
 
 **`GENERATE_INFOPLIST_FILE = YES`** — there is no hand-written `Info.plist`. Add privacy keys or entitlements via `INFOPLIST_KEY_*` entries in both the Debug and Release `XCBuildConfiguration` blocks inside `project.pbxproj`.
 

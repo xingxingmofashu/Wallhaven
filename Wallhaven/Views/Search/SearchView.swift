@@ -13,7 +13,7 @@ struct SearchView: View {
                     idleView
 
                 case .loading:
-                    ProgressView("搜索中…")
+                    ProgressView("Searching...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 case .loaded:
@@ -24,16 +24,16 @@ struct SearchView: View {
                     }
 
                 case .failed(let error):
-                    ErrorView(message: error.errorDescription ?? "未知错误") {
+                    ErrorView(message: error.errorDescription ?? "Unknown error") {
                         viewModel.search()
                     }
                 }
             }
-            .navigationTitle("搜索")
+            .navigationTitle("Search")
             .searchable(
                 text: $viewModel.filters.query,
                 placement: .navigationBarDrawer(displayMode: .always),
-                prompt: "搜索壁纸、标签…"
+                prompt: "Search wallpapers, tags..."
             )
             .onSubmit(of: .search) {
                 viewModel.search()
@@ -62,9 +62,9 @@ struct SearchView: View {
 
     private var idleView: some View {
         ContentUnavailableView(
-            "搜索壁纸",
+            "Search Wallpapers",
             systemImage: "magnifyingglass",
-            description: Text("输入关键词开始搜索，或点击筛选按钮设置条件")
+            description: Text("Enter keywords to search, or tap the filter button to set conditions")
         )
     }
 
@@ -72,8 +72,8 @@ struct SearchView: View {
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // 结果数量
-            Text("共 \(viewModel.totalResults) 张")
+            // Result count
+            Text("\(viewModel.totalResults) results")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 16)

@@ -2,20 +2,21 @@ import Foundation
 import SwiftData
 
 @Observable
+@MainActor
 final class FavoritesViewModel {
 
-    // MARK: - 收藏操作（通过 ModelContext 直接操作）
+    // MARK: - Favorite Operations (via ModelContext)
 
-    /// 添加收藏
+    /// Add to favorites
     func add(wallpaper: Wallpaper, context: ModelContext) {
-        // 避免重复收藏
+        // Prevent duplicate favorites
         guard !isFavorite(id: wallpaper.id, context: context) else { return }
         let fav = FavoriteWallpaper(from: wallpaper)
         context.insert(fav)
         try? context.save()
     }
 
-    /// 移除收藏
+    /// Remove from favorites
     func remove(wallpaper: Wallpaper, context: ModelContext) {
         let id = wallpaper.id
         let descriptor = FetchDescriptor<FavoriteWallpaper>(
@@ -27,7 +28,7 @@ final class FavoritesViewModel {
         }
     }
 
-    /// 切换收藏状态
+    /// Toggle favorite status
     func toggle(wallpaper: Wallpaper, context: ModelContext) {
         if isFavorite(id: wallpaper.id, context: context) {
             remove(wallpaper: wallpaper, context: context)
@@ -36,7 +37,7 @@ final class FavoritesViewModel {
         }
     }
 
-    /// 查询是否已收藏
+    /// Check if already favorited
     func isFavorite(id: String, context: ModelContext) -> Bool {
         let descriptor = FetchDescriptor<FavoriteWallpaper>(
             predicate: #Predicate { $0.wallpaperID == id }
@@ -44,7 +45,7 @@ final class FavoritesViewModel {
         return (try? context.fetchCount(descriptor)) ?? 0 > 0
     }
 
-    /// 清空所有收藏
+    /// Clear all favorites
     func clearAll(context: ModelContext) {
         try? context.delete(model: FavoriteWallpaper.self)
         try? context.save()

@@ -1,6 +1,7 @@
 import Foundation
 
 @Observable
+@MainActor
 final class HomeViewModel {
 
     // MARK: - State
@@ -15,7 +16,7 @@ final class HomeViewModel {
     private var currentPage     = 1
     private var currentTask: Task<Void, Never>?
 
-    // 首页使用 latest SFW 作为默认筛选
+    // Home page uses latest SFW as default filter
     private var filters: SearchFilters = {
         var f = SearchFilters()
         f.sorting = .dateAdded
@@ -71,7 +72,7 @@ final class HomeViewModel {
             hasNextPage  = response.meta.hasNextPage
             currentPage  = response.meta.currentPage
         } catch {
-            // 加载更多失败静默处理，不覆盖主状态
+            // Silently handle load-more failures without overwriting main state
         }
     }
 }

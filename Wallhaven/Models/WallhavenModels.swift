@@ -36,19 +36,19 @@ struct Wallpaper: Codable, Identifiable, Hashable {
         case createdAt    = "created_at"
     }
 
-    // 缩略图 URL，优先 large，降级 original
+    // Thumbnail URL, prefer large, fallback to original
     var thumbnailURL: URL? { URL(string: thumbs.large) }
     var fullURL: URL?      { URL(string: path) }
     var pageURL: URL?      { URL(string: url) }
 
-    // 计算纵横比，用于判断是否竖向图
+    // Compute aspect ratio to determine if portrait
     var aspectRatio: Double {
         guard dimensionY > 0 else { return 1 }
         return Double(dimensionX) / Double(dimensionY)
     }
     var isPortrait: Bool { aspectRatio < 1.0 }
 
-    // 格式化文件大小
+    // Format file size
     var formattedFileSize: String {
         let mb = Double(fileSize) / 1_048_576
         return String(format: "%.1f MB", mb)
@@ -128,7 +128,7 @@ struct Meta: Codable {
     var hasNextPage: Bool { currentPage < lastPage }
 }
 
-// query 字段可能是 String 或 {id, tag} 对象
+// query field may be a String or {id, tag} object
 enum QueryValue: Codable, Hashable {
     case string(String)
     case tag(id: Int, tag: String)

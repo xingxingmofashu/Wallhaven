@@ -16,7 +16,7 @@ struct WallhavenApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            ContentView()
         }
         .modelContainer(modelContainer)
     }

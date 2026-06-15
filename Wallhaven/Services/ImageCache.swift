@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Image Cache
 
-/// 基于 NSCache 的内存图片缓存（线程安全）
+/// NSCache-based in-memory image cache (thread-safe)
 final class ImageCache: @unchecked Sendable {
     static let shared = ImageCache()
 
@@ -10,7 +10,7 @@ final class ImageCache: @unchecked Sendable {
     private let lock  = NSLock()
 
     private init() {
-        cache.countLimit     = 200      // 最多缓存 200 张
+        cache.countLimit     = 200      // max 200 images
         cache.totalCostLimit = 1024 * 1024 * 150  // 150 MB
     }
 
@@ -52,7 +52,7 @@ final class CachedImageLoader {
         cancel()
         currentURL = url
 
-        // 命中缓存
+        // Cache hit
         if let cached = ImageCache.shared.image(for: url) {
             image = cached
             return
@@ -87,7 +87,7 @@ final class CachedImageLoader {
 
 // MARK: - CachedAsyncImage View
 
-/// 替代 AsyncImage，带内存缓存，支持占位和失败态
+/// Replacement for AsyncImage with in-memory cache, placeholder and failure states
 struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     private let url: URL?
     private let content: (Image) -> Content

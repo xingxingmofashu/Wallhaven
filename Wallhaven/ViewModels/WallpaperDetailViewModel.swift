@@ -2,14 +2,15 @@ import SwiftUI
 import Photos
 
 @Observable
+@MainActor
 final class WallpaperDetailViewModel {
 
     // MARK: - State
 
     var wallpaper: Wallpaper
-    var detailLoaded  = false          // 是否已加载带 tags 的完整详情
+    var detailLoaded  = false          // Whether full details with tags have been loaded
     var isLoadingDetail = false
-    var isSaving      = false          // 保存到相册中
+    var isSaving      = false          // Saving to photo album
     var saveResult: SaveResult?
 
     enum SaveResult: Equatable {
@@ -23,7 +24,7 @@ final class WallpaperDetailViewModel {
         self.wallpaper = wallpaper
     }
 
-    // MARK: - Load Detail（获取包含 tags 的完整数据）
+    // MARK: - Load Detail (fetch full data with tags)
 
     func loadDetailIfNeeded() {
         guard !detailLoaded, !isLoadingDetail else { return }
@@ -35,7 +36,7 @@ final class WallpaperDetailViewModel {
                 wallpaper    = full
                 detailLoaded = true
             } catch {
-                // 加载失败静默处理，保留预览数据
+                // Silently handle load failure, keep preview data
             }
         }
     }
@@ -44,7 +45,7 @@ final class WallpaperDetailViewModel {
 
     func saveToPhotos() {
         guard let url = wallpaper.fullURL else {
-            saveResult = .failure("无效的图片地址")
+            saveResult = .failure("Invalid image URL")
             return
         }
         isSaving = true
@@ -53,27 +54,27 @@ final class WallpaperDetailViewModel {
         Task {
             defer { isSaving = false }
             do {
-                // 下载原图
+                // Download original image
                 let (data, _) = try await URLSession.shared.data(from: url)
                 guard let image = UIImage(data: data) else {
-                    saveResult = .failure("图片数据无效")
+                    saveResult = .failure("Invalid image data")
                     return
                 }
 
-                // 请求相册权限
+                // Request photo library permission
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
                 guard status == .authorized || status == .limited else {
-                    saveResult = .failure("需要相册权限，请在设置中开启")
+                    saveResult = .failure("Photo library permission required, please enable in Settings")
                     return
                 }
 
-                // 存储
+                // Save
                 try await PHPhotoLibrary.shared().performChanges {
                     PHAssetChangeRequest.creationRequestForAsset(from: image)
                 }
                 saveResult = .success
             } catch {
-                saveResult = .failure("保存失败：\(error.localizedDescription)")
+                saveResult = .failure("Save failed: \(error.localizedDescription)")
             }
         }
     }
@@ -88,15 +89,15 @@ final class WallpaperDetailViewModel {
 
     var formattedInfo: [(label: String, value: String)] {
         [
-            ("分辨率", wallpaper.resolution),
-            ("比例",   wallpaper.ratio),
-            ("类型",   wallpaper.fileType),
-            ("大小",   wallpaper.formattedFileSize),
-            ("纯度",   wallpaper.purity.uppercased()),
-            ("分类",   wallpaper.category.capitalized),
-            ("浏览量", "\(wallpaper.views)"),
-            ("收藏量", "\(wallpaper.favorites)"),
-            ("上传于", wallpaper.createdAt),
+            ("Resolution", wallpaper.resolution),
+            ("Ratio",      wallpaper.ratio),
+            ("Type",       wallpaper.fileType),
+            ("Size",       wallpaper.formattedFileSize),
+            ("Purity",     wallpaper.purity.uppercased()),
+            ("Category",   wallpaper.category.capitalized),
+            ("Views",      "\(wallpaper.views)"),
+            ("Favorites",  "\(wallpaper.favorites)"),
+            ("Uploaded",   wallpaper.createdAt),
         ]
     }
 }

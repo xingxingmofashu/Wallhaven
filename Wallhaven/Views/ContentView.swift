@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct MainTabView: View {
+struct ContentView: View {
     var body: some View {
         TabView {
             Tab("首页", systemImage: "photo.stack") {
@@ -21,6 +21,6 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
+    ContentView()
         .modelContainer(for: FavoriteWallpaper.self, inMemory: true)
 }

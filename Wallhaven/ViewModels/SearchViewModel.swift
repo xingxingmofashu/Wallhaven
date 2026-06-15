@@ -1,6 +1,7 @@
 import Foundation
 
 @Observable
+@MainActor
 final class SearchViewModel {
 
     // MARK: - State
@@ -13,17 +14,17 @@ final class SearchViewModel {
     var hasNextPage             = false
     var totalResults            = 0
 
-    // 搜索词 & 筛选条件
+    // Search query & filter criteria
     var filters: SearchFilters  = SearchFilters()
 
-    // 上次实际执行搜索的关键词，避免频繁重复请求
+    // Last actual search query to avoid frequent duplicate requests
     private var lastSearchedQuery = ""
     private var currentPage       = 0
     private var searchTask: Task<Void, Never>?
 
     // MARK: - Search
 
-    /// 用新关键词/筛选触发搜索（重置分页）
+    /// Trigger search with new query/filters (resets pagination)
     func search() {
         searchTask?.cancel()
         searchTask = Task {
@@ -65,7 +66,7 @@ final class SearchViewModel {
         do {
             let response = try await WallhavenAPI.shared.search(filters: filters, page: page)
 
-            // 随机排序时保存 seed，翻页时复用以保证不重复
+            // Save seed for random sorting, reuse on pagination to avoid duplicates
             if filters.sorting == .random, let seed = response.meta.seed {
                 filters.seed = seed
             }

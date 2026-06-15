@@ -17,21 +17,21 @@ struct FilterSheet: View {
                 ratioSection
                 colorSection
             }
-            .navigationTitle("筛选条件")
+            .navigationTitle("Filters")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("应用") {
+                    Button("Apply") {
                         onApply()
                         dismiss()
                     }
                     .fontWeight(.semibold)
                 }
                 ToolbarItem(placement: .bottomBar) {
-                    Button("重置") { filters = SearchFilters() }
+                    Button("Reset") { filters = SearchFilters() }
                         .foregroundStyle(.red)
                 }
             }
@@ -41,30 +41,30 @@ struct FilterSheet: View {
     // MARK: - Sections
 
     private var categoriesSection: some View {
-        Section("分类") {
-            Toggle("General（通用）", isOn: $filters.general)
-            Toggle("Anime（动漫）",   isOn: $filters.anime)
-            Toggle("People（人物）",  isOn: $filters.people)
+        Section("Categories") {
+            Toggle("General", isOn: $filters.general)
+            Toggle("Anime",   isOn: $filters.anime)
+            Toggle("People",  isOn: $filters.people)
         }
     }
 
     private var puritySection: some View {
-        Section("纯度") {
-            Toggle("SFW（适合工作）",   isOn: $filters.sfw)
-            Toggle("Sketchy（少儿不宜）", isOn: $filters.sketchy)
-            Toggle("NSFW（成人内容）",   isOn: $filters.nsfw)
+        Section("Purity") {
+            Toggle("SFW (Safe)",      isOn: $filters.sfw)
+            Toggle("Sketchy",         isOn: $filters.sketchy)
+            Toggle("NSFW (Adult)",    isOn: $filters.nsfw)
                 .foregroundStyle(filters.nsfw ? .red : .primary)
         }
     }
 
     private var sortingSection: some View {
-        Section("排序") {
-            Picker("排序方式", selection: $filters.sorting) {
+        Section("Sorting") {
+            Picker("Sort by", selection: $filters.sorting) {
                 ForEach(SearchFilters.Sorting.allCases) { s in
                     Text(s.displayName).tag(s)
                 }
             }
-            Picker("排序方向", selection: $filters.order) {
+            Picker("Order", selection: $filters.order) {
                 ForEach(SearchFilters.Order.allCases) { o in
                     Text(o.displayName).tag(o)
                 }
@@ -73,8 +73,8 @@ struct FilterSheet: View {
     }
 
     private var topRangeSection: some View {
-        Section("排行榜时间范围") {
-            Picker("范围", selection: $filters.topRange) {
+        Section("Toplist Time Range") {
+            Picker("Range", selection: $filters.topRange) {
                 ForEach(SearchFilters.TopRange.allCases) { r in
                     Text(r.displayName).tag(r)
                 }
@@ -84,33 +84,33 @@ struct FilterSheet: View {
     }
 
     private var resolutionSection: some View {
-        Section("分辨率") {
-            TextField("最小分辨率，如 1920x1080", text: $filters.atleast)
+        Section("Resolution") {
+            TextField("Min resolution, e.g. 1920x1080", text: $filters.atleast)
                 .keyboardType(.numbersAndPunctuation)
                 .autocorrectionDisabled()
         }
     }
 
     private var ratioSection: some View {
-        Section("比例") {
+        Section("Ratio") {
             let ratioOptions = ["", "16x9", "16x10", "4x3", "9x16", "1x1"]
-            Picker("常用比例", selection: $filters.ratios) {
-                Text("不限").tag("")
+            Picker("Common Ratios", selection: $filters.ratios) {
+                Text("Any").tag("")
                 Text("16:9").tag("16x9")
                 Text("16:10").tag("16x10")
                 Text("4:3").tag("4x3")
-                Text("9:16（竖向）").tag("9x16")
-                Text("1:1（正方）").tag("1x1")
+                Text("9:16 (Portrait)").tag("9x16")
+                Text("1:1 (Square)").tag("1x1")
             }
             .id(ratioOptions)
         }
     }
 
     private var colorSection: some View {
-        Section("主色调") {
+        Section("Dominant Color") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    // 清除选项
+                    // Clear option
                     Circle()
                         .strokeBorder(.secondary, lineWidth: 2)
                         .frame(width: 36, height: 36)

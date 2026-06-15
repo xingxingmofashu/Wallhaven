@@ -2,17 +2,17 @@ import Foundation
 
 // MARK: - Search Filters
 
-/// 搜索筛选条件，绑定到 SearchViewModel
+/// Search filter criteria, bound to SearchViewModel
 struct SearchFilters: Equatable {
 
     var query: String = ""
 
-    // categories: 每位对应 general / anime / people，1=开 0=关
+    // categories: each bit corresponds to general / anime / people, 1=on 0=off
     var general: Bool = true
     var anime: Bool   = true
     var people: Bool  = true
 
-    // purity: 每位对应 sfw / sketchy / nsfw
+    // purity: each bit corresponds to sfw / sketchy / nsfw
     var sfw: Bool     = true
     var sketchy: Bool = false
     var nsfw: Bool    = false
@@ -22,10 +22,10 @@ struct SearchFilters: Equatable {
     var topRange: TopRange   = .oneMonth
 
     var atleast: String      = ""     // e.g. "1920x1080"
-    var resolutions: String  = ""     // 逗号分隔 e.g. "1920x1080,2560x1440"
-    var ratios: String       = ""     // 逗号分隔 e.g. "16x9,16x10"
-    var colors: String       = ""     // 单色 hex e.g. "ff0000"
-    var seed: String?                  // 随机排序时的 seed
+    var resolutions: String  = ""     // comma-separated e.g. "1920x1080,2560x1440"
+    var ratios: String       = ""     // comma-separated e.g. "16x9,16x10"
+    var colors: String       = ""     // single color hex e.g. "ff0000"
+    var seed: String?                  // seed for random sorting
 
     // MARK: - Enums
 
@@ -42,13 +42,13 @@ struct SearchFilters: Equatable {
 
         var displayName: String {
             switch self {
-            case .dateAdded:  return "最新"
-            case .relevance:  return "相关"
-            case .random:     return "随机"
-            case .views:      return "浏览量"
-            case .favorites:  return "收藏量"
-            case .toplist:    return "排行榜"
-            case .hot:        return "热门"
+            case .dateAdded:  return "Latest"
+            case .relevance:  return "Relevance"
+            case .random:     return "Random"
+            case .views:      return "Views"
+            case .favorites:  return "Favorites"
+            case .toplist:    return "Toplist"
+            case .hot:        return "Hot"
             }
         }
     }
@@ -57,7 +57,7 @@ struct SearchFilters: Equatable {
         case desc = "desc"
         case asc  = "asc"
         var id: String { rawValue }
-        var displayName: String { self == .desc ? "降序" : "升序" }
+        var displayName: String { self == .desc ? "Descending" : "Ascending" }
     }
 
     enum TopRange: String, CaseIterable, Identifiable {
@@ -71,20 +71,20 @@ struct SearchFilters: Equatable {
         var id: String { rawValue }
         var displayName: String {
             switch self {
-            case .oneDay:      return "今日"
-            case .threeDays:   return "近3天"
-            case .oneWeek:     return "近一周"
-            case .oneMonth:    return "近一月"
-            case .threeMonths: return "近三月"
-            case .sixMonths:   return "近半年"
-            case .oneYear:     return "近一年"
+            case .oneDay:      return "Today"
+            case .threeDays:   return "Last 3 Days"
+            case .oneWeek:     return "Last Week"
+            case .oneMonth:    return "Last Month"
+            case .threeMonths: return "Last 3 Months"
+            case .sixMonths:   return "Last 6 Months"
+            case .oneYear:     return "Last Year"
             }
         }
     }
 
     // MARK: - Computed API Parameters
 
-    /// 三位二进制字符串，例如 "111", "100"
+    /// Three-bit binary string, e.g. "111", "100"
     var categoriesParam: String {
         "\(general ? 1 : 0)\(anime ? 1 : 0)\(people ? 1 : 0)"
     }
@@ -93,7 +93,7 @@ struct SearchFilters: Equatable {
         "\(sfw ? 1 : 0)\(sketchy ? 1 : 0)\(nsfw ? 1 : 0)"
     }
 
-    /// 将当前 filters 转为 URL query items
+    /// Convert current filters to URL query items
     func queryItems(page: Int) -> [URLQueryItem] {
         var items: [URLQueryItem] = []
 
@@ -135,7 +135,7 @@ struct SearchFilters: Equatable {
 // MARK: - Available Colors
 
 struct WallhavenColor: Identifiable, Hashable {
-    let hex: String   // 不含 #
+    let hex: String   // without #
     var id: String { hex }
     var display: String { "#\(hex)" }
 }

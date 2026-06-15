@@ -1,36 +1,36 @@
 import SwiftUI
 
-/// 通用错误状态视图
+/// Generic error state view
 struct ErrorView: View {
     let message: String
     let retryAction: () -> Void
 
     var body: some View {
         ContentUnavailableView {
-            Label("加载失败", systemImage: "wifi.exclamationmark")
+            Label("Loading Failed", systemImage: "wifi.exclamationmark")
         } description: {
             Text(message)
                 .multilineTextAlignment(.center)
         } actions: {
-            Button("重试", action: retryAction)
+            Button("Retry", action: retryAction)
                 .buttonStyle(.bordered)
         }
     }
 }
 
-/// 空结果状态视图
+/// Empty result state view
 struct EmptyResultView: View {
-    var message: String = "没有找到相关壁纸"
+    var message: String = "No wallpapers found"
 
     var body: some View {
         ContentUnavailableView(
             message,
             systemImage: "photo.on.rectangle.angled",
-            description: Text("尝试使用不同的关键词或筛选条件")
+            description: Text("Try different keywords or filter conditions")
         )
     }
 }
 
 #Preview {
-    ErrorView(message: "网络连接超时，请检查网络后重试") {}
+    ErrorView(message: "Network connection timed out, please check your network and try again") {}
 }

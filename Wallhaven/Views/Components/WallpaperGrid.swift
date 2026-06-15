@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 可复用的壁纸网格，双列瀑布流（每张图按真实宽高比显示，无空白）
+/// Reusable wallpaper grid, two-column waterfall layout
 struct WallpaperGrid: View {
     let wallpapers: [Wallpaper]
     let isLoadingMore: Bool
@@ -9,22 +9,14 @@ struct WallpaperGrid: View {
 
     private let spacing: CGFloat = 8
 
-    // 将 wallpapers 按奇偶下标分到左右两列
-    private var leftColumn: [Wallpaper] {
-        wallpapers.enumerated().filter { $0.offset % 2 == 0 }.map(\.element)
-    }
-    private var rightColumn: [Wallpaper] {
-        wallpapers.enumerated().filter { $0.offset % 2 == 1 }.map(\.element)
-    }
-
     var body: some View {
         GeometryReader { geo in
-            // 屏幕宽 - 左右边距(8+8) - 中间间距(8)，平分两列
             let columnWidth = (geo.size.width - spacing * 3) / 2
+
             ScrollView {
                 HStack(alignment: .top, spacing: spacing) {
-                    masonryColumn(wallpapers: leftColumn, width: columnWidth)
-                    masonryColumn(wallpapers: rightColumn, width: columnWidth)
+                    columnWallpapers(leftIndices, columnWidth: columnWidth)
+                    columnWallpapers(rightIndices, columnWidth: columnWidth)
                 }
                 .padding(.horizontal, spacing)
                 .padding(.top, spacing)
@@ -38,28 +30,45 @@ struct WallpaperGrid: View {
         }
     }
 
-    // MARK: - Single column
+    // MARK: - Columns
+
+    private var leftIndices: [Int] {
+        stride(from: 0, to: wallpapers.count, by: 2).map { $0 }
+    }
+
+    private var rightIndices: [Int] {
+        stride(from: 1, to: wallpapers.count, by: 2).map { $0 }
+    }
 
     @ViewBuilder
-    private func masonryColumn(wallpapers: [Wallpaper], width: CGFloat) -> some View {
+    private func columnWallpapers(_ indices: [Int], columnWidth: CGFloat) -> some View {
         LazyVStack(spacing: spacing) {
-            ForEach(wallpapers) { wallpaper in
+            ForEach(indices, id: \.self) { idx in
+                let wallpaper = wallpapers[idx]
+                let cellHeight = cellHeight(for: wallpaper, width: columnWidth)
+
                 Button {
                     onSelect(wallpaper)
                 } label: {
                     WallpaperCell(wallpaper: wallpaper)
-                        .frame(width: width,
-                               height: width / CGFloat(wallpaper.aspectRatio))
+                        .frame(width: columnWidth, height: cellHeight)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
                 .onAppear {
-                    if wallpaper.id == wallpapers.dropLast(4).last?.id {
+                    if idx >= wallpapers.count - 4, !isLoadingMore {
                         onLoadMore()
                     }
                 }
             }
         }
-        .frame(width: width)
+        .frame(width: columnWidth)
+    }
+
+    private func cellHeight(for wallpaper: Wallpaper, width: CGFloat) -> CGFloat {
+        let ratio = max(wallpaper.aspectRatio, 0.01)
+        return width / ratio
     }
 }
 

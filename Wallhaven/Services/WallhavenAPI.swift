@@ -13,13 +13,13 @@ enum WallhavenError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL:           return "无效的请求地址"
-        case .unauthorized:         return "API Key 无效或无权访问此内容"
-        case .rateLimited:          return "请求过于频繁，请稍后再试（每分钟限 45 次）"
-        case .serverError(let c):   return "服务器错误：\(c)"
-        case .decodingError(let e): return "数据解析失败：\(e.localizedDescription)"
-        case .networkError(let e):  return "网络错误：\(e.localizedDescription)"
-        case .unknown:              return "未知错误"
+        case .invalidURL:           return "Invalid request URL"
+        case .unauthorized:         return "Invalid API key or unauthorized access"
+        case .rateLimited:          return "Too many requests, please try again later (45 req/min limit)"
+        case .serverError(let c):   return "Server error: \(c)"
+        case .decodingError(let e): return "Failed to parse data: \(e.localizedDescription)"
+        case .networkError(let e):  return "Network error: \(e.localizedDescription)"
+        case .unknown:              return "Unknown error"
         }
     }
 }
@@ -33,7 +33,7 @@ actor WallhavenAPI {
     private let baseURL = "https://wallhaven.cc/api/v1"
     private let session: URLSession
 
-    /// 从 UserDefaults 读取 API Key
+    /// Read API key from UserDefaults
     private var apiKey: String? {
         let key = UserDefaults.standard.string(forKey: "wallhaven_api_key")
         return key?.isEmpty == false ? key : nil
@@ -48,7 +48,7 @@ actor WallhavenAPI {
 
     // MARK: - Search
 
-    /// 搜索 / 获取列表
+    /// Search / get list
     func search(filters: SearchFilters, page: Int = 1) async throws -> SearchResponse {
         var items = filters.queryItems(page: page)
         if let key = apiKey {
@@ -91,7 +91,7 @@ actor WallhavenAPI {
 
     // MARK: - Collections
 
-    /// 获取当前认证用户的收藏夹列表
+    /// Get current authenticated user's collection list
     func myCollections() async throws -> [Collection] {
         guard let key = apiKey else { throw WallhavenError.unauthorized }
         let url = try buildURL(path: "/collections", queryItems: [
@@ -101,14 +101,14 @@ actor WallhavenAPI {
         return response.data
     }
 
-    /// 获取指定用户的公开收藏夹列表
+    /// Get public collection list for a specific user
     func collections(username: String) async throws -> [Collection] {
         let url = try buildURL(path: "/collections/\(username)")
         let response: CollectionsResponse = try await fetch(url: url)
         return response.data
     }
 
-    /// 获取收藏夹内壁纸列表
+    /// Get wallpaper list within a collection
     func collectionWallpapers(
         username: String,
         collectionID: Int,

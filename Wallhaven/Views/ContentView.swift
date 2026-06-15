@@ -4,16 +4,16 @@ import SwiftData
 struct ContentView: View {
     var body: some View {
         TabView {
-            Tab("首页", systemImage: "photo.stack") {
+            Tab("Home", systemImage: "photo.stack") {
                 HomeView()
             }
-            Tab("搜索", systemImage: "magnifyingglass") {
+            Tab("Search", systemImage: "magnifyingglass") {
                 SearchView()
             }
-            Tab("收藏", systemImage: "heart") {
+            Tab("Favorites", systemImage: "heart") {
                 FavoritesView()
             }
-            Tab("设置", systemImage: "gearshape") {
+            Tab("Settings", systemImage: "gearshape") {
                 SettingsView()
             }
         }

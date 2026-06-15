@@ -15,14 +15,14 @@ struct SettingsView: View {
                 cacheSection
                 aboutSection
             }
-            .navigationTitle("设置")
+            .navigationTitle("Settings")
             .task {
                 tempAPIKey = viewModel.apiKey
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
             }
             .overlay(alignment: .bottom) {
                 if showClearedToast {
-                    Label("缓存已清除", systemImage: "checkmark.circle.fill")
+                    Label("Cache Cleared", systemImage: "checkmark.circle.fill")
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .background(Color.green)
@@ -41,10 +41,10 @@ struct SettingsView: View {
         Section {
             if showAPIKeyField {
                 HStack {
-                    SecureField("粘贴 API Key", text: $tempAPIKey)
+                    SecureField("Paste API Key", text: $tempAPIKey)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
-                    Button("保存") {
+                    Button("Save") {
                         viewModel.apiKey = tempAPIKey.trimmingCharacters(in: .whitespaces)
                         showAPIKeyField  = false
                         if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
@@ -54,12 +54,12 @@ struct SettingsView: View {
             } else {
                 HStack {
                     Label(
-                        viewModel.hasAPIKey ? "已设置 API Key" : "未设置 API Key",
+                        viewModel.hasAPIKey ? "API Key Set" : "No API Key",
                         systemImage: viewModel.hasAPIKey ? "key.fill" : "key"
                     )
                     .foregroundStyle(viewModel.hasAPIKey ? .green : .secondary)
                     Spacer()
-                    Button(viewModel.hasAPIKey ? "更改" : "设置") {
+                    Button(viewModel.hasAPIKey ? "Change" : "Set") {
                         tempAPIKey = viewModel.apiKey
                         showAPIKeyField = true
                     }
@@ -67,7 +67,7 @@ struct SettingsView: View {
                 }
 
                 if viewModel.hasAPIKey {
-                    Button("清除 API Key", role: .destructive) {
+                    Button("Clear API Key", role: .destructive) {
                         viewModel.apiKey = ""
                         tempAPIKey = ""
                     }
@@ -76,25 +76,25 @@ struct SettingsView: View {
         } header: {
             Text("Wallhaven API Key")
         } footer: {
-            Text("API Key 可在 wallhaven.cc 账号设置中获取。设置后可访问 NSFW 内容及个人设置。")
+            Text("API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.")
         }
     }
 
     // MARK: - Remote Settings Section
 
     private var remoteSettingsSection: some View {
-        Section("账号偏好（来自 Wallhaven）") {
+        Section("Account Preferences (from Wallhaven)") {
             if viewModel.isLoadingSettings {
                 HStack {
                     ProgressView()
-                    Text("同步中…").foregroundStyle(.secondary)
+                    Text("Syncing…").foregroundStyle(.secondary)
                 }
             } else if let s = viewModel.userSettings {
-                settingsRow("默认纯度",  value: s.purity.joined(separator: ", "))
-                settingsRow("默认分类",  value: s.categories.joined(separator: ", "))
-                settingsRow("首选分辨率", value: s.resolutions.isEmpty ? "不限" : s.resolutions.joined(separator: ", "))
-                settingsRow("首选比例",  value: s.aspectRatios.isEmpty ? "不限" : s.aspectRatios.joined(separator: ", "))
-                settingsRow("排行榜范围", value: s.toplistRange)
+                settingsRow("Default Purity",  value: s.purity.joined(separator: ", "))
+                settingsRow("Default Categories",  value: s.categories.joined(separator: ", "))
+                settingsRow("Preferred Resolutions", value: s.resolutions.isEmpty ? "Any" : s.resolutions.joined(separator: ", "))
+                settingsRow("Preferred Ratios",  value: s.aspectRatios.isEmpty ? "Any" : s.aspectRatios.joined(separator: ", "))
+                settingsRow("Toplist Range", value: s.toplistRange)
             } else if let err = viewModel.settingsError {
                 Label(err, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
@@ -114,12 +114,12 @@ struct SettingsView: View {
     // MARK: - Cache Section
 
     private var cacheSection: some View {
-        Section("缓存") {
-            Button("清除图片缓存") {
+        Section("Cache") {
+            Button("Clear Image Cache") {
                 showClearCacheAlert = true
             }
-            .alert("清除缓存", isPresented: $showClearCacheAlert) {
-                Button("清除", role: .destructive) {
+            .alert("Clear Cache", isPresented: $showClearCacheAlert) {
+                Button("Clear", role: .destructive) {
                     viewModel.clearImageCache()
                     withAnimation {
                         showClearedToast = true
@@ -129,9 +129,9 @@ struct SettingsView: View {
                         withAnimation { showClearedToast = false }
                     }
                 }
-                Button("取消", role: .cancel) {}
+                Button("Cancel", role: .cancel) {}
             } message: {
-                Text("将清除内存中的图片缓存。")
+                Text("This will clear the in-memory image cache.")
             }
         }
     }
@@ -139,15 +139,15 @@ struct SettingsView: View {
     // MARK: - About Section
 
     private var aboutSection: some View {
-        Section("关于") {
+        Section("About") {
             HStack {
-                Text("版本")
+                Text("Version")
                 Spacer()
                 Text("\(viewModel.appVersion) (\(viewModel.buildNumber))")
                     .foregroundStyle(.secondary)
             }
-            Link("Wallhaven 网站", destination: URL(string: "https://wallhaven.cc")!)
-            Link("API 文档", destination: URL(string: "https://wallhaven.cc/help/api")!)
+            Link("Wallhaven Website", destination: URL(string: "https://wallhaven.cc")!)
+            Link("API Documentation", destination: URL(string: "https://wallhaven.cc/help/api")!)
         }
     }
 }

@@ -77,34 +77,3 @@ struct CategoryBadge: View {
         .frame(width: 180, height: 120)
         .padding()
 }
-
-// MARK: - Preview Helper
-
-extension Wallpaper {
-    static let preview = Wallpaper(
-        id: "94x38z",
-        url: "https://wallhaven.cc/w/94x38z",
-        shortURL: "http://whvn.cc/94x38z",
-        uploader: nil,
-        views: 1024,
-        favorites: 42,
-        source: "",
-        purity: "sfw",
-        category: "anime",
-        dimensionX: 1920,
-        dimensionY: 1080,
-        resolution: "1920x1080",
-        ratio: "1.78",
-        fileSize: 2_048_000,
-        fileType: "image/jpeg",
-        createdAt: "2024-01-01 00:00:00",
-        colors: ["#000000", "#ffffff"],
-        path: "https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg",
-        thumbs: Thumbs(
-            large:    "https://th.wallhaven.cc/lg/94/94x38z.jpg",
-            original: "https://th.wallhaven.cc/orig/94/94x38z.jpg",
-            small:    "https://th.wallhaven.cc/small/94/94x38z.jpg"
-        ),
-        tags: nil
-    )
-}

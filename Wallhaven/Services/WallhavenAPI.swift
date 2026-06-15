@@ -1,29 +1,5 @@
 import Foundation
 
-// MARK: - API Errors
-
-enum WallhavenError: LocalizedError {
-    case invalidURL
-    case unauthorized
-    case rateLimited
-    case serverError(Int)
-    case decodingError(Error)
-    case networkError(Error)
-    case unknown
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL:           return "Invalid request URL"
-        case .unauthorized:         return "Invalid API key or unauthorized access"
-        case .rateLimited:          return "Too many requests, please try again later (45 req/min limit)"
-        case .serverError(let c):   return "Server error: \(c)"
-        case .decodingError(let e): return "Failed to parse data: \(e.localizedDescription)"
-        case .networkError(let e):  return "Network error: \(e.localizedDescription)"
-        case .unknown:              return "Unknown error"
-        }
-    }
-}
-
 // MARK: - WallhavenAPI
 
 actor WallhavenAPI {
@@ -33,7 +9,6 @@ actor WallhavenAPI {
     private let baseURL = "https://wallhaven.cc/api/v1"
     private let session: URLSession
 
-    /// Read API key from UserDefaults
     private var apiKey: String? {
         let key = UserDefaults.standard.string(forKey: "wallhaven_api_key")
         return key?.isEmpty == false ? key : nil
@@ -48,7 +23,6 @@ actor WallhavenAPI {
 
     // MARK: - Search
 
-    /// Search / get list
     func search(filters: SearchFilters, page: Int = 1) async throws -> SearchResponse {
         var items = filters.queryItems(page: page)
         if let key = apiKey {
@@ -70,14 +44,6 @@ actor WallhavenAPI {
         return response.data
     }
 
-    // MARK: - Tag
-
-    func tag(id: Int) async throws -> Tag {
-        let url = try buildURL(path: "/tag/\(id)")
-        let response: TagDetailResponse = try await fetch(url: url)
-        return response.data
-    }
-
     // MARK: - User Settings
 
     func userSettings() async throws -> UserSettings {
@@ -87,46 +53,6 @@ actor WallhavenAPI {
         ])
         let response: UserSettingsResponse = try await fetch(url: url)
         return response.data
-    }
-
-    // MARK: - Collections
-
-    /// Get current authenticated user's collection list
-    func myCollections() async throws -> [Collection] {
-        guard let key = apiKey else { throw WallhavenError.unauthorized }
-        let url = try buildURL(path: "/collections", queryItems: [
-            URLQueryItem(name: "apikey", value: key)
-        ])
-        let response: CollectionsResponse = try await fetch(url: url)
-        return response.data
-    }
-
-    /// Get public collection list for a specific user
-    func collections(username: String) async throws -> [Collection] {
-        let url = try buildURL(path: "/collections/\(username)")
-        let response: CollectionsResponse = try await fetch(url: url)
-        return response.data
-    }
-
-    /// Get wallpaper list within a collection
-    func collectionWallpapers(
-        username: String,
-        collectionID: Int,
-        purity: String = "100",
-        page: Int = 1
-    ) async throws -> SearchResponse {
-        var items = [
-            URLQueryItem(name: "purity", value: purity),
-            URLQueryItem(name: "page",   value: "\(page)")
-        ]
-        if let key = apiKey {
-            items.append(URLQueryItem(name: "apikey", value: key))
-        }
-        let url = try buildURL(
-            path: "/collections/\(username)/\(collectionID)",
-            queryItems: items
-        )
-        return try await fetch(url: url)
     }
 
     // MARK: - Private Helpers

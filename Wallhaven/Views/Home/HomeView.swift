@@ -3,7 +3,6 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
     @State private var selectedWallpaper: Wallpaper?
-    @State private var showDetail = false
 
     var body: some View {
         NavigationStack {
@@ -35,14 +34,14 @@ struct HomeView: View {
             )
 
         case .failed(let error):
-            ErrorView(message: error.errorDescription ?? "未知错误") {
+            ErrorView(message: error.errorDescription ?? "Unknown error") {
                 viewModel.refresh()
             }
         }
     }
 
     private var loadingView: some View {
-        ProgressView("加载中…")
+        ProgressView("Loading…")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 

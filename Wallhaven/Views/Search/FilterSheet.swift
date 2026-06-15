@@ -115,13 +115,13 @@ struct FilterSheet: View {
                         .strokeBorder(.secondary, lineWidth: 2)
                         .frame(width: 36, height: 36)
                         .overlay {
-                            if filters.colors.isEmpty {
+                            if filters.selectedColor.isEmpty {
                                 Image(systemName: "checkmark")
                                     .font(.caption.bold())
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .onTapGesture { filters.colors = "" }
+                        .onTapGesture { filters.selectedColor = "" }
 
                     ForEach(WallhavenColor.all) { color in
                         colorCircle(color)
@@ -133,7 +133,7 @@ struct FilterSheet: View {
     }
 
     private func colorCircle(_ color: WallhavenColor) -> some View {
-        let isSelected = filters.colors == color.hex
+        let isSelected = filters.selectedColor == color.hex
         return Circle()
             .fill(Color(hex: color.hex))
             .frame(width: 36, height: 36)
@@ -150,7 +150,7 @@ struct FilterSheet: View {
                 }
             }
             .onTapGesture {
-                filters.colors = isSelected ? "" : color.hex
+                filters.selectedColor = isSelected ? "" : color.hex
             }
     }
 }

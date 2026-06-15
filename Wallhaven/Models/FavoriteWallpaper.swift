@@ -31,5 +31,30 @@ final class FavoriteWallpaper {
     }
 
     var thumbnailURL: URL? { URL(string: thumbURL) }
-    var imageURL: URL?     { URL(string: fullPath) }
+
+    /// Convert back to Wallpaper for reuse with WallpaperCell
+    var asWallpaper: Wallpaper {
+        Wallpaper(
+            id: wallpaperID,
+            url: "https://wallhaven.cc/w/\(wallpaperID)",
+            shortURL: "",
+            uploader: nil,
+            views: 0,
+            favorites: 0,
+            source: "",
+            purity: purity,
+            category: category,
+            dimensionX: 0,
+            dimensionY: 0,
+            resolution: resolution,
+            ratio: ratio,
+            fileSize: 0,
+            fileType: fileType,
+            createdAt: "",
+            colors: colors,
+            path: fullPath,
+            thumbs: Thumbs(large: thumbURL, original: "", small: ""),
+            tags: nil
+        )
+    }
 }

@@ -18,11 +18,11 @@ xcodebuild -scheme Wallhaven \
 
 ```
 Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
-  Models/                   API response models + SwiftData model
-  Services/                 WallhavenAPI (actor), ImageCache (NSCache)
+  Models/                   Wallpaper, SearchResponse, UserSettings, FavoriteWallpaper, SearchFilters, LoadState
+  Services/                 WallhavenAPI (actor), WallhavenError, ImageCache, CachedImageLoader, CachedAsyncImage
   ViewModels/               @Observable ViewModels, one per screen
   Views/
-    Components/             WallpaperCell, WallpaperGrid, ErrorView
+    Components/             WallpaperCell, WallpaperGrid, ErrorView, EmptyResultView
     Home / Search / Detail / Favorites / Settings / ContentView
   Docs/WallhavenAPI.md      Full API reference
 ```

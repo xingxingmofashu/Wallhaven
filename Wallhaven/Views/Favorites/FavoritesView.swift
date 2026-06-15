@@ -6,7 +6,7 @@ struct FavoritesView: View {
     @Query(sort: \FavoriteWallpaper.addedAt, order: .reverse)
     private var favorites: [FavoriteWallpaper]
 
-    @State private var favVM            = FavoritesViewModel()
+    @State private var favoritesViewModel = FavoritesViewModel()
     @State private var selectedFavorite: FavoriteWallpaper?
     @State private var showDeleteAlert  = false
 
@@ -21,7 +21,7 @@ struct FavoritesView: View {
                     gridView
                 }
             }
-            .navigationTitle("收藏")
+            .navigationTitle("Favorites")
             .toolbar {
                 if !favorites.isEmpty {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -34,13 +34,13 @@ struct FavoritesView: View {
                     }
                 }
             }
-            .alert("清空收藏", isPresented: $showDeleteAlert) {
-                Button("清空", role: .destructive) {
-                    favVM.clearAll(context: modelContext)
+            .alert("Clear All Favorites", isPresented: $showDeleteAlert) {
+                Button("Clear", role: .destructive) {
+                    favoritesViewModel.clearAll(context: modelContext)
                 }
-                Button("取消", role: .cancel) {}
+                Button("Cancel", role: .cancel) {}
             } message: {
-                Text("此操作将删除所有本地收藏，无法恢复。")
+                Text("This will permanently delete all local favorites. This cannot be undone.")
             }
         }
     }
@@ -51,16 +51,21 @@ struct FavoritesView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(favorites) { fav in
-                    FavoriteCell(favorite: fav)
-                        .aspectRatio(16/9, contentMode: .fit)
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                modelContext.delete(fav)
-                                try? modelContext.save()
-                            } label: {
-                                Label("取消收藏", systemImage: "heart.slash")
-                            }
+                    Button {
+                        // No navigation needed for favorites — show context menu only
+                    } label: {
+                        WallpaperCell(wallpaper: fav.asWallpaper)
+                    }
+                    .buttonStyle(.plain)
+                    .aspectRatio(16/9, contentMode: .fit)
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            modelContext.delete(fav)
+                            try? modelContext.save()
+                        } label: {
+                            Label("Remove from Favorites", systemImage: "heart.slash")
                         }
+                    }
                 }
             }
             .padding(.horizontal, 8)
@@ -72,35 +77,10 @@ struct FavoritesView: View {
 
     private var emptyView: some View {
         ContentUnavailableView(
-            "还没有收藏",
+            "No Favorites Yet",
             systemImage: "heart",
-            description: Text("在壁纸详情页点击「收藏」，壁纸将保存在这里")
+            description: Text("Tap the heart icon on any wallpaper detail to save it here.")
         )
-    }
-}
-
-// MARK: - FavoriteCell
-
-struct FavoriteCell: View {
-    let favorite: FavoriteWallpaper
-
-    var body: some View {
-        CachedAsyncImage(url: favorite.thumbnailURL) { image in
-            image
-                .resizable()
-                .scaledToFill()
-        } placeholder: {
-            Rectangle()
-                .fill(Color(.systemGray5))
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(alignment: .bottomLeading) {
-            HStack(spacing: 4) {
-                PurityBadge(purity: favorite.purity)
-                CategoryBadge(category: favorite.category)
-            }
-            .padding(6)
-        }
     }
 }
 

@@ -6,8 +6,6 @@ final class SearchViewModel {
 
     // MARK: - State
 
-    enum LoadState { case idle, loading, loaded, failed(WallhavenError) }
-
     var wallpapers: [Wallpaper] = []
     var loadState: LoadState    = .idle
     var isLoadingMore           = false
@@ -17,8 +15,6 @@ final class SearchViewModel {
     // Search query & filter criteria
     var filters: SearchFilters  = SearchFilters()
 
-    // Last actual search query to avoid frequent duplicate requests
-    private var lastSearchedQuery = ""
     private var currentPage       = 0
     private var searchTask: Task<Void, Never>?
 

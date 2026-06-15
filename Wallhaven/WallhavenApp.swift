@@ -10,7 +10,7 @@ struct WallhavenApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            fatalError("SwiftData ModelContainer 创建失败: \(error)")
+            fatalError("Failed to create SwiftData ModelContainer: \(error)")
         }
     }()
 

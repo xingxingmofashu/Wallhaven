@@ -6,8 +6,6 @@ final class HomeViewModel {
 
     // MARK: - State
 
-    enum LoadState { case idle, loading, loaded, failed(WallhavenError) }
-
     var wallpapers: [Wallpaper] = []
     var loadState: LoadState    = .idle
     var isLoadingMore           = false

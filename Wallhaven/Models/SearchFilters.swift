@@ -24,7 +24,7 @@ struct SearchFilters: Equatable {
     var atleast: String      = ""     // e.g. "1920x1080"
     var resolutions: String  = ""     // comma-separated e.g. "1920x1080,2560x1440"
     var ratios: String       = ""     // comma-separated e.g. "16x9,16x10"
-    var colors: String       = ""     // single color hex e.g. "ff0000"
+    var selectedColor: String  = ""     // single color hex e.g. "ff0000"
     var seed: String?                  // seed for random sorting
 
     // MARK: - Enums
@@ -107,7 +107,7 @@ struct SearchFilters: Equatable {
         items.append(URLQueryItem(name: "order",      value: order.rawValue))
 
         if sorting == .toplist {
-            items.append(URLQueryItem(name: "topRange", value: topRange.rawValue))
+            items.append(URLQueryItem(name: "top_range", value: topRange.rawValue))
         }
 
         if !atleast.isEmpty {
@@ -119,8 +119,8 @@ struct SearchFilters: Equatable {
         if !ratios.isEmpty {
             items.append(URLQueryItem(name: "ratios", value: ratios))
         }
-        if !colors.isEmpty {
-            items.append(URLQueryItem(name: "colors", value: colors))
+        if !selectedColor.isEmpty {
+            items.append(URLQueryItem(name: "colors", value: selectedColor))
         }
         if sorting == .random, let seed = seed {
             items.append(URLQueryItem(name: "seed", value: seed))

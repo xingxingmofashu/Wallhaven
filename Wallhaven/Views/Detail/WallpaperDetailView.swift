@@ -4,7 +4,7 @@ import SwiftData
 struct WallpaperDetailView: View {
     @State private var viewModel: WallpaperDetailViewModel
     @Environment(\.modelContext) private var modelContext
-    @State private var favVM       = FavoritesViewModel()
+    @State private var favoritesViewModel = FavoritesViewModel()
     @State private var showFullscreen = false
     @State private var showShareSheet = false
     @State private var showSaveToast  = false
@@ -76,25 +76,18 @@ struct WallpaperDetailView: View {
 
     private var infoPanel: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Action buttons row
             actionButtons
-
             Divider()
-
-            // Basic info
             infoGrid
 
-            // Colors
             if !viewModel.wallpaper.colors.isEmpty {
                 colorRow
             }
 
-            // Tags
             if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
                 tagSection(tags: tags)
             }
 
-            // Uploader
             if let uploader = viewModel.wallpaper.uploader {
                 uploaderRow(uploader: uploader)
             }
@@ -106,10 +99,9 @@ struct WallpaperDetailView: View {
 
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            // Favorite
-            let isFav = favVM.isFavorite(id: viewModel.wallpaper.id, context: modelContext)
+            let isFav = favoritesViewModel.isFavorite(id: viewModel.wallpaper.id, context: modelContext)
             Button {
-                favVM.toggle(wallpaper: viewModel.wallpaper, context: modelContext)
+                favoritesViewModel.toggle(wallpaper: viewModel.wallpaper, context: modelContext)
             } label: {
                 Label(
                     isFav ? "Favorited" : "Favorite",
@@ -120,7 +112,6 @@ struct WallpaperDetailView: View {
             .buttonStyle(.bordered)
             .tint(isFav ? .pink : .primary)
 
-            // Save to photos
             Button {
                 viewModel.saveToPhotos()
             } label: {
@@ -134,7 +125,6 @@ struct WallpaperDetailView: View {
             .buttonStyle(.bordered)
             .disabled(viewModel.isSaving)
 
-            // Share
             Button {
                 showShareSheet = true
             } label: {
@@ -256,112 +246,6 @@ struct WallpaperDetailView: View {
             .foregroundStyle(.white)
             .clipShape(Capsule())
             .padding(.bottom, 30)
-    }
-}
-
-// MARK: - Fullscreen Image View
-
-struct FullscreenImageView: View {
-    let url: URL?
-    @Environment(\.dismiss) private var dismiss
-    @State private var scale: CGFloat = 1
-    @State private var offset: CGSize = .zero
-
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Color.black.ignoresSafeArea()
-
-            CachedAsyncImage(url: url) { image in
-                image
-                    .resizable()
-                    .scaledToFit()
-                    .scaleEffect(scale)
-                    .offset(offset)
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { scale = max(1, $0) }
-                            .onEnded { _ in
-                                withAnimation { if scale < 1 { scale = 1 } }
-                            }
-                        .simultaneously(
-                            with: DragGesture()
-                                .onChanged { offset = $0.translation }
-                                .onEnded { _ in
-                                    if scale <= 1 {
-                                        withAnimation { offset = .zero }
-                                    }
-                                }
-                        )
-                    )
-            } placeholder: {
-                ProgressView().tint(.white)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title)
-                    .foregroundStyle(.white.opacity(0.8))
-            }
-            .padding()
-        }
-    }
-}
-
-// MARK: - ShareSheet
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-    func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
-}
-
-// MARK: - FlowLayout (tag flow layout)
-
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
-        let maxWidth = proposal.width ?? .infinity
-        var height: CGFloat = 0
-        var x: CGFloat = 0
-        var rowHeight: CGFloat = 0
-
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if x + size.width > maxWidth, x > 0 {
-                height += rowHeight + spacing
-                x = 0
-                rowHeight = 0
-            }
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-        height += rowHeight
-        return CGSize(width: maxWidth, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if x + size.width > bounds.maxX, x > bounds.minX {
-                y += rowHeight + spacing
-                x = bounds.minX
-                rowHeight = 0
-            }
-            view.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
     }
 }
 

@@ -5,7 +5,7 @@ struct WallpaperCell: View {
     let wallpaper: Wallpaper
 
     var body: some View {
-        AsyncImage(url: wallpaper.thumbnailURL) { image in
+        CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
             image
                 .resizable()
                 .scaledToFill()

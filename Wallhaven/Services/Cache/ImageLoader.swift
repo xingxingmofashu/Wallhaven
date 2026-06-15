@@ -1,7 +1,7 @@
 import SwiftUI
 
 @Observable
-final class ImageLoader {
+final class CacheImageLoader {
     var image: UIImage?
     var isLoading = false
     var failed    = false

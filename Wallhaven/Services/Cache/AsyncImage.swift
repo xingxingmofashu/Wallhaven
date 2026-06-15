@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// AsyncImage with in-memory cache, placeholder and failure states
-struct AsyncImage<Content: View, Placeholder: View>: View {
+/// CacheAsyncImage with in-memory cache, placeholder and failure states
+struct CacheAsyncImage<Content: View, Placeholder: View>: View {
     private let url: URL?
     private let content: (Image) -> Content
     private let placeholder: () -> Placeholder
 
-    @State private var loader = ImageLoader()
+    @State private var loader = CacheImageLoader()
 
     init(
         url: URL?,

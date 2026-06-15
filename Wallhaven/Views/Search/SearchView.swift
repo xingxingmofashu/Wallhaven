@@ -39,8 +39,8 @@ struct SearchView: View {
             .onSubmit(of: .search) {
                 viewModel.search()
             }
-            .onChange(of: navigationState.shouldSearch) { _, should in
-                guard should else { return }
+            .task(id: navigationState.shouldSearch) {
+                guard navigationState.shouldSearch else { return }
                 viewModel.filters.query = navigationState.searchQuery
                 navigationState.shouldSearch = false
                 viewModel.search()

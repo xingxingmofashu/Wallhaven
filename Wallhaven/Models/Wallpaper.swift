@@ -113,3 +113,7 @@ extension Wallpaper {
         tags: nil
     )
 }
+
+struct WallpaperDetailResponse: Codable {
+    let data: Wallpaper
+}

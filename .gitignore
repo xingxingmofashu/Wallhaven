@@ -1,0 +1,7 @@
+# Local config overrides (not committed)
+Wallhaven/Config/
+
+# Xcode
+*.xcworkspace
+xcuserdata/
+DerivedData/

@@ -7,7 +7,8 @@ actor WallhavenFetch {
     static let shared = WallhavenFetch()
 
     private var baseURL: String {
-        UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
+        LocalConfig.apiBaseURL
+            ?? UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
             ?? "https://wallhaven.cc/api/v1"
     }
     private let session: URLSession

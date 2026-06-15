@@ -1,32 +1,23 @@
-//
-//  WallhavenApp.swift
-//  Wallhaven
-//
-//  Created by 星星魔法术 on 15/06/2026.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct WallhavenApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
+    private let modelContainer: ModelContainer = {
+        let schema = Schema([FavoriteWallpaper.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [config])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("SwiftData ModelContainer 创建失败: \(error)")
         }
     }()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(modelContainer)
     }
 }

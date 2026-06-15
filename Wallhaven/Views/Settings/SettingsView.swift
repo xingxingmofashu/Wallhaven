@@ -4,6 +4,8 @@ struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""
+    @State private var showAPIURLField = false
+    @State private var tempAPIURL      = ""
     @State private var showClearCacheAlert = false
     @State private var showClearedToast   = false
 
@@ -11,6 +13,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 apiKeySection
+                apiURLSection
                 if viewModel.hasAPIKey { remoteSettingsSection }
                 cacheSection
                 aboutSection
@@ -18,6 +21,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .task {
                 tempAPIKey = viewModel.apiKey
+                tempAPIURL = viewModel.apiBaseURL
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
             }
             .overlay(alignment: .bottom) {
@@ -77,6 +81,44 @@ struct SettingsView: View {
             Text("Wallhaven API Key")
         } footer: {
             Text("API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.")
+        }
+    }
+
+    // MARK: - API URL Section
+
+    private var apiURLSection: some View {
+        Section {
+            if showAPIURLField {
+                HStack {
+                    TextField("API Base URL", text: $tempAPIURL)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                    Button("Save") {
+                        viewModel.apiBaseURL = tempAPIURL.trimmingCharacters(in: .whitespaces)
+                        showAPIURLField = false
+                    }
+                    .fontWeight(.semibold)
+                }
+            } else {
+                HStack {
+                    Label("API URL", systemImage: "link")
+                    Spacer()
+                    Button("Edit") {
+                        tempAPIURL = viewModel.apiBaseURL
+                        showAPIURLField = true
+                    }
+                    .font(.subheadline)
+                }
+
+                Text(viewModel.apiBaseURL)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } header: {
+            Text("API Endpoint")
+        } footer: {
+            Text("Default: https://wallhaven.cc/api/v1")
         }
     }
 

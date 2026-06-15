@@ -5,21 +5,18 @@ struct WallpaperCell: View {
     let wallpaper: Wallpaper
 
     var body: some View {
-        GeometryReader { geo in
-            CachedAsyncImage(url: wallpaper.thumbnailURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                Rectangle()
-                    .fill(Color(.systemGray5))
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
-            .clipped()
-            .overlay(alignment: .bottomLeading) {
-                badges
-                    .padding(6)
-            }
+        CachedAsyncImage(url: wallpaper.thumbnailURL) { image in
+            image
+                .resizable()
+                .scaledToFill()
+        } placeholder: {
+            Rectangle()
+                .fill(Color(.systemGray5))
+        }
+        .clipped()
+        .overlay(alignment: .bottomLeading) {
+            badges
+                .padding(6)
         }
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }

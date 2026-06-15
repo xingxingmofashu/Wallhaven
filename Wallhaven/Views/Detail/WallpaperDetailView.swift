@@ -164,7 +164,6 @@ struct WallpaperDetailView: View {
                         .foregroundStyle(.secondary)
                     Text(item.value)
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.primary.opacity(0.7))
                 }
             }
         }

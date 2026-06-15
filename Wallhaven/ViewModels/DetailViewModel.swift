@@ -4,7 +4,7 @@ import SwiftData
 
 @Observable
 @MainActor
-final class WallpaperDetailViewModel {
+final class DetailViewModel {
 
     // MARK: - State
 

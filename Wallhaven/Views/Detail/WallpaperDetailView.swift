@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct WallpaperDetailView: View {
-    @State private var viewModel: WallpaperDetailViewModel
+    @State private var viewModel: DetailViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var showFullscreen = false
     @State private var showShareSheet = false
@@ -11,7 +11,7 @@ struct WallpaperDetailView: View {
     @Environment(NavigationState.self) private var navigationState
 
     init(wallpaper: Wallpaper) {
-        _viewModel = State(initialValue: WallpaperDetailViewModel(wallpaper: wallpaper))
+        _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper))
     }
 
     var body: some View {
@@ -269,7 +269,7 @@ struct WallpaperDetailView: View {
             .padding(.bottom, 30)
     }
 
-    private func favToastView(_ toast: WallpaperDetailViewModel.FavoriteToast) -> some View {
+    private func favToastView(_ toast: DetailViewModel.FavoriteToast) -> some View {
         Label(toast.message, systemImage: toast == .added ? "heart.fill" : "heart.slash")
             .padding(.horizontal, 16)
             .padding(.vertical, 10)

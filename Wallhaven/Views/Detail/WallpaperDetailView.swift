@@ -117,12 +117,10 @@ struct WallpaperDetailView: View {
                 viewModel.toggleFavorite(in: modelContext)
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } label: {
-                Label(
-                    viewModel.isFavorited ? "Favorited" : "Favorite",
-                    systemImage: viewModel.isFavorited ? "heart.fill" : "heart"
-                )
-                .frame(maxWidth: .infinity)
-                .contentTransition(.symbolEffect(.replace))
+                Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
+                    .font(.title3)
+                    .frame(maxWidth: .infinity)
+                    .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.bordered)
             .tint(viewModel.isFavorited ? .pink : .primary)

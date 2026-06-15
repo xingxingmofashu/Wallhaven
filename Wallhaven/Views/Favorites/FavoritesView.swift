@@ -54,7 +54,7 @@ struct FavoritesView: View {
                     Button {
                         // No navigation needed for favorites — show context menu only
                     } label: {
-                        Cell(wallpaper: fav.asWallpaper)
+                        CellView(wallpaper: fav.asWallpaper)
                     }
                     .buttonStyle(.plain)
                     .aspectRatio(16/9, contentMode: .fit)

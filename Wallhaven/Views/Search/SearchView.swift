@@ -79,7 +79,7 @@ struct SearchView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
 
-            Grid(
+            GridView(
                 wallpapers: viewModel.wallpapers,
                 isLoadingMore: viewModel.isLoadingMore,
                 onLoadMore: { viewModel.loadMore() },

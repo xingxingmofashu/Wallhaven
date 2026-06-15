@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Reusable wallpaper grid, two-column waterfall layout
-struct Grid: View {
+struct GridView: View {
     let wallpapers: [Wallpaper]
     let isLoadingMore: Bool
     let onLoadMore: () -> Void
@@ -50,7 +50,7 @@ struct Grid: View {
                 Button {
                     onSelect(wallpaper)
                 } label: {
-                    Cell(wallpaper: wallpaper)
+                    CellView(wallpaper: wallpaper)
                         .frame(width: columnWidth, height: cellHeight)
                         .clipped()
                         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -73,7 +73,7 @@ struct Grid: View {
 }
 
 #Preview {
-    Grid(
+    GridView(
         wallpapers: [.preview, .preview, .preview, .preview],
         isLoadingMore: false,
         onLoadMore: {},

@@ -2,13 +2,9 @@
 
 A native iOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.cc/help/api).
 
-<table align="center">
-  <tr>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Light.png" width="120" alt="Light"></td>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Dark.png" width="120" alt="Dark"></td>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Tinted.png" width="120" alt="Tinted"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Light.png" width="100%" alt="Wallhaven App Icon">
+</p>
 
 ## Features
 

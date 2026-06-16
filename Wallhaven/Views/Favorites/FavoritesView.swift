@@ -54,12 +54,12 @@ struct FavoritesView: View {
             contextMenu: { wallpaper in
                 AnyView(
                     Button(role: .destructive) {
-                        let id = wallpaper.id
+                        let wallpaperID = wallpaper.id
                         let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                            predicate: #Predicate { $0.wallpaperID == id }
+                            predicate: #Predicate { $0.wallpaperID == wallpaperID }
                         )
-                        if let fav = try? modelContext.fetch(descriptor).first {
-                            modelContext.delete(fav)
+                        if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
+                            modelContext.delete(favoriteWallpaper)
                             try? modelContext.save()
                         }
                     } label: {

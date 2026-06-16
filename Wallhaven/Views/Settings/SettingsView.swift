@@ -134,14 +134,14 @@ struct SettingsView: View {
                     ProgressView()
                     Text("Syncing…").foregroundStyle(.secondary)
                 }
-            } else if let s = viewModel.userSettings {
-                settingsRow("Default Purity",  value: s.purity.joined(separator: ", "))
-                settingsRow("Default Categories",  value: s.categories.joined(separator: ", "))
-                settingsRow("Preferred Resolutions", value: s.resolutions.isEmpty ? "Any" : s.resolutions.joined(separator: ", "))
-                settingsRow("Preferred Ratios",  value: s.aspectRatios.isEmpty ? "Any" : s.aspectRatios.joined(separator: ", "))
-                settingsRow("Toplist Range", value: s.toplistRange)
-            } else if let err = viewModel.settingsError {
-                Label(err, systemImage: "exclamationmark.triangle")
+            } else if let userSettings = viewModel.userSettings {
+                settingsRow("Default Purity", value: userSettings.purity.joined(separator: ", "))
+                settingsRow("Default Categories", value: userSettings.categories.joined(separator: ", "))
+                settingsRow("Preferred Resolutions", value: userSettings.resolutions.isEmpty ? "Any" : userSettings.resolutions.joined(separator: ", "))
+                settingsRow("Preferred Ratios", value: userSettings.aspectRatios.isEmpty ? "Any" : userSettings.aspectRatios.joined(separator: ", "))
+                settingsRow("Toplist Range", value: userSettings.toplistRange)
+            } else if let settingsError = viewModel.settingsError {
+                Label(settingsError, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
                     .font(.caption)
             }

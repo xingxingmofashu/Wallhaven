@@ -33,15 +33,6 @@ final class SearchViewModel {
         Task { await performSearch(reset: false) }
     }
 
-    func clearResults() {
-        wallpapers    = []
-        loadState     = .idle
-        hasNextPage   = false
-        totalResults  = 0
-        currentPage   = 0
-        filters.query = ""
-    }
-
     // MARK: - Private
 
     private func performSearch(reset: Bool) async {

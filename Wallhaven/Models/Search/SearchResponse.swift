@@ -43,10 +43,10 @@ enum QueryValue: Codable, Hashable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .string(let s):
-            try container.encode(s)
-        case .tag(let id, let tag):
-            try container.encode(TagQuery(id: id, tag: tag))
+        case .string(let queryString):
+            try container.encode(queryString)
+        case .tag(let tagID, let tagName):
+            try container.encode(TagQuery(id: tagID, tag: tagName))
         }
     }
 }

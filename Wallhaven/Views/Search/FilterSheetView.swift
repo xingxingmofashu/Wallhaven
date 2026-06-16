@@ -60,13 +60,13 @@ struct FilterSheetView: View {
     private var sortingSection: some View {
         Section("Sorting") {
             Picker("Sort by", selection: $filters.sorting) {
-                ForEach(SearchFilters.Sorting.allCases) { s in
-                    Text(s.displayName).tag(s)
+                ForEach(SearchFilters.Sorting.allCases) { sorting in
+                    Text(sorting.displayName).tag(sorting)
                 }
             }
             Picker("Order", selection: $filters.order) {
-                ForEach(SearchFilters.Order.allCases) { o in
-                    Text(o.displayName).tag(o)
+                ForEach(SearchFilters.Order.allCases) { order in
+                    Text(order.displayName).tag(order)
                 }
             }
         }
@@ -75,8 +75,8 @@ struct FilterSheetView: View {
     private var topRangeSection: some View {
         Section("Toplist Time Range") {
             Picker("Range", selection: $filters.topRange) {
-                ForEach(SearchFilters.TopRange.allCases) { r in
-                    Text(r.displayName).tag(r)
+                ForEach(SearchFilters.TopRange.allCases) { range in
+                    Text(range.displayName).tag(range)
                 }
             }
             .pickerStyle(.segmented)

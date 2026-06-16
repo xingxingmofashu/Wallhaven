@@ -27,9 +27,9 @@ final class CacheImageLoader {
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 guard !Task.isCancelled else { return }
-                if let img = UIImage(data: data) {
-                    CacheImage.shared.insert(img, for: url)
-                    image = img
+                if let loadedImage = UIImage(data: data) {
+                    CacheImage.shared.insert(loadedImage, for: url)
+                    image = loadedImage
                 } else {
                     failed = true
                 }

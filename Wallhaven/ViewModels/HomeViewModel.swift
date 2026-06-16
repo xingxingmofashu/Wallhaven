@@ -12,13 +12,12 @@ final class HomeViewModel {
     var hasNextPage             = false
 
     private var currentPage     = 1
-    private var currentTask: Task<Void, Never>?
 
     // Home page uses latest SFW as default filter
     private var filters: SearchFilters = {
-        var f = SearchFilters()
-        f.sorting = .dateAdded
-        return f
+        var defaultFilters = SearchFilters()
+        defaultFilters.sorting = .dateAdded
+        return defaultFilters
     }()
 
     // MARK: - Load
@@ -29,7 +28,6 @@ final class HomeViewModel {
     }
 
     func refresh() {
-        currentTask?.cancel()
         loadState = .idle
         Task { await fetchFirstPage() }
     }

@@ -34,8 +34,8 @@ final class SettingsViewModel {
             defer { isLoadingSettings = false }
             do {
                 userSettings = try await WallhavenFetch.shared.userSettings()
-            } catch let e as WallhavenError {
-                settingsError = e.errorDescription
+            } catch let wallhavenError as WallhavenError {
+                settingsError = wallhavenError.errorDescription
             } catch {
                 settingsError = error.localizedDescription
             }

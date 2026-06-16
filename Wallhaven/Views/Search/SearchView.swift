@@ -87,7 +87,7 @@ struct SearchView: View {
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Result count
-            Text("\(viewModel.totalResults) results")
+            Text(localizedResultCount)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 16)
@@ -100,6 +100,13 @@ struct SearchView: View {
                 onSelect: { selectedWallpaper = $0 }
             )
         }
+    }
+
+    private var localizedResultCount: String {
+        String(
+            format: NSLocalizedString("search.results.count", comment: ""),
+            viewModel.totalResults
+        )
     }
 }
 

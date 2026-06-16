@@ -148,9 +148,9 @@ struct SettingsView: View {
         }
     }
 
-    private func settingsRow(_ label: String, value: String) -> some View {
+    private func settingsRow(_ labelKey: LocalizedStringKey, value: String) -> some View {
         HStack {
-            Text(label).foregroundStyle(.secondary)
+            Text(labelKey).foregroundStyle(.secondary)
             Spacer()
             Text(value).font(.subheadline)
         }

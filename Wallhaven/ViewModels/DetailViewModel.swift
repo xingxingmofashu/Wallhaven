@@ -104,15 +104,15 @@ final class DetailViewModel {
 
     var formattedInfo: [(label: String, value: String)] {
         [
-            ("Resolution", wallpaper.resolution),
-            ("Ratio",      wallpaper.ratio),
-            ("Type",       wallpaper.fileType),
-            ("Size",       wallpaper.formattedFileSize),
-            ("Purity",     wallpaper.purity.uppercased()),
-            ("Category",   wallpaper.category.capitalized),
-            ("Views",      "\(wallpaper.views)"),
-            ("Favorites",  "\(wallpaper.favorites)"),
-            ("Uploaded",   wallpaper.createdAt),
+            (NSLocalizedString("detail.info.resolution", comment: ""), wallpaper.resolution),
+            (NSLocalizedString("detail.info.ratio", comment: ""), wallpaper.ratio),
+            (NSLocalizedString("detail.info.type", comment: ""), wallpaper.fileType),
+            (NSLocalizedString("detail.info.size", comment: ""), wallpaper.formattedFileSize),
+            (NSLocalizedString("detail.info.purity", comment: ""), wallpaper.purity.uppercased()),
+            (NSLocalizedString("detail.info.category", comment: ""), wallpaper.category.capitalized),
+            (NSLocalizedString("detail.info.views", comment: ""), "\(wallpaper.views)"),
+            (NSLocalizedString("detail.info.favorites", comment: ""), "\(wallpaper.favorites)"),
+            (NSLocalizedString("detail.info.uploaded", comment: ""), wallpaper.createdAt),
         ]
     }
 }

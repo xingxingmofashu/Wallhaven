@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Empty result state view
 struct EmptyView: View {
-    var message: String = "No wallpapers found"
+    var message: LocalizedStringKey = "No wallpapers found"
 
     var body: some View {
         VStack(spacing: 12) {

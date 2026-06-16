@@ -40,7 +40,7 @@ struct FavoritesView: View {
                 Text("This will permanently delete all local favorites. This cannot be undone.")
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                DetailView(wallpaper: wallpaper)
+                DetailView(wallpaper: wallpaper, relatedWallpapers: favorites.map(\.asWallpaper))
             }
         }
     }

@@ -21,8 +21,9 @@ final class DetailViewModel {
 
     // MARK: - Init
 
-    init(wallpaper: Wallpaper) {
+    init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
         self.wallpaper = wallpaper
+        self.relatedWallpapers = relatedWallpapers
     }
 
     // MARK: - Load Detail
@@ -58,7 +59,12 @@ final class DetailViewModel {
         }
     }
 
-    // MARK: - Favorites
+    func selectRelated(_ wallpaper: Wallpaper) {
+        self.wallpaper = wallpaper
+        hasLoadedDetail = false
+        isLoadingDetail = false
+        loadDetailIfNeeded()
+    }
 
     func refreshFavoriteStatus(in context: ModelContext) {
         let descriptor = FetchDescriptor<FavoriteWallpaper>(

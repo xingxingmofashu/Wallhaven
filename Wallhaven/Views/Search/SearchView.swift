@@ -60,7 +60,7 @@ struct SearchView: View {
                 }
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                DetailView(wallpaper: wallpaper)
+                DetailView(wallpaper: wallpaper, relatedWallpapers: viewModel.wallpapers)
             }
         }
     }

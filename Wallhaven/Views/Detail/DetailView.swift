@@ -9,8 +9,8 @@ struct DetailView: View {
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
 
-    init(wallpaper: Wallpaper) {
-        _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper))
+    init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
+        _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: relatedWallpapers))
     }
 
     var body: some View {
@@ -19,7 +19,7 @@ struct DetailView: View {
             centeredImage
             Spacer()
             relatedThumbnailList
-                .frame(height: 42)
+                .frame(height: 44)
                 .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
         }
         .background(Color(.systemBackground))
@@ -94,9 +94,11 @@ struct DetailView: View {
 
     private var relatedThumbnailList: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
+            HStack(spacing: 8) {
                 ForEach(viewModel.relatedWallpapers) { wallpaper in
-                    NavigationLink(value: wallpaper) {
+                    Button {
+                        viewModel.selectRelated(wallpaper)
+                    } label: {
                         CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
                             image
                                 .resizable()
@@ -111,6 +113,7 @@ struct DetailView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, 12)
         }
     }
     // MARK: - Bottom Toolbar

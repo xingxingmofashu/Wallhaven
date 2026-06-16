@@ -27,7 +27,7 @@ struct DetailView: View {
             bottomToolbar
         }
         .task {
-            viewModel.checkFavoriteStatus(in: modelContext)
+            viewModel.refreshFavoriteStatus(in: modelContext)
             viewModel.loadDetailIfNeeded()
         }
         .sheet(isPresented: $showShareSheet) {
@@ -51,8 +51,6 @@ struct DetailView: View {
                     .foregroundStyle(.primary)
             }
         }
-
-
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button("Open in Browser", systemImage: "safari") {

@@ -1,7 +1,19 @@
-# Local config overrides (not committed)
-Wallhaven/Config/
+# macOS
+.DS_Store
 
-# Xcode
-*.xcworkspace
+# Xcode user-specific files
 xcuserdata/
+*.xcuserstate
+
+# Build artifacts
 DerivedData/
+build/
+
+# Swift Package Manager
+.build/
+.swiftpm/xcode/xcuserdata/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace

@@ -74,8 +74,8 @@
 "Cache Cleared" = "缓存已清除";
 "About" = "关于";
 "Version" = "版本";
-"Wallhaven Website" = "Wallhaven 官网";
-"API Documentation" = "API 文档";
+"Website" = "官网";
+"Documentation" = "文档";
 
 "Open in Browser" = "在浏览器中打开";
 "Copy Link" = "复制链接";

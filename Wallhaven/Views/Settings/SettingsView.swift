@@ -223,8 +223,8 @@ struct SettingsView: View {
                 Text("\(viewModel.appVersion) (\(viewModel.buildNumber))")
                     .foregroundStyle(.secondary)
             }
-            Link("Wallhaven Website", destination: URL(string: "https://wallhaven.cc")!)
-            Link("API Documentation", destination: URL(string: "https://wallhaven.cc/help/api")!)
+            Link("Website", destination: URL(string: "https://wallhaven.cc")!)
+            Link("Documentation", destination: URL(string: "https://wallhaven.cc/help/api")!)
         }
     }
 }

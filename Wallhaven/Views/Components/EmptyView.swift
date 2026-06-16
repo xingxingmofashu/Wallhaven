@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Empty result state view
-struct EmptyView: View {
+struct NoResultsView: View {
     var message: LocalizedStringKey = "No wallpapers found"
 
     var body: some View {

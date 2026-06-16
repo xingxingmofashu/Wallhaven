@@ -37,16 +37,6 @@ final class SettingsViewModel {
         }
     }
 
-    func applyLanguageOverride() {
-        let raw = UserDefaults.standard.string(forKey: "AppLanguage") ?? ""
-        let lang = AppLanguage(rawValue: raw) ?? .system
-        if lang == .system {
-            Bundle.resetLanguage()
-        } else {
-            Bundle.setLanguage(lang.rawValue)
-        }
-    }
-
     // MARK: - API Key
 
     var apiKey: String {

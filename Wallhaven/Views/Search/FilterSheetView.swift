@@ -93,7 +93,6 @@ struct FilterSheetView: View {
 
     private var ratioSection: some View {
         Section("Ratio") {
-            let ratioOptions = ["", "16x9", "16x10", "4x3", "9x16", "1x1"]
             Picker("Common Ratios", selection: $filters.ratios) {
                 Text("Any").tag("")
                 Text("16:9").tag("16x9")
@@ -102,7 +101,6 @@ struct FilterSheetView: View {
                 Text("9:16 (Portrait)").tag("9x16")
                 Text("1:1 (Square)").tag("1x1")
             }
-            .id(ratioOptions)
         }
     }
 

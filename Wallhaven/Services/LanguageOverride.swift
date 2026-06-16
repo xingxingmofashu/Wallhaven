@@ -1,18 +1,5 @@
 import Foundation
 
-extension Bundle {
-    private static var _currentLanguage: String?
-
-    static var currentLanguage: String {
-        if let override = _currentLanguage { return override }
-        return Locale.preferredLanguages.first?.prefix(2).description ?? "en"
-    }
-
-    static func setCurrentLanguage(_ code: String?) {
-        _currentLanguage = code
-    }
-}
-
 private var bundleKey: UInt8 = 0
 
 extension Bundle {

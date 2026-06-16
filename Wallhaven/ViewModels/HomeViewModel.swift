@@ -13,12 +13,7 @@ final class HomeViewModel {
 
     private var currentPage     = 1
 
-    // Home page uses latest SFW as default filter
-    private var filters: SearchFilters = {
-        var defaultFilters = SearchFilters()
-        defaultFilters.sorting = .dateAdded
-        return defaultFilters
-    }()
+    private var filters = SearchFilters()
 
     // MARK: - Load
 

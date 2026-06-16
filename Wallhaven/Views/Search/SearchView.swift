@@ -19,7 +19,7 @@ struct SearchView: View {
 
                 case .loaded:
                     if viewModel.wallpapers.isEmpty {
-                        EmptyView()
+                        NoResultsView()
                     } else {
                         resultsView
                     }

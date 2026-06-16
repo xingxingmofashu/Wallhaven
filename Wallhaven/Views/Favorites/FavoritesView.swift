@@ -6,7 +6,6 @@ struct FavoritesView: View {
     @Query(sort: \FavoriteWallpaper.addedAt, order: .reverse)
     private var favorites: [FavoriteWallpaper]
 
-    @State private var favoritesViewModel = FavoritesViewModel()
     @State private var selectedWallpaper: Wallpaper?
     @State private var showDeleteAlert  = false
 
@@ -33,7 +32,8 @@ struct FavoritesView: View {
             }
             .alert("Clear All Favorites", isPresented: $showDeleteAlert) {
                 Button("Clear", role: .destructive) {
-                    favoritesViewModel.clearAll(context: modelContext)
+                    try? modelContext.delete(model: FavoriteWallpaper.self)
+                    try? modelContext.save()
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {

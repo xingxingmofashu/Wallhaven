@@ -23,7 +23,6 @@ struct SettingsView: View {
             .task {
                 tempAPIKey = viewModel.apiKey
                 tempAPIURL = viewModel.apiBaseURL
-                viewModel.applyLanguageOverride()
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
             }
             .overlay(alignment: .bottom) {

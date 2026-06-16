@@ -12,9 +12,7 @@ struct HomeView: View {
                 .task { viewModel.loadInitial() }
                 .refreshable { viewModel.refresh() }
                 .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                    if let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
-                        DetailView(wallpapers: viewModel.wallpapers, startIndex: index)
-                    }
+                    DetailView(wallpaper: wallpaper, relatedWallpapers: viewModel.wallpapers)
                 }
         }
     }

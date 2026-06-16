@@ -9,43 +9,18 @@ struct DetailView: View {
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
 
-    let wallpapers: [Wallpaper]
-    @State private var selectedIndex: Int
-
     init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: relatedWallpapers))
-        self.wallpapers = [wallpaper]
-        _selectedIndex = State(initialValue: 0)
-    }
-
-    init(wallpapers: [Wallpaper], startIndex: Int) {
-        let wallpaper = wallpapers[startIndex]
-        _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: wallpapers))
-        self.wallpapers = wallpapers
-        _selectedIndex = State(initialValue: startIndex)
     }
 
     var body: some View {
-        ZStack {
-            Color(.systemBackground).ignoresSafeArea()
-
-            TabView(selection: $selectedIndex) {
-                ForEach(Array(wallpapers.enumerated()), id: \.element.id) { index, wallpaper in
-                    imageView(for: wallpaper)
-                        .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .gesture(
-                DragGesture(minimumDistance: 20)
-                    .onEnded { value in
-                        let vertical = value.translation.height
-                        let horizontal = value.translation.width
-                        if vertical > 80 && abs(horizontal) < abs(vertical) {
-                            dismiss()
-                        }
-                    }
-            )
+        VStack(spacing: 0) {
+            Spacer()
+            centeredImage
+            Spacer()
+            relatedThumbnailList
+                .frame(height: 44)
+                .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
         }
         .background(Color(.systemBackground))
         .navigationBarBackButtonHidden(true)
@@ -53,9 +28,6 @@ struct DetailView: View {
         .toolbar {
             topToolbar
             bottomToolbar
-        }
-        .onChange(of: selectedIndex) { _, newIndex in
-            viewModel.selectRelated(wallpapers[newIndex])
         }
         .task {
             viewModel.refreshFavoriteStatus(in: modelContext)
@@ -70,20 +42,6 @@ struct DetailView: View {
         }
         .navigationDestination(for: Wallpaper.self) { wallpaper in
             DetailView(wallpaper: wallpaper)
-        }
-    }
-
-    // MARK: - Image View
-
-    private func imageView(for wallpaper: Wallpaper) -> some View {
-        CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
-            image
-                .resizable()
-                .scaledToFit()
-        } placeholder: {
-            Rectangle()
-                .fill(Color(.systemGray5))
-                .aspectRatio(wallpaper.aspectRatio, contentMode: .fit)
         }
     }
 
@@ -118,6 +76,54 @@ struct DetailView: View {
         }
     }
 
+    // MARK: - Centered Image
+
+    private var centeredImage: some View {
+        CacheAsyncImage(url: viewModel.wallpaper.thumbnailURL) { image in
+            image
+                .resizable()
+                .scaledToFit()
+        } placeholder: {
+            Rectangle()
+                .fill(Color(.systemGray5))
+                .aspectRatio(viewModel.wallpaper.aspectRatio, contentMode: .fit)
+        }
+    }
+
+    // MARK: - Related Thumbnail List
+
+    private var relatedThumbnailList: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(viewModel.relatedWallpapers) { wallpaper in
+                    Button {
+                        viewModel.selectRelated(wallpaper)
+                    } label: {
+                        CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color(.systemGray5))
+                        }
+                        .frame(width: 60, height: 42)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .overlay(alignment: .topTrailing) {
+                            if viewModel.favoritedIDs.contains(wallpaper.id) {
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(.pink)
+                                    .padding(3)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 12)
+        }
+    }
     // MARK: - Bottom Toolbar
 
     @ToolbarContentBuilder
@@ -163,7 +169,6 @@ struct DetailView: View {
             }
         }
     }
-
     // MARK: - Info Sheet
 
     private var infoSheet: some View {

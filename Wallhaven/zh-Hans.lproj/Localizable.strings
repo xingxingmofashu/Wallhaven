@@ -126,3 +126,7 @@
 "toprange.last_year" = "最近一年";
 "settings.language" = "语言";
 "settings.language.open_settings" = "打开 iPhone 设置";
+"Appearance" = "外观";
+"Automatic" = "自动";
+"Dark" = "深色";
+"Light" = "浅色";

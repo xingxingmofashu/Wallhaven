@@ -8,11 +8,12 @@ struct SettingsView: View {
     @State private var tempAPIURL      = ""
     @State private var showClearCacheAlert = false
     @State private var showClearedToast   = false
+    @AppStorage("app_appearance") private var appAppearance = 0
 
     var body: some View {
         NavigationStack {
             Form {
-                languageSection
+                generalSection
                 apiKeySection
                 apiURLSection
                 if viewModel.hasAPIKey { remoteSettingsSection }
@@ -24,6 +25,7 @@ struct SettingsView: View {
                 tempAPIKey = viewModel.apiKey
                 tempAPIURL = viewModel.apiBaseURL
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
+                applyAppearance(appAppearance)
             }
             .overlay(alignment: .bottom) {
                 if showClearedToast {
@@ -40,9 +42,9 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Language Section
+    // MARK: - General Section
 
-    private var languageSection: some View {
+    private var generalSection: some View {
         Section {
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -60,6 +62,15 @@ struct SettingsView: View {
                 }
             }
             .tint(.primary)
+
+            Picker("Appearance", selection: $appAppearance) {
+                Text("Automatic").tag(0)
+                Text("Dark").tag(1)
+                Text("Light").tag(2)
+            }
+            .onChange(of: appAppearance) { _, newValue in
+                applyAppearance(newValue)
+            }
         }
     }
 
@@ -68,6 +79,15 @@ struct SettingsView: View {
         switch code {
         case "zh":  return "简体中文"
         default:    return "English"
+        }
+    }
+
+    private func applyAppearance(_ value: Int) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        switch value {
+        case 1:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .dark }
+        case 2:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .light }
+        default: scene.windows.forEach { $0.overrideUserInterfaceStyle = .unspecified }
         }
     }
 

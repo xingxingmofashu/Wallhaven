@@ -107,3 +107,24 @@
 "error.server" = "服务器错误：%d";
 "error.decoding" = "数据解析失败：%@";
 "error.network" = "网络错误：%@";
+
+"sorting.latest" = "最新";
+"sorting.relevance" = "相关性";
+"sorting.random" = "随机";
+"sorting.views" = "浏览量";
+"sorting.favorites" = "收藏数";
+"sorting.toplist" = "热门榜";
+"sorting.hot" = "热度";
+"sorting.descending" = "降序";
+"sorting.ascending" = "升序";
+"toprange.today" = "今天";
+"toprange.last_3_days" = "最近 3 天";
+"toprange.last_week" = "最近一周";
+"toprange.last_month" = "最近一月";
+"toprange.last_3_months" = "最近 3 月";
+"toprange.last_6_months" = "最近 6 月";
+"toprange.last_year" = "最近一年";
+"settings.language" = "语言";
+"settings.language.follow_system" = "跟随系统";
+"settings.language.english" = "English";
+"settings.language.chinese" = "简体中文";

@@ -42,13 +42,13 @@ struct SearchFilters: Equatable {
 
         var displayName: String {
             switch self {
-            case .dateAdded:  return "Latest"
-            case .relevance:  return "Relevance"
-            case .random:     return "Random"
-            case .views:      return "Views"
-            case .favorites:  return "Favorites"
-            case .toplist:    return "Toplist"
-            case .hot:        return "Hot"
+            case .dateAdded:  return NSLocalizedString("sorting.latest", comment: "")
+            case .relevance:  return NSLocalizedString("sorting.relevance", comment: "")
+            case .random:     return NSLocalizedString("sorting.random", comment: "")
+            case .views:      return NSLocalizedString("sorting.views", comment: "")
+            case .favorites:  return NSLocalizedString("sorting.favorites", comment: "")
+            case .toplist:    return NSLocalizedString("sorting.toplist", comment: "")
+            case .hot:        return NSLocalizedString("sorting.hot", comment: "")
             }
         }
     }
@@ -57,7 +57,11 @@ struct SearchFilters: Equatable {
         case desc = "desc"
         case asc  = "asc"
         var id: String { rawValue }
-        var displayName: String { self == .desc ? "Descending" : "Ascending" }
+        var displayName: String {
+            self == .desc
+                ? NSLocalizedString("sorting.descending", comment: "")
+                : NSLocalizedString("sorting.ascending", comment: "")
+        }
     }
 
     enum TopRange: String, CaseIterable, Identifiable {
@@ -71,13 +75,13 @@ struct SearchFilters: Equatable {
         var id: String { rawValue }
         var displayName: String {
             switch self {
-            case .oneDay:      return "Today"
-            case .threeDays:   return "Last 3 Days"
-            case .oneWeek:     return "Last Week"
-            case .oneMonth:    return "Last Month"
-            case .threeMonths: return "Last 3 Months"
-            case .sixMonths:   return "Last 6 Months"
-            case .oneYear:     return "Last Year"
+            case .oneDay:      return NSLocalizedString("toprange.today", comment: "")
+            case .threeDays:   return NSLocalizedString("toprange.last_3_days", comment: "")
+            case .oneWeek:     return NSLocalizedString("toprange.last_week", comment: "")
+            case .oneMonth:    return NSLocalizedString("toprange.last_month", comment: "")
+            case .threeMonths: return NSLocalizedString("toprange.last_3_months", comment: "")
+            case .sixMonths:   return NSLocalizedString("toprange.last_6_months", comment: "")
+            case .oneYear:     return NSLocalizedString("toprange.last_year", comment: "")
             }
         }
     }

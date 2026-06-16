@@ -107,3 +107,24 @@
 "error.server" = "Server error: %d";
 "error.decoding" = "Failed to parse data: %@";
 "error.network" = "Network error: %@";
+
+"sorting.latest" = "Latest";
+"sorting.relevance" = "Relevance";
+"sorting.random" = "Random";
+"sorting.views" = "Views";
+"sorting.favorites" = "Favorites";
+"sorting.toplist" = "Toplist";
+"sorting.hot" = "Hot";
+"sorting.descending" = "Descending";
+"sorting.ascending" = "Ascending";
+"toprange.today" = "Today";
+"toprange.last_3_days" = "Last 3 Days";
+"toprange.last_week" = "Last Week";
+"toprange.last_month" = "Last Month";
+"toprange.last_3_months" = "Last 3 Months";
+"toprange.last_6_months" = "Last 6 Months";
+"toprange.last_year" = "Last Year";
+"settings.language" = "Language";
+"settings.language.follow_system" = "Follow System";
+"settings.language.english" = "English";
+"settings.language.chinese" = "Chinese";

@@ -12,6 +12,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                languageSection
                 apiKeySection
                 apiURLSection
                 if viewModel.hasAPIKey { remoteSettingsSection }
@@ -22,6 +23,7 @@ struct SettingsView: View {
             .task {
                 tempAPIKey = viewModel.apiKey
                 tempAPIURL = viewModel.apiBaseURL
+                viewModel.applyLanguageOverride()
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
             }
             .overlay(alignment: .bottom) {
@@ -36,6 +38,22 @@ struct SettingsView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+        }
+    }
+
+    // MARK: - Language Section
+
+    private var languageSection: some View {
+        Section("settings.language") {
+            Picker("settings.language", selection: Binding(
+                get: { viewModel.selectedLanguage },
+                set: { viewModel.selectedLanguage = $0 }
+            )) {
+                ForEach(SettingsViewModel.AppLanguage.allCases) { lang in
+                    Text(lang.displayName).tag(lang)
+                }
+            }
+            .pickerStyle(.segmented)
         }
     }
 

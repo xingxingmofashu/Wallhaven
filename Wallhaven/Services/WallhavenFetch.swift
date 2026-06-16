@@ -35,6 +35,20 @@ actor WallhavenFetch {
         return try await fetch(url: url)
     }
 
+    // MARK: - Related Wallpapers
+
+    func relatedWallpapers(id: String, page: Int = 1) async throws -> SearchResponse {
+        var items: [URLQueryItem] = [
+            URLQueryItem(name: "q", value: "like:\(id)"),
+            URLQueryItem(name: "page", value: "\(page)")
+        ]
+        if let key = apiKey {
+            items.append(URLQueryItem(name: "apikey", value: key))
+        }
+        let url = try buildURL(path: "/search", queryItems: items)
+        return try await fetch(url: url)
+    }
+
     // MARK: - Wallpaper Detail
 
     func wallpaper(id: String) async throws -> Wallpaper {

@@ -18,6 +18,9 @@ struct DetailView: View {
             Spacer()
             centeredImage
             Spacer()
+            if !viewModel.relatedWallpapers.isEmpty {
+                relatedThumbnailList
+            }
         }
         .background(Color(.systemBackground))
         .navigationBarBackButtonHidden(true)
@@ -29,12 +32,16 @@ struct DetailView: View {
         .task {
             viewModel.refreshFavoriteStatus(in: modelContext)
             viewModel.loadDetailIfNeeded()
+            viewModel.loadRelatedWallpapers()
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheetView(items: viewModel.shareItems)
         }
         .sheet(isPresented: $showInfoSheet) {
             infoSheet
+        }
+        .navigationDestination(for: Wallpaper.self) { wallpaper in
+            DetailView(wallpaper: wallpaper)
         }
     }
 
@@ -81,7 +88,30 @@ struct DetailView: View {
                 .fill(Color(.systemGray5))
                 .aspectRatio(viewModel.wallpaper.aspectRatio, contentMode: .fit)
         }
-        .padding(.horizontal, 8)
+    }
+
+    // MARK: - Related Thumbnail List
+
+    private var relatedThumbnailList: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(viewModel.relatedWallpapers) { wallpaper in
+                    NavigationLink(value: wallpaper) {
+                        CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } placeholder: {
+                            Rectangle()
+                                .fill(Color(.systemGray5))
+                        }
+                        .frame(width: 60, height: 42)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
     // MARK: - Bottom Toolbar
 

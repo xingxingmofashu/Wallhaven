@@ -14,6 +14,11 @@ final class DetailViewModel {
     var isSavingToPhotos = false
     var isFavorited = false
 
+    // MARK: - Related Wallpapers
+
+    var relatedWallpapers: [Wallpaper] = []
+    var isLoadingRelated = false
+
     // MARK: - Init
 
     init(wallpaper: Wallpaper) {
@@ -33,6 +38,22 @@ final class DetailViewModel {
                 hasLoadedDetail = true
             } catch {
                 // Silently handle load failure, keep preview data
+            }
+        }
+    }
+
+    // MARK: - Related Wallpapers
+
+    func loadRelatedWallpapers() {
+        guard !isLoadingRelated, relatedWallpapers.isEmpty else { return }
+        isLoadingRelated = true
+        Task {
+            defer { isLoadingRelated = false }
+            do {
+                let response = try await WallhavenFetch.shared.relatedWallpapers(id: wallpaper.id)
+                relatedWallpapers = response.data
+            } catch {
+                // Silently handle load failure
             }
         }
     }

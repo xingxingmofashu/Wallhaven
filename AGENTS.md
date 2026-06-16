@@ -23,7 +23,7 @@ Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
   Services/                 WallhavenFetch (actor), WallhavenError, Cache/ (CacheImage, CacheImageLoader, CacheAsyncImage)
   ViewModels/               @Observable ViewModels, one per screen
   Views/
-    Components/             CellView, GridView, ErrorView, EmptyView
+    Components/             CellView, GridView, ErrorView, NoResultsView
     Home / Search / Detail / Favorites / Settings / ContentView
   Docs/WallhavenAPI.md      Full API reference
   en.lproj/Localizable.strings
@@ -48,7 +48,7 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 
 - **MVVM** with `@Observable` (not `ObservableObject`).
 - `WallhavenFetch` is an `actor` — call its methods with `await`.
-- API base URL: configurable via `UserDefaults("wallhaven_api_base_url")` with fallback `https://wallhaven.cc/api/v1`. Users can override locally via a gitignored `Wallhaven/Config/LocalConfig.swift`.
+- API base URL: configurable via `UserDefaults("wallhaven_api_base_url")` with fallback `https://wallhaven.cc/api/v1`.
 - API key stored in `UserDefaults` under key `"wallhaven_api_key"`; read by both `WallhavenFetch` (actor) and `SettingsViewModel`.
 - Local favorites persist via **SwiftData** (`FavoriteWallpaper` model). The `ModelContainer` is configured in `WallhavenApp.swift` and injected as `.modelContainer(...)` on the root scene.
 - Image caching: `CacheImage` (NSCache, 150 MB limit). Use `CacheAsyncImage` (defined in `Services/Cache/AsyncImage.swift`) instead of the system `AsyncImage` everywhere.

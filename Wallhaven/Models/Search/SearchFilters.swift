@@ -141,7 +141,6 @@ struct SearchFilters: Equatable {
 struct WallhavenColor: Identifiable, Hashable {
     let hex: String   // without #
     var id: String { hex }
-    var display: String { "#\(hex)" }
 }
 
 extension WallhavenColor {

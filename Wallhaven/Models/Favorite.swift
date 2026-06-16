@@ -34,8 +34,6 @@ final class FavoriteWallpaper {
         self.dimensionY  = wallpaper.dimensionY
     }
 
-    var thumbnailURL: URL? { URL(string: thumbURL) }
-
     var aspectRatio: Double {
         guard dimensionY > 0 else { return 1 }
         return Double(dimensionX) / Double(dimensionY)

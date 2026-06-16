@@ -18,9 +18,9 @@ struct DetailView: View {
             Spacer()
             centeredImage
             Spacer()
-            if !viewModel.relatedWallpapers.isEmpty {
-                relatedThumbnailList
-            }
+            relatedThumbnailList
+                .frame(height: 42)
+                .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
         }
         .background(Color(.systemBackground))
         .navigationBarBackButtonHidden(true)

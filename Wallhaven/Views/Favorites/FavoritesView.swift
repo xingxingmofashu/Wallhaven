@@ -7,6 +7,7 @@ struct FavoritesView: View {
     private var favorites: [FavoriteWallpaper]
 
     @State private var selectedWallpaper: Wallpaper?
+    @State private var selectedWallpaperIndex: Int?
     @State private var showDeleteAlert  = false
 
     var body: some View {
@@ -40,7 +41,10 @@ struct FavoritesView: View {
                 Text("This will permanently delete all local favorites. This cannot be undone.")
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                DetailView(wallpaper: wallpaper, relatedWallpapers: favorites.map(\.asWallpaper))
+                DetailView(
+                    wallpapers: favorites.map(\.asWallpaper),
+                    startIndex: selectedWallpaperIndex ?? 0
+                )
             }
         }
     }
@@ -51,6 +55,7 @@ struct FavoritesView: View {
         GridView(
             wallpapers: favorites.map(\.asWallpaper),
             onSelect: { selectedWallpaper = $0 },
+            onSelectIndex: { selectedWallpaperIndex = $0 },
             contextMenu: { wallpaper in
                 AnyView(
                     Button(role: .destructive) {

@@ -209,6 +209,7 @@ struct AppearanceView: View {
                         }
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
         .navigationTitle("Appearance")

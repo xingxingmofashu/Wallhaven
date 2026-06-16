@@ -26,7 +26,7 @@ struct GridView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let columnWidth = (geo.size.width - spacing * 3) / 2
+            let columnWidth = max((geo.size.width - spacing * 3) / 2, 0)
 
             ScrollView {
                 HStack(alignment: .top, spacing: spacing) {
@@ -87,6 +87,7 @@ struct GridView: View {
     }
 
     private func cellHeight(for wallpaper: Wallpaper, width: CGFloat) -> CGFloat {
+        guard width > 0 else { return 200 }
         let ratio = max(wallpaper.aspectRatio, 0.01)
         return width / ratio
     }

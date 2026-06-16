@@ -4,8 +4,6 @@ struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""
-    @State private var showAPIURLField = false
-    @State private var tempAPIURL      = ""
     @State private var showClearCacheAlert = false
     @State private var showClearedToast   = false
     @AppStorage("app_appearance") private var appAppearance = 0
@@ -14,16 +12,13 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 generalSection
-                apiKeySection
-                apiURLSection
-                if viewModel.hasAPIKey { remoteSettingsSection }
+                apiSection
                 cacheSection
                 aboutSection
             }
             .navigationTitle("Settings")
             .task {
                 tempAPIKey = viewModel.apiKey
-                tempAPIURL = viewModel.apiBaseURL
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
                 applyAppearance(appAppearance)
             }
@@ -91,10 +86,19 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - API Key Section
+    // MARK: - API Section
 
-    private var apiKeySection: some View {
+    private var apiSection: some View {
         Section {
+            HStack {
+                Text("Default URL")
+                Spacer()
+                Text(viewModel.apiBaseURL)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
             if showAPIKeyField {
                 HStack {
                     SecureField("Paste API Key", text: $tempAPIKey)
@@ -129,82 +133,39 @@ struct SettingsView: View {
                     }
                 }
             }
+
+            if viewModel.hasAPIKey {
+                Divider()
+
+                if viewModel.isLoadingSettings {
+                    HStack {
+                        ProgressView()
+                        Text("Syncing…").foregroundStyle(.secondary)
+                    }
+                } else if let userSettings = viewModel.userSettings {
+                    settingsRow("Default Purity", value: userSettings.purity.joined(separator: ", "))
+                    settingsRow("Default Categories", value: userSettings.categories.joined(separator: ", "))
+                    settingsRow("Preferred Resolutions", value: userSettings.resolutions.isEmpty ? "Any" : userSettings.resolutions.joined(separator: ", "))
+                    settingsRow("Preferred Ratios", value: userSettings.aspectRatios.isEmpty ? "Any" : userSettings.aspectRatios.joined(separator: ", "))
+                    settingsRow("Toplist Range", value: userSettings.toplistRange)
+                } else if let settingsError = viewModel.settingsError {
+                    Label(settingsError, systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
+                        .font(.caption)
+                }
+            }
         } header: {
-            Text("Wallhaven API Key")
+            Text("Wallhaven API")
         } footer: {
             Text("API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.")
         }
     }
 
-    // MARK: - API URL Section
-
-    private var apiURLSection: some View {
-        Section {
-            HStack {
-                Text("Default URL")
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text(viewModel.apiBaseURL)
-                    .font(.subheadline)
-                    .lineLimit(1)
-            }
-
-            if showAPIURLField {
-                HStack {
-                    TextField("New URL", text: $tempAPIURL)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.URL)
-                    Button("Save") {
-                        viewModel.apiBaseURL = tempAPIURL.trimmingCharacters(in: .whitespaces)
-                        showAPIURLField = false
-                    }
-                    .fontWeight(.semibold)
-                }
-            }
-
-            Button(showAPIURLField ? "Cancel" : "Change URL") {
-                withAnimation {
-                    showAPIURLField.toggle()
-                    tempAPIURL = viewModel.apiBaseURL
-                }
-            }
-            .font(.subheadline)
-        } header: {
-            Text("API Endpoint")
-        } footer: {
-            Text("Default: https://wallhaven.cc/api/v1")
-        }
-    }
-
-    // MARK: - Remote Settings Section
-
-    private var remoteSettingsSection: some View {
-        Section("Account Preferences (from Wallhaven)") {
-            if viewModel.isLoadingSettings {
-                HStack {
-                    ProgressView()
-                    Text("Syncing…").foregroundStyle(.secondary)
-                }
-            } else if let userSettings = viewModel.userSettings {
-                settingsRow("Default Purity", value: userSettings.purity.joined(separator: ", "))
-                settingsRow("Default Categories", value: userSettings.categories.joined(separator: ", "))
-                settingsRow("Preferred Resolutions", value: userSettings.resolutions.isEmpty ? "Any" : userSettings.resolutions.joined(separator: ", "))
-                settingsRow("Preferred Ratios", value: userSettings.aspectRatios.isEmpty ? "Any" : userSettings.aspectRatios.joined(separator: ", "))
-                settingsRow("Toplist Range", value: userSettings.toplistRange)
-            } else if let settingsError = viewModel.settingsError {
-                Label(settingsError, systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.orange)
-                    .font(.caption)
-            }
-        }
-    }
-
     private func settingsRow(_ labelKey: LocalizedStringKey, value: String) -> some View {
         HStack {
-            Text(labelKey).foregroundStyle(.secondary)
+            Text(labelKey)
             Spacer()
-            Text(value).font(.subheadline)
+            Text(value).font(.subheadline).foregroundStyle(.secondary)
         }
     }
 

@@ -26,15 +26,17 @@ struct GridView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let columnWidth = max((geo.size.width - spacing * 3) / 2, 0)
+            let columnWidth = (geo.size.width - spacing * 3) / 2
 
             ScrollView {
-                HStack(alignment: .top, spacing: spacing) {
-                    columnWallpapers(leftWallpapers, columnWidth: columnWidth)
-                    columnWallpapers(rightWallpapers, columnWidth: columnWidth)
+                if columnWidth > 0 {
+                    HStack(alignment: .top, spacing: spacing) {
+                        columnWallpapers(leftWallpapers, columnWidth: columnWidth)
+                        columnWallpapers(rightWallpapers, columnWidth: columnWidth)
+                    }
+                    .padding(.horizontal, spacing)
+                    .padding(.top, spacing)
                 }
-                .padding(.horizontal, spacing)
-                .padding(.top, spacing)
 
                 if isLoadingMore {
                     ProgressView()
@@ -42,6 +44,7 @@ struct GridView: View {
                         .padding()
                 }
             }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
     }
 
@@ -83,7 +86,6 @@ struct GridView: View {
                 }
             }
         }
-        .frame(width: columnWidth)
     }
 
     private func cellHeight(for wallpaper: Wallpaper, width: CGFloat) -> CGFloat {

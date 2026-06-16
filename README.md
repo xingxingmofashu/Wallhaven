@@ -2,6 +2,14 @@
 
 A native iOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.cc/help/api).
 
+<p align="center">
+  <img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Light.png" width="120" alt="Light Icon">
+  &nbsp;&nbsp;
+  <img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Dark.png" width="120" alt="Dark Icon">
+  &nbsp;&nbsp;
+  <img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Tinted.png" width="120" alt="Tinted Icon">
+</p>
+
 ## Features
 
 - **Home** — latest wallpapers in a two-column waterfall grid

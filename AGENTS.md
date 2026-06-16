@@ -25,7 +25,7 @@ Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
   Views/
     Components/             CellView, GridView, ErrorView, NoResultsView
     Home / Search / Detail / Favorites / Settings / ContentView
-  Docs/WallhavenAPI.md      Full API reference
+  Docs/API.md               API reference
   en.lproj/Localizable.strings
   zh-Hans.lproj/Localizable.strings
 ```
@@ -67,7 +67,7 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 
 Base URL: configurable, defaults to `https://wallhaven.cc/api/v1`
 Rate limit: 45 req/min → `429`. NSFW without key → `401`.
-Full parameter reference: `Wallhaven/Docs/WallhavenAPI.md`.
+Full parameter reference: `Wallhaven/Docs/API.md`.
 
 ## Git conventions
 

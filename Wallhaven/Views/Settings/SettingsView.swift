@@ -58,13 +58,15 @@ struct SettingsView: View {
             }
             .tint(.primary)
 
-            Picker("Appearance", selection: $appAppearance) {
-                Text("Automatic").tag(0)
-                Text("Dark").tag(1)
-                Text("Light").tag(2)
-            }
-            .onChange(of: appAppearance) { _, newValue in
-                applyAppearance(newValue)
+            NavigationLink {
+                AppearanceView(appearance: $appAppearance)
+            } label: {
+                HStack {
+                    Text("Appearance")
+                    Spacer()
+                    Text(appearanceName)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
@@ -74,6 +76,14 @@ struct SettingsView: View {
         switch code {
         case "zh":  return "简体中文"
         default:    return "English"
+        }
+    }
+
+    private var appearanceName: String {
+        switch appAppearance {
+        case 1:  return "Dark"
+        case 2:  return "Light"
+        default: return "Automatic"
         }
     }
 
@@ -125,47 +135,11 @@ struct SettingsView: View {
                     }
                     .font(.subheadline)
                 }
-
-                if viewModel.hasAPIKey {
-                    Button("Clear API Key", role: .destructive) {
-                        viewModel.apiKey = ""
-                        tempAPIKey = ""
-                    }
-                }
-            }
-
-            if viewModel.hasAPIKey {
-                Divider()
-
-                if viewModel.isLoadingSettings {
-                    HStack {
-                        ProgressView()
-                        Text("Syncing…").foregroundStyle(.secondary)
-                    }
-                } else if let userSettings = viewModel.userSettings {
-                    settingsRow("Default Purity", value: userSettings.purity.joined(separator: ", "))
-                    settingsRow("Default Categories", value: userSettings.categories.joined(separator: ", "))
-                    settingsRow("Preferred Resolutions", value: userSettings.resolutions.isEmpty ? "Any" : userSettings.resolutions.joined(separator: ", "))
-                    settingsRow("Preferred Ratios", value: userSettings.aspectRatios.isEmpty ? "Any" : userSettings.aspectRatios.joined(separator: ", "))
-                    settingsRow("Toplist Range", value: userSettings.toplistRange)
-                } else if let settingsError = viewModel.settingsError {
-                    Label(settingsError, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.orange)
-                        .font(.caption)
-                }
             }
         } header: {
             Text("Wallhaven API")
         } footer: {
             Text("API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.")
-        }
-    }
-
-    private func settingsRow(_ labelKey: LocalizedStringKey, value: String) -> some View {
-        HStack {
-            Text(labelKey)
-            Spacer()
-            Text(value).font(.subheadline).foregroundStyle(.secondary)
         }
     }
 
@@ -206,6 +180,46 @@ struct SettingsView: View {
             }
             Link("Website", destination: URL(string: "https://wallhaven.cc")!)
             Link("Documentation", destination: URL(string: "https://wallhaven.cc/help/api")!)
+        }
+    }
+}
+
+// MARK: - Appearance View
+
+struct AppearanceView: View {
+    @Binding var appearance: Int
+
+    private let options = ["Automatic", "Dark", "Light"]
+
+    var body: some View {
+        List {
+            ForEach(0..<3, id: \.self) { index in
+                Button {
+                    appearance = index
+                    applyAppearance(index)
+                } label: {
+                    HStack {
+                        Text(options[index])
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if appearance == index {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle("Appearance")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func applyAppearance(_ value: Int) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        switch value {
+        case 1:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .dark }
+        case 2:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .light }
+        default: scene.windows.forEach { $0.overrideUserInterfaceStyle = .unspecified }
         }
     }
 }

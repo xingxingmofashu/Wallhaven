@@ -13,6 +13,7 @@ final class DetailViewModel {
     var isLoadingDetail = false
     var isSavingToPhotos = false
     var isFavorited = false
+    var favoritedIDs: Set<String> = []
 
     // MARK: - Related Wallpapers
 
@@ -63,6 +64,7 @@ final class DetailViewModel {
         self.wallpaper = wallpaper
         hasLoadedDetail = false
         isLoadingDetail = false
+        isFavorited = favoritedIDs.contains(wallpaper.id)
         loadDetailIfNeeded()
     }
 
@@ -71,6 +73,15 @@ final class DetailViewModel {
             predicate: #Predicate { $0.wallpaperID == wallpaper.id }
         )
         isFavorited = (try? context.fetchCount(descriptor)) ?? 0 > 0
+        loadFavoriteStatuses(in: context)
+    }
+
+    func loadFavoriteStatuses(in context: ModelContext) {
+        let allIDs = Set([wallpaper.id] + relatedWallpapers.map(\.id))
+        guard !allIDs.isEmpty else { return }
+        var descriptor = FetchDescriptor<FavoriteWallpaper>()
+        descriptor.predicate = #Predicate { allIDs.contains($0.wallpaperID) }
+        favoritedIDs = Set((try? context.fetch(descriptor))?.map(\.wallpaperID) ?? [])
     }
 
     func toggleFavorite(in context: ModelContext) {
@@ -83,11 +94,13 @@ final class DetailViewModel {
                 try? context.save()
             }
             isFavorited = false
+            favoritedIDs.remove(wallpaper.id)
         } else {
             let favoriteWallpaper = FavoriteWallpaper(from: wallpaper)
             context.insert(favoriteWallpaper)
             try? context.save()
             isFavorited = true
+            favoritedIDs.insert(wallpaper.id)
         }
     }
 

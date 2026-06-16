@@ -109,6 +109,14 @@ struct DetailView: View {
                         }
                         .frame(width: 60, height: 42)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .overlay(alignment: .topTrailing) {
+                            if viewModel.favoritedIDs.contains(wallpaper.id) {
+                                Image(systemName: "heart.fill")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(.pink)
+                                    .padding(3)
+                            }
+                        }
                     }
                     .buttonStyle(.plain)
                 }

@@ -30,8 +30,8 @@ struct GridView: View {
 
             ScrollView {
                 HStack(alignment: .top, spacing: spacing) {
-                    columnWallpapers(leftIndices, columnWidth: columnWidth)
-                    columnWallpapers(rightIndices, columnWidth: columnWidth)
+                    columnWallpapers(leftWallpapers, columnWidth: columnWidth)
+                    columnWallpapers(rightWallpapers, columnWidth: columnWidth)
                 }
                 .padding(.horizontal, spacing)
                 .padding(.top, spacing)
@@ -47,19 +47,18 @@ struct GridView: View {
 
     // MARK: - Columns
 
-    private var leftIndices: [Int] {
-        stride(from: 0, to: wallpapers.count, by: 2).map { $0 }
+    private var leftWallpapers: [Wallpaper] {
+        stride(from: 0, to: wallpapers.count, by: 2).map { wallpapers[$0] }
     }
 
-    private var rightIndices: [Int] {
-        stride(from: 1, to: wallpapers.count, by: 2).map { $0 }
+    private var rightWallpapers: [Wallpaper] {
+        stride(from: 1, to: wallpapers.count, by: 2).map { wallpapers[$0] }
     }
 
     @ViewBuilder
-    private func columnWallpapers(_ indices: [Int], columnWidth: CGFloat) -> some View {
+    private func columnWallpapers(_ items: [Wallpaper], columnWidth: CGFloat) -> some View {
         LazyVStack(spacing: spacing) {
-            ForEach(indices, id: \.self) { idx in
-                let wallpaper = wallpapers[idx]
+            ForEach(items) { wallpaper in
                 let cellHeight = cellHeight(for: wallpaper, width: columnWidth)
 
                 Button {
@@ -77,7 +76,7 @@ struct GridView: View {
                     }
                 }
                 .onAppear {
-                    if idx >= wallpapers.count - 4, !isLoadingMore {
+                    if wallpaper.id == wallpapers.last?.id, !isLoadingMore {
                         onLoadMore()
                     }
                 }

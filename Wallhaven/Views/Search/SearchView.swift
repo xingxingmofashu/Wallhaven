@@ -60,7 +60,9 @@ struct SearchView: View {
                 }
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                DetailView(wallpaper: wallpaper, relatedWallpapers: viewModel.wallpapers)
+                if let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
+                    DetailView(wallpapers: viewModel.wallpapers, startIndex: index)
+                }
             }
         }
     }

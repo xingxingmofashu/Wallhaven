@@ -165,6 +165,7 @@ struct SettingsView: View {
             } message: {
                 Text("This will clear the in-memory image cache.")
             }
+            .foregroundColor(.red)
         }
     }
 
@@ -201,7 +202,6 @@ struct AppearanceView: View {
                 } label: {
                     HStack {
                         Text(options[index])
-                            .foregroundStyle(.primary)
                         Spacer()
                         if appearance == index {
                             Image(systemName: "checkmark")
@@ -209,7 +209,7 @@ struct AppearanceView: View {
                         }
                     }
                 }
-                .buttonStyle(.plain)
+                .foregroundStyle(.foreground)
             }
         }
         .navigationTitle("Appearance")

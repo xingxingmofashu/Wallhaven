@@ -70,6 +70,7 @@ struct GridView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)
+                .contentShape(Rectangle())
                 .contextMenu {
                     if let contextMenu = contextMenu {
                         contextMenu(wallpaper)

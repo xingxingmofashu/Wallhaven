@@ -15,44 +15,16 @@ struct DetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            navBar
             Spacer()
             centeredImage
             Spacer()
         }
         .background(Color(.systemBackground))
-        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                Button {
-                    showShareSheet = true
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.largeTitle)
-                        .foregroundStyle(.primary)
-                }
-            }
-            ToolbarItemGroup(placement: .bottomBar) {
-                Button {
-                    viewModel.toggleFavorite(in: modelContext)
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                } label: {
-                    Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
-                        .font(.largeTitle)
-                        .foregroundStyle(viewModel.isFavorited ? .pink : .primary)
-                        .contentTransition(.symbolEffect(.replace))
-                }
-                .symbolEffect(.bounce, value: viewModel.isFavorited)
-
-                Button {
-                    showInfoSheet = true
-                } label: {
-                    Image(systemName: "info.circle")
-                        .font(.largeTitle)
-                        .foregroundStyle(.primary)
-                }
-            }
+            topToolbar
+            bottomToolbar
         }
         .task {
             viewModel.checkFavoriteStatus(in: modelContext)
@@ -66,23 +38,22 @@ struct DetailView: View {
         }
     }
 
-    // MARK: - Nav Bar
+    // MARK: - Top Toolbar
 
-    private var navBar: some View {
-        HStack {
-            Button { dismiss() } label: {
+    @ToolbarContentBuilder
+    private var topToolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                dismiss()
+            } label: {
                 Image(systemName: "chevron.left")
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(.primary)
             }
-            Spacer()
-            Text(viewModel.wallpaper.id)
-                .font(.subheadline.weight(.medium))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(.ultraThinMaterial)
-                .clipShape(Capsule())
-            Spacer()
+        }
+
+
+        ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button("Open in Browser", systemImage: "safari") {
                     if let url = URL(string: viewModel.wallpaper.url) {
@@ -98,8 +69,6 @@ struct DetailView: View {
                     .foregroundStyle(.primary)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
     }
 
     // MARK: - Centered Image
@@ -116,7 +85,51 @@ struct DetailView: View {
         }
         .padding(.horizontal, 8)
     }
+    // MARK: - Bottom Toolbar
 
+    @ToolbarContentBuilder
+    private var bottomToolbar: some ToolbarContent {
+        ToolbarItem(placement: .bottomBar) {
+            Button {
+                showShareSheet = true
+            } label: {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
+            }
+        }
+
+        ToolbarItemGroup(placement: .status) {
+            Button {
+                viewModel.toggleFavorite(in: modelContext)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
+                    .font(.title3)
+                    .foregroundStyle(viewModel.isFavorited ? .pink : .primary)
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .symbolEffect(.bounce, value: viewModel.isFavorited)
+
+            Button {
+                showInfoSheet = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
+            }
+        }
+
+        ToolbarItem(placement: .bottomBar) {
+            Button {
+                viewModel.saveToPhotos()
+            } label: {
+                Image(systemName: "arrow.down.circle")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
+            }
+        }
+    }
     // MARK: - Info Sheet
 
     private var infoSheet: some View {
@@ -193,11 +206,5 @@ struct DetailView: View {
                 }
             }
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        DetailView(wallpaper: .preview)
     }
 }

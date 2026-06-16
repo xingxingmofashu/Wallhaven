@@ -52,7 +52,6 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 - API key stored in `UserDefaults` under key `"wallhaven_api_key"`; read by both `WallhavenFetch` (actor) and `SettingsViewModel`.
 - Local favorites persist via **SwiftData** (`FavoriteWallpaper` model). The `ModelContainer` is configured in `WallhavenApp.swift` and injected as `.modelContainer(...)` on the root scene.
 - Image caching: `CacheImage` (NSCache, 150 MB limit). Use `CacheAsyncImage` (defined in `Services/Cache/AsyncImage.swift`) instead of the system `AsyncImage` everywhere.
-- Language override: `Services/LanguageOverride.swift` — `Bundle` extension using `object_setClass` + associated objects to swap main bundle at runtime. Stored in `UserDefaults("AppLanguage")`, applied in `WallhavenApp.init()`. Supports `.en` and `.zhHans`.
 - `NavigationState` (`@Observable`) manages cross-tab navigation: `selectedTab`, `searchQuery`, `shouldSearch`. Injected via `.environment()` from `ContentView`.
 
 ## Known pitfalls caught in this repo

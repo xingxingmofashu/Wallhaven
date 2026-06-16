@@ -125,6 +125,4 @@
 "toprange.last_6_months" = "最近 6 月";
 "toprange.last_year" = "最近一年";
 "settings.language" = "语言";
-"settings.language.follow_system" = "跟随系统";
-"settings.language.english" = "English";
-"settings.language.chinese" = "简体中文";
+"settings.language.open_settings" = "打开 iPhone 设置";

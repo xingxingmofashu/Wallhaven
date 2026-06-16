@@ -43,16 +43,31 @@ struct SettingsView: View {
     // MARK: - Language Section
 
     private var languageSection: some View {
-        Section("settings.language") {
-            Picker("settings.language", selection: Binding(
-                get: { viewModel.selectedLanguage },
-                set: { viewModel.selectedLanguage = $0 }
-            )) {
-                ForEach(SettingsViewModel.AppLanguage.allCases) { lang in
-                    Text(lang.displayName).tag(lang)
+        Section {
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                HStack {
+                    Text("App Language")
+                    Spacer()
+                    Text(currentLanguageName)
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .pickerStyle(.segmented)
+            .tint(.primary)
+        }
+    }
+
+    private var currentLanguageName: String {
+        let code = Locale.preferredLanguages.first?.prefix(2).description ?? "en"
+        switch code {
+        case "zh":  return "简体中文"
+        default:    return "English"
         }
     }
 

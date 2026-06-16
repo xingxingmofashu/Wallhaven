@@ -125,6 +125,4 @@
 "toprange.last_6_months" = "Last 6 Months";
 "toprange.last_year" = "Last Year";
 "settings.language" = "Language";
-"settings.language.follow_system" = "Follow System";
-"settings.language.english" = "English";
-"settings.language.chinese" = "Chinese";
+"settings.language.open_settings" = "Open iPhone Settings";

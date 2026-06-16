@@ -14,13 +14,6 @@ struct WallhavenApp: App {
         }
     }()
 
-    init() {
-        let raw = UserDefaults.standard.string(forKey: "AppLanguage") ?? ""
-        if !raw.isEmpty {
-            Bundle.setLanguage(raw)
-        }
-    }
-
     var body: some Scene {
         WindowGroup {
             ContentView()

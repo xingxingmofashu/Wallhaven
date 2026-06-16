@@ -107,7 +107,7 @@ struct SettingsView: View {
     private var apiURLSection: some View {
         Section {
             HStack {
-                Text("Base URL")
+                Text("Default URL")
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text(viewModel.apiBaseURL)

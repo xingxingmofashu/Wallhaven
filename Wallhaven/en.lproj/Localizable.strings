@@ -55,7 +55,7 @@
 "Set" = "Set";
 "Clear API Key" = "Clear API Key";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.";
-"Base URL" = "Base URL";
+"Default URL" = "Default URL";
 "New URL" = "New URL";
 "Change URL" = "Change URL";
 "API Endpoint" = "API Endpoint";

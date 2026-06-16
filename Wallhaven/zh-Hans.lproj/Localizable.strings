@@ -55,7 +55,7 @@
 "Set" = "设置";
 "Clear API Key" = "清除 API Key";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key 可在 wallhaven.cc 账号设置中获取，用于启用 NSFW 内容和账号偏好。";
-"Base URL" = "基础 URL";
+"Default URL" = "默认 URL";
 "New URL" = "新 URL";
 "Change URL" = "修改 URL";
 "API Endpoint" = "API 端点";

@@ -3,7 +3,6 @@
 "Favorites" = "收藏";
 "Settings" = "设置";
 "Wallhaven" = "Wallhaven";
-"Loading..." = "加载中...";
 "Loading…" = "加载中...";
 "Unknown error" = "未知错误";
 "Searching..." = "搜索中...";
@@ -46,27 +45,14 @@
 "No Favorites Yet" = "还没有收藏";
 "Tap the heart icon on any wallpaper detail to save it here." = "在壁纸详情页点击爱心即可收藏到这里。";
 
-"Wallhaven API Key" = "Wallhaven API Key";
 "Paste API Key" = "粘贴 API Key";
 "Save" = "保存";
 "API Key Set" = "已设置 API Key";
 "No API Key" = "未设置 API Key";
 "Change" = "修改";
 "Set" = "设置";
-"Clear API Key" = "清除 API Key";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key 可在 wallhaven.cc 账号设置中获取，用于启用 NSFW 内容和账号偏好。";
 "Default URL" = "默认 URL";
-"New URL" = "新 URL";
-"Change URL" = "修改 URL";
-"API Endpoint" = "API 端点";
-"Default: https://wallhaven.cc/api/v1" = "默认：https://wallhaven.cc/api/v1";
-"Account Preferences (from Wallhaven)" = "账号偏好（来自 Wallhaven）";
-"Syncing…" = "同步中...";
-"Default Purity" = "默认分级";
-"Default Categories" = "默认分类";
-"Preferred Resolutions" = "偏好分辨率";
-"Preferred Ratios" = "偏好比例";
-"Toplist Range" = "热门榜范围";
 "Cache" = "缓存";
 "Clear Image Cache" = "清除图片缓存";
 "Clear Cache" = "清除缓存";
@@ -124,8 +110,6 @@
 "toprange.last_3_months" = "最近 3 月";
 "toprange.last_6_months" = "最近 6 月";
 "toprange.last_year" = "最近一年";
-"settings.language" = "语言";
-"settings.language.open_settings" = "打开 iPhone 设置";
 "Appearance" = "外观";
 "Automatic" = "自动";
 "Dark" = "深色";

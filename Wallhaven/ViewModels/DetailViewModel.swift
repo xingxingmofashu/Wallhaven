@@ -11,7 +11,6 @@ final class DetailViewModel {
     var wallpaper: Wallpaper
     var hasLoadedDetail = false
     var isLoadingDetail = false
-    var isSavingToPhotos = false
     var isFavorited = false
     var favoritedIDs: Set<String> = []
 
@@ -110,10 +109,8 @@ final class DetailViewModel {
         guard let url = wallpaper.fullURL else {
             return
         }
-        isSavingToPhotos = true
 
         Task {
-            defer { isSavingToPhotos = false }
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
 

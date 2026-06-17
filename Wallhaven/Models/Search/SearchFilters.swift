@@ -21,7 +21,7 @@ struct SearchFilters: Equatable {
     var order: Order         = .desc
     var topRange: TopRange   = .oneMonth
 
-    var atleast: String      = ""     // e.g. "1920x1080"
+    var atLeast: String      = ""     // e.g. "1920x1080"
     var resolutions: String  = ""     // comma-separated e.g. "1920x1080,2560x1440"
     var ratios: String       = ""     // comma-separated e.g. "16x9,16x10"
     var selectedColor: String  = ""     // single color hex e.g. "ff0000"
@@ -35,7 +35,7 @@ struct SearchFilters: Equatable {
         case random     = "random"
         case views      = "views"
         case favorites  = "favorites"
-        case toplist    = "toplist"
+        case topList    = "toplist"
         case hot        = "hot"
 
         var id: String { rawValue }
@@ -47,7 +47,7 @@ struct SearchFilters: Equatable {
             case .random:     return NSLocalizedString("sorting.random", comment: "")
             case .views:      return NSLocalizedString("sorting.views", comment: "")
             case .favorites:  return NSLocalizedString("sorting.favorites", comment: "")
-            case .toplist:    return NSLocalizedString("sorting.toplist", comment: "")
+            case .topList:    return NSLocalizedString("sorting.toplist", comment: "")
             case .hot:        return NSLocalizedString("sorting.hot", comment: "")
             }
         }
@@ -110,12 +110,12 @@ struct SearchFilters: Equatable {
         items.append(URLQueryItem(name: "sorting",    value: sorting.rawValue))
         items.append(URLQueryItem(name: "order",      value: order.rawValue))
 
-        if sorting == .toplist {
+        if sorting == .topList {
             items.append(URLQueryItem(name: "top_range", value: topRange.rawValue))
         }
 
-        if !atleast.isEmpty {
-            items.append(URLQueryItem(name: "atleast", value: atleast))
+        if !atLeast.isEmpty {
+            items.append(URLQueryItem(name: "atleast", value: atLeast))
         }
         if !resolutions.isEmpty {
             items.append(URLQueryItem(name: "resolutions", value: resolutions))

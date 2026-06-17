@@ -3,7 +3,7 @@ import SwiftData
 
 /// SwiftData persisted local favorite wallpaper
 @Model
-final class FavoriteWallpaper {
+final class FavoriteWallpaper: HasDimensions {
     @Attribute(.unique) var wallpaperID: String
     var addedAt: Date
 
@@ -22,7 +22,7 @@ final class FavoriteWallpaper {
     init(from wallpaper: Wallpaper) {
         self.wallpaperID = wallpaper.id
         self.addedAt     = Date()
-        self.thumbURL    = wallpaper.thumbs.large
+        self.thumbURL    = wallpaper.thumbnails.large
         self.fullPath    = wallpaper.path
         self.resolution  = wallpaper.resolution
         self.purity      = wallpaper.purity
@@ -32,11 +32,6 @@ final class FavoriteWallpaper {
         self.colors      = wallpaper.colors
         self.dimensionX  = wallpaper.dimensionX
         self.dimensionY  = wallpaper.dimensionY
-    }
-
-    var aspectRatio: Double {
-        guard dimensionY > 0 else { return 1 }
-        return Double(dimensionX) / Double(dimensionY)
     }
 
     var asWallpaper: Wallpaper {
@@ -59,7 +54,7 @@ final class FavoriteWallpaper {
             createdAt: "",
             colors: colors,
             path: fullPath,
-            thumbs: Thumbs(large: thumbURL, original: "", small: ""),
+            thumbnails: Thumbnails(large: thumbURL, original: "", small: ""),
             tags: nil
         )
     }

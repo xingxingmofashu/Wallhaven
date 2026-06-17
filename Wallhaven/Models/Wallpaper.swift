@@ -1,8 +1,22 @@
 import Foundation
 
+// MARK: - Aspect Ratio
+
+protocol HasDimensions {
+    var dimensionX: Int { get }
+    var dimensionY: Int { get }
+}
+
+extension HasDimensions {
+    var aspectRatio: Double {
+        guard dimensionY > 0 else { return 1 }
+        return Double(dimensionX) / Double(dimensionY)
+    }
+}
+
 // MARK: - Wallpaper
 
-struct Wallpaper: Codable, Identifiable, Hashable {
+struct Wallpaper: Codable, Identifiable, Hashable, HasDimensions {
     let id: String
     let url: String
     let shortURL: String
@@ -21,12 +35,13 @@ struct Wallpaper: Codable, Identifiable, Hashable {
     let createdAt: String
     let colors: [String]
     let path: String
-    let thumbs: Thumbs
+    let thumbnails: Thumbnails
     let tags: [Tag]?
 
     enum CodingKeys: String, CodingKey {
         case id, url, views, favorites, source, purity, category
-        case resolution, ratio, colors, path, thumbs, tags
+        case resolution, ratio, colors, path, tags
+        case thumbnails = "thumbs"
         case shortURL     = "short_url"
         case uploader
         case dimensionX   = "dimension_x"
@@ -36,13 +51,8 @@ struct Wallpaper: Codable, Identifiable, Hashable {
         case createdAt    = "created_at"
     }
 
-    var thumbnailURL: URL? { URL(string: thumbs.large) }
+    var thumbnailURL: URL? { URL(string: thumbnails.large) }
     var fullURL: URL?      { URL(string: path) }
-
-    var aspectRatio: Double {
-        guard dimensionY > 0 else { return 1 }
-        return Double(dimensionX) / Double(dimensionY)
-    }
 
     var formattedFileSize: String {
         let mb = Double(fileSize) / 1_048_576
@@ -57,9 +67,9 @@ struct Uploader: Codable, Hashable {
     let group: String
 }
 
-// MARK: - Thumbs
+// MARK: - Thumbnails
 
-struct Thumbs: Codable, Hashable {
+struct Thumbnails: Codable, Hashable {
     let large:    String
     let original: String
     let small:    String
@@ -105,7 +115,7 @@ extension Wallpaper {
         createdAt: "2024-01-01 00:00:00",
         colors: ["#000000", "#ffffff"],
         path: "https://w.wallhaven.cc/full/94/wallhaven-94x38z.jpg",
-        thumbs: Thumbs(
+        thumbnails: Thumbnails(
             large:    "https://th.wallhaven.cc/lg/94/94x38z.jpg",
             original: "https://th.wallhaven.cc/orig/94/94x38z.jpg",
             small:    "https://th.wallhaven.cc/small/94/94x38z.jpg"

@@ -12,7 +12,7 @@ struct FilterSheetView: View {
                 categoriesSection
                 puritySection
                 sortingSection
-                if filters.sorting == .toplist { topRangeSection }
+                if filters.sorting == .topList { topRangeSection }
                 resolutionSection
                 ratioSection
                 colorSection
@@ -85,7 +85,7 @@ struct FilterSheetView: View {
 
     private var resolutionSection: some View {
         Section("Resolution") {
-            TextField("Min resolution, e.g. 1920x1080", text: $filters.atleast)
+            TextField("Min resolution, e.g. 1920x1080", text: $filters.atLeast)
                 .keyboardType(.numbersAndPunctuation)
                 .autocorrectionDisabled()
         }

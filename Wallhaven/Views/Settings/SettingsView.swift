@@ -19,7 +19,6 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .task {
                 tempAPIKey = viewModel.apiKey
-                if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
                 applyAppearance(appAppearance)
             }
             .overlay(alignment: .bottom) {
@@ -117,19 +116,18 @@ struct SettingsView: View {
                     Button("Save") {
                         viewModel.apiKey = tempAPIKey.trimmingCharacters(in: .whitespaces)
                         showAPIKeyField  = false
-                        if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
                     }
                     .fontWeight(.semibold)
                 }
             } else {
                 HStack {
                     Label(
-                        viewModel.hasAPIKey ? "API Key Set" : "No API Key",
-                        systemImage: viewModel.hasAPIKey ? "key.fill" : "key"
+                        viewModel.hasApiKey ? "API Key Set" : "No API Key",
+                        systemImage: viewModel.hasApiKey ? "key.fill" : "key"
                     )
-                    .foregroundStyle(viewModel.hasAPIKey ? .green : .secondary)
+                    .foregroundStyle(viewModel.hasApiKey ? .green : .secondary)
                     Spacer()
-                    Button(viewModel.hasAPIKey ? "Change" : "Set") {
+                    Button(viewModel.hasApiKey ? "Change" : "Set") {
                         tempAPIKey = viewModel.apiKey
                         showAPIKeyField = true
                     }

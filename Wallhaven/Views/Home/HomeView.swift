@@ -27,7 +27,7 @@ struct HomeView: View {
     private var content: some View {
         switch viewModel.loadState {
         case .idle, .loading:
-            loadingView
+            LoadingView()
 
         case .loaded:
             GridView(
@@ -43,11 +43,6 @@ struct HomeView: View {
                 viewModel.refresh()
             }
         }
-    }
-
-    private var loadingView: some View {
-        ProgressView("Loading…")
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Toolbar

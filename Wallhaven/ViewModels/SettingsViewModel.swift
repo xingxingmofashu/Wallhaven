@@ -11,35 +11,13 @@ final class SettingsViewModel {
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_key") }
     }
 
-    var hasAPIKey: Bool { !apiKey.isEmpty }
+    var hasApiKey: Bool { !apiKey.isEmpty }
 
     // MARK: - API Base URL
 
     var apiBaseURL: String {
         get { UserDefaults.standard.string(forKey: "wallhaven_api_base_url") ?? "https://wallhaven.cc/api/v1" }
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url") }
-    }
-
-    // MARK: - User Settings (from API)
-
-    var userSettings: UserSettings?
-    var isLoadingSettings = false
-    var settingsError: String?
-
-    func fetchUserSettings() {
-        guard hasAPIKey else { return }
-        isLoadingSettings = true
-        settingsError     = nil
-        Task {
-            defer { isLoadingSettings = false }
-            do {
-                userSettings = try await WallhavenFetch.shared.userSettings()
-            } catch let wallhavenError as WallhavenError {
-                settingsError = wallhavenError.errorDescription
-            } catch {
-                settingsError = error.localizedDescription
-            }
-        }
     }
 
     // MARK: - Cache

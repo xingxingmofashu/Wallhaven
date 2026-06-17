@@ -3,7 +3,6 @@
 "Favorites" = "Favorites";
 "Settings" = "Settings";
 "Wallhaven" = "Wallhaven";
-"Loading..." = "Loading...";
 "Loading…" = "Loading...";
 "Unknown error" = "Unknown error";
 "Searching..." = "Searching...";
@@ -46,27 +45,14 @@
 "No Favorites Yet" = "No Favorites Yet";
 "Tap the heart icon on any wallpaper detail to save it here." = "Tap the heart icon on any wallpaper detail to save it here.";
 
-"Wallhaven API Key" = "Wallhaven API Key";
 "Paste API Key" = "Paste API Key";
 "Save" = "Save";
 "API Key Set" = "API Key Set";
 "No API Key" = "No API Key";
 "Change" = "Change";
 "Set" = "Set";
-"Clear API Key" = "Clear API Key";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.";
 "Default URL" = "Default URL";
-"New URL" = "New URL";
-"Change URL" = "Change URL";
-"API Endpoint" = "API Endpoint";
-"Default: https://wallhaven.cc/api/v1" = "Default: https://wallhaven.cc/api/v1";
-"Account Preferences (from Wallhaven)" = "Account Preferences (from Wallhaven)";
-"Syncing…" = "Syncing...";
-"Default Purity" = "Default Purity";
-"Default Categories" = "Default Categories";
-"Preferred Resolutions" = "Preferred Resolutions";
-"Preferred Ratios" = "Preferred Ratios";
-"Toplist Range" = "Toplist Range";
 "Cache" = "Cache";
 "Clear Image Cache" = "Clear Image Cache";
 "Clear Cache" = "Clear Cache";
@@ -124,8 +110,6 @@
 "toprange.last_3_months" = "Last 3 Months";
 "toprange.last_6_months" = "Last 6 Months";
 "toprange.last_year" = "Last Year";
-"settings.language" = "Language";
-"settings.language.open_settings" = "Open iPhone Settings";
 "Appearance" = "Appearance";
 "Automatic" = "Automatic";
 "Dark" = "Dark";

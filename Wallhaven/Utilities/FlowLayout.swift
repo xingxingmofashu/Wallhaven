@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct FlowLayoutView: Layout {
+struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {

@@ -9,6 +9,7 @@ struct DetailView: View {
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
     @State private var scrollPosition: Int?
+    @State private var wallpaperForNavigation: Wallpaper?
 
     let wallpapers: [Wallpaper]
     @State private var selectedIndex: Int
@@ -53,7 +54,6 @@ struct DetailView: View {
                     .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
             }
         }
-        .background(Color(.systemBackground))
         .simultaneousGesture(
             DragGesture(minimumDistance: 20)
                 .onEnded { value in
@@ -88,7 +88,7 @@ struct DetailView: View {
         .sheet(isPresented: $showInfoSheet) {
             infoSheet
         }
-        .navigationDestination(for: Wallpaper.self) { wallpaper in
+        .navigationDestination(item: $wallpaperForNavigation) { wallpaper in
             DetailView(wallpaper: wallpaper)
         }
     }
@@ -132,6 +132,8 @@ struct DetailView: View {
                         Button {
                             if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
                                 scrollPosition = idx
+                            } else {
+                                wallpaperForNavigation = wallpaper
                             }
                         } label: {
                             CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
@@ -284,7 +286,7 @@ struct DetailView: View {
 
                 if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
                     Section("Tags") {
-                        FlowLayoutView(spacing: 6) {
+                        FlowLayout(spacing: 6) {
                             ForEach(tags) { tag in
                                 Button {
                                     dismiss()

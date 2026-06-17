@@ -15,8 +15,7 @@ struct SearchView: View {
                     idleView
 
                 case .loading:
-                    ProgressView("Searching...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    LoadingView(message: "Searching...")
 
                 case .loaded:
                     if viewModel.wallpapers.isEmpty {

@@ -9,16 +9,14 @@ struct DetailView: View {
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
     @State private var scrollPosition: Int?
-    @State private var wallpaperForNavigation: Wallpaper?
-
-    let wallpapers: [Wallpaper]
+    @State private var wallpapers: [Wallpaper]
     @State private var selectedIndex: Int
 
     private var currentID: String? { wallpapers.indices.contains(selectedIndex) ? wallpapers[selectedIndex].id : nil }
 
     init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: relatedWallpapers))
-        self.wallpapers = [wallpaper]
+        _wallpapers = State(initialValue: [wallpaper])
         _selectedIndex = State(initialValue: 0)
         _scrollPosition = State(initialValue: 0)
     }
@@ -26,7 +24,7 @@ struct DetailView: View {
     init(wallpapers: [Wallpaper], startIndex: Int) {
         let wallpaper = wallpapers[startIndex]
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: wallpapers))
-        self.wallpapers = wallpapers
+        _wallpapers = State(initialValue: wallpapers)
         _selectedIndex = State(initialValue: startIndex)
         _scrollPosition = State(initialValue: startIndex)
     }
@@ -88,9 +86,6 @@ struct DetailView: View {
         .sheet(isPresented: $showInfoSheet) {
             infoSheet
         }
-        .navigationDestination(item: $wallpaperForNavigation) { wallpaper in
-            DetailView(wallpaper: wallpaper)
-        }
     }
 
     // MARK: - Image View
@@ -133,7 +128,9 @@ struct DetailView: View {
                             if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
                                 scrollPosition = idx
                             } else {
-                                wallpaperForNavigation = wallpaper
+                                wallpapers = [wallpaper]
+                                scrollPosition = 0
+                                viewModel.selectRelated(wallpaper)
                             }
                         } label: {
                             CacheAsyncImage(url: wallpaper.thumbnailURL) { image in

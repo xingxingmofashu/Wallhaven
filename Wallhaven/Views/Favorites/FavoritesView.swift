@@ -63,12 +63,14 @@ struct FavoritesView: View {
                 AnyView(
                     Button(role: .destructive) {
                         let wallpaperID = wallpaper.id
-                        let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                            predicate: #Predicate { $0.wallpaperID == wallpaperID }
-                        )
-                        if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
-                            modelContext.delete(favoriteWallpaper)
-                            try? modelContext.save()
+                        Task { @MainActor in
+                            let descriptor = FetchDescriptor<FavoriteWallpaper>(
+                                predicate: #Predicate { $0.wallpaperID == wallpaperID }
+                            )
+                            if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
+                                modelContext.delete(favoriteWallpaper)
+                                try? modelContext.save()
+                            }
                         }
                     } label: {
                         Label("Remove from Favorites", systemImage: "heart.slash")

@@ -22,7 +22,7 @@ struct FavoritesView: View {
             .navigationTitle("Favorites")
             .toolbar {
                 if !favorites.isEmpty {
-                    ToolbarItem(placement: .automatic) {
+                    ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             showDeleteAlert = true
                         } label: {

@@ -54,7 +54,7 @@ struct HomeView: View {
 
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .navigationBarTrailing) {
             Button {
                 viewModel.refresh()
             } label: {

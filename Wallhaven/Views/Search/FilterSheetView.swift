@@ -18,9 +18,7 @@ struct FilterSheetView: View {
                 colorSection
             }
             .navigationTitle("Filters")
-            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
-            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -32,7 +30,7 @@ struct FilterSheetView: View {
                     }
                     .fontWeight(.semibold)
                 }
-                ToolbarItem(placement: .automatic) {
+                ToolbarItem(placement: .bottomBar) {
                     Button("Reset") { filters = SearchFilters() }
                         .foregroundStyle(.red)
                 }
@@ -88,9 +86,7 @@ struct FilterSheetView: View {
     private var resolutionSection: some View {
         Section("Resolution") {
             TextField("Min resolution, e.g. 1920x1080", text: $filters.atleast)
-                #if os(iOS)
                 .keyboardType(.numbersAndPunctuation)
-                #endif
                 .autocorrectionDisabled()
         }
     }

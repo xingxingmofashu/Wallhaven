@@ -34,6 +34,7 @@ struct SearchView: View {
             .navigationTitle("Search")
             .searchable(
                 text: $viewModel.filters.query,
+                placement: .navigationBarDrawer(displayMode: .always),
                 prompt: "Search wallpapers, tags..."
             )
             .onSubmit(of: .search) {
@@ -46,7 +47,7 @@ struct SearchView: View {
                 viewModel.search()
             }
             .toolbar {
-                ToolbarItem(placement: .automatic) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showFilter = true
                     } label: {

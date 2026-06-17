@@ -20,12 +20,8 @@ struct CacheAsyncImage<Content: View, Placeholder: View>: View {
 
     var body: some View {
         Group {
-            if let platformImage = loader.image {
-                #if os(iOS)
-                content(Image(uiImage: platformImage))
-                #elseif os(macOS)
-                content(Image(nsImage: platformImage))
-                #endif
+            if let uiImage = loader.image {
+                content(Image(uiImage: uiImage))
             } else {
                 placeholder()
                     .overlay {

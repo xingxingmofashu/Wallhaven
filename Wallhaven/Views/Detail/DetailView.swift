@@ -1,9 +1,5 @@
 import SwiftUI
 import SwiftData
-#if os(macOS)
-import AppKit
-import UniformTypeIdentifiers
-#endif
 
 struct DetailView: View {
     @State private var viewModel: DetailViewModel
@@ -31,7 +27,7 @@ struct DetailView: View {
 
     var body: some View {
         ZStack {
-            Color.clear.ignoresSafeArea()
+            Color(.systemBackground).ignoresSafeArea()
 
             VStack(spacing: 0) {
                 TabView(selection: $selectedIndex) {
@@ -40,9 +36,7 @@ struct DetailView: View {
                             .tag(index)
                     }
                 }
-                #if os(iOS)
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                #endif
                 .gesture(
                     DragGesture(minimumDistance: 20)
                         .onEnded { value in
@@ -59,17 +53,9 @@ struct DetailView: View {
                     .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
             }
         }
-        .background {
-            #if os(iOS)
-            Color(.systemBackground)
-            #elseif os(macOS)
-            Color(nsColor: .windowBackgroundColor)
-            #endif
-        }
+        .background(Color(.systemBackground))
         .navigationBarBackButtonHidden(true)
-        #if os(iOS)
         .toolbar(.hidden, for: .tabBar)
-        #endif
         .toolbar {
             topToolbar
             bottomToolbar
@@ -107,7 +93,7 @@ struct DetailView: View {
                     .scaledToFit()
             } placeholder: {
                 Rectangle()
-                    .fill(Color.secondary.opacity(0.15))
+                    .fill(Color(.systemGray5))
                     .aspectRatio(wallpaper.aspectRatio, contentMode: .fit)
             }
         }
@@ -133,7 +119,7 @@ struct DetailView: View {
                                     .scaledToFill()
                             } placeholder: {
                                 Rectangle()
-                                    .fill(Color.secondary.opacity(0.15))
+                                    .fill(Color(.systemGray5))
                             }
                             .frame(width: 60, height: 42)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -171,7 +157,7 @@ struct DetailView: View {
 
     @ToolbarContentBuilder
     private var topToolbar: some ToolbarContent {
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .topBarLeading) {
             Button {
                 dismiss()
             } label: {
@@ -180,24 +166,15 @@ struct DetailView: View {
                     .foregroundStyle(.primary)
             }
         }
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button("Open in Browser", systemImage: "safari") {
                     if let url = URL(string: viewModel.wallpaper.url) {
-                        #if os(iOS)
                         UIApplication.shared.open(url)
-                        #elseif os(macOS)
-                        NSWorkspace.shared.open(url)
-                        #endif
                     }
                 }
                 Button("Copy Link", systemImage: "doc.on.doc") {
-                    #if os(iOS)
                     UIPasteboard.general.string = viewModel.wallpaper.url
-                    #elseif os(macOS)
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(viewModel.wallpaper.url, forType: .string)
-                    #endif
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -211,7 +188,7 @@ struct DetailView: View {
 
     @ToolbarContentBuilder
     private var bottomToolbar: some ToolbarContent {
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .bottomBar) {
             Button {
                 showShareSheet = true
             } label: {
@@ -224,9 +201,7 @@ struct DetailView: View {
         ToolbarItemGroup(placement: .status) {
             Button {
                 viewModel.toggleFavorite(in: modelContext)
-                #if os(iOS)
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                #endif
             } label: {
                 Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
                     .font(.title3)
@@ -244,7 +219,7 @@ struct DetailView: View {
             }
         }
 
-        ToolbarItem(placement: .automatic) {
+        ToolbarItem(placement: .bottomBar) {
             Button {
                 viewModel.saveToPhotos()
             } label: {
@@ -280,7 +255,7 @@ struct DetailView: View {
                                 Circle()
                                     .fill(Color(hex: cleanHex))
                                     .frame(width: 30, height: 30)
-                                    .overlay(Circle().strokeBorder(Color.secondary.opacity(0.3), lineWidth: 0.5))
+                                    .overlay(Circle().strokeBorder(Color(.systemGray4), lineWidth: 0.5))
                             }
                         }
                     }
@@ -299,7 +274,7 @@ struct DetailView: View {
                                         .foregroundStyle(.blue)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
-                                        .background(Color.secondary.opacity(0.15))
+                                        .background(Color(.secondarySystemBackground))
                                         .clipShape(Capsule())
                                 }
                                 .buttonStyle(.plain)
@@ -324,11 +299,9 @@ struct DetailView: View {
                 }
             }
             .navigationTitle("Info")
-            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
-            #endif
             .toolbar {
-                ToolbarItem(placement: .automatic) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { showInfoSheet = false }
                 }
             }

@@ -20,9 +20,7 @@ struct SettingsView: View {
             .task {
                 tempAPIKey = viewModel.apiKey
                 if viewModel.hasAPIKey { viewModel.fetchUserSettings() }
-                #if os(iOS)
                 applyAppearance(appAppearance)
-                #endif
             }
             .overlay(alignment: .bottom) {
                 if showClearedToast {
@@ -43,7 +41,6 @@ struct SettingsView: View {
 
     private var generalSection: some View {
         Section {
-            #if os(iOS)
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -60,7 +57,6 @@ struct SettingsView: View {
                 }
             }
             .tint(.primary)
-            #endif
 
             NavigationLink {
                 AppearanceView(appearance: $appAppearance, onAppear: applyAppearance)
@@ -92,14 +88,12 @@ struct SettingsView: View {
     }
 
     private func applyAppearance(_ value: Int) {
-        #if os(iOS)
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
         switch value {
         case 1:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .dark }
         case 2:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .light }
         default: scene.windows.forEach { $0.overrideUserInterfaceStyle = .unspecified }
         }
-        #endif
     }
 
     // MARK: - API Section
@@ -119,9 +113,7 @@ struct SettingsView: View {
                 HStack {
                     SecureField("Paste API Key", text: $tempAPIKey)
                         .autocorrectionDisabled()
-                        #if os(iOS)
                         .textInputAutocapitalization(.never)
-                        #endif
                     Button("Save") {
                         viewModel.apiKey = tempAPIKey.trimmingCharacters(in: .whitespaces)
                         showAPIKeyField  = false
@@ -221,9 +213,7 @@ struct AppearanceView: View {
             }
         }
         .navigationTitle("Appearance")
-        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-        #endif
     }
 }
 

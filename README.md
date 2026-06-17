@@ -1,6 +1,6 @@
 # Wallhaven
 
-A native iOS & macOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.cc/help/api).
+A native iOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.cc/help/api).
 
 <table align="center">
   <tr>
@@ -20,7 +20,7 @@ A native iOS & macOS wallpaper browser powered by the [Wallhaven API](https://wa
 
 ## Requirements
 
-- iOS 26.5+ / macOS 26.5+
+- iOS 26.5+
 - Xcode 26.5+
 
 ## Installation

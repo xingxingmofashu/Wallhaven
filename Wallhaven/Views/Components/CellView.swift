@@ -11,7 +11,7 @@ struct CellView: View {
                 .scaledToFill()
         } placeholder: {
             Rectangle()
-                .fill(Color.secondary.opacity(0.15))
+                .fill(Color(.systemGray5))
         }
         .overlay(alignment: .bottomLeading) {
             badges

@@ -2,7 +2,7 @@ import SwiftUI
 
 @Observable
 final class CacheImageLoader {
-    var image: UIImage?
+    var image: PlatformImage?
     var isLoading = false
     var failed    = false
 
@@ -27,7 +27,7 @@ final class CacheImageLoader {
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 guard !Task.isCancelled else { return }
-                if let loadedImage = UIImage(data: data) {
+                if let loadedImage = PlatformImage(data: data) {
                     CacheImage.shared.insert(loadedImage, for: url)
                     image = loadedImage
                 } else {

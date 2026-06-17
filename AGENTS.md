@@ -3,16 +3,23 @@
 ## Build & verify
 
 ```bash
-# Only working build command (macOS 26.x host, Xcode 26.5)
+# iOS build
 xcodebuild -scheme Wallhaven \
   -sdk iphonesimulator \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
   build 2>&1 | grep -E "error:|Build succeeded|Build FAILED"
+
+# macOS build
+xcodebuild -scheme Wallhaven \
+  -sdk macosx \
+  -destination 'platform=macOS' \
+  build 2>&1 | grep -E "error:|Build succeeded|Build FAILED"
 ```
 
-- `-destination 'platform=iOS Simulator,name=...'` is required — generic destination and "My Mac" both fail on this machine.
+- `-destination 'platform=iOS Simulator,name=...'` is required for iOS — generic destination and "My Mac" both fail on this machine.
+- macOS build uses `-sdk macosx -destination 'platform=macOS'`.
 - No test targets exist yet; build success is the only automated check.
-- After any Swift change, run the build above before committing.
+- After any Swift change, run both builds before committing.
 
 ## Project structure
 
@@ -34,7 +41,7 @@ Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `
 
 ## Key constraints
 
-**Deployment target: iOS 26.5** — `IPHONEOS_DEPLOYMENT_TARGET = 26.5`. Do not use APIs gated behind availability checks unless they are available on 26.5.
+**Deployment target: iOS 26.5 / macOS 26.5** — `IPHONEOS_DEPLOYMENT_TARGET = 26.5`, `MACOSX_DEPLOYMENT_TARGET = 26.5`. Do not use APIs gated behind availability checks unless they are available on both 26.5. Use `#if os(iOS)` / `#if os(macOS)` for platform-specific code.
 
 **Swift concurrency** — `SWIFT_APPROACHABLE_CONCURRENCY = YES` is active. `SWIFT_DEFAULT_ACTOR_ISOLATION` is **not set** — types are not implicitly `@MainActor`. ViewModels are explicitly annotated `@MainActor`. `WallhavenFetch` is an `actor` with its own isolation.
 

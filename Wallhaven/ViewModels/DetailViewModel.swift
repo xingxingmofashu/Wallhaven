@@ -1,6 +1,11 @@
 import SwiftUI
-import Photos
 import SwiftData
+#if os(iOS)
+import Photos
+#elseif os(macOS)
+import AppKit
+import UniformTypeIdentifiers
+#endif
 
 @Observable
 @MainActor
@@ -116,18 +121,31 @@ final class DetailViewModel {
             defer { isSavingToPhotos = false }
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
-                guard let image = UIImage(data: data) else {
-                    return
-                }
 
+                #if os(iOS)
+                guard let image = UIImage(data: data) else { return }
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-                guard status == .authorized || status == .limited else {
-                    return
-                }
-
+                guard status == .authorized || status == .limited else { return }
                 try await PHPhotoLibrary.shared().performChanges {
                     PHAssetChangeRequest.creationRequestForAsset(from: image)
                 }
+                #elseif os(macOS)
+                guard let image = NSImage(data: data) else { return }
+                await MainActor.run {
+                    let panel = NSSavePanel()
+                    panel.allowedContentTypes = [.png, .jpeg]
+                    panel.nameFieldStringValue = "\(wallpaper.id).\(wallpaper.fileType.lowercased())"
+                    panel.begin { result in
+                        if result == .OK, let fileURL = panel.url {
+                            if let tiffData = image.tiffRepresentation,
+                               let bitmap = NSBitmapImageRep(data: tiffData),
+                               let pngData = bitmap.representation(using: .png, properties: [:]) {
+                                try? pngData.write(to: fileURL)
+                            }
+                        }
+                    }
+                }
+                #endif
             } catch {
                 return
             }

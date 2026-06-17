@@ -62,11 +62,13 @@ struct DetailView: View {
         }
         .onChange(of: selectedIndex) { _, newIndex in
             viewModel.selectRelated(wallpapers[newIndex])
+            preloadAdjacent(at: newIndex)
         }
         .task {
             viewModel.refreshFavoriteStatus(in: modelContext)
             viewModel.loadDetailIfNeeded()
             viewModel.loadRelatedWallpapers()
+            preloadAdjacent(at: selectedIndex)
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheetView(items: viewModel.shareItems)
@@ -80,6 +82,15 @@ struct DetailView: View {
     }
 
     // MARK: - Image View
+
+    private func preloadAdjacent(at index: Int) {
+        for offset in [-1, 1] {
+            let target = index + offset
+            if wallpapers.indices.contains(target), let url = wallpapers[target].fullURL {
+                CacheImage.shared.preload(url: url)
+            }
+        }
+    }
 
     private func imageView(for wallpaper: Wallpaper) -> some View {
         CacheAsyncImage(url: wallpaper.fullURL) { image in

@@ -27,4 +27,16 @@ final class CacheImage: @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         cache.removeAllObjects()
     }
+
+    func preload(url: URL) {
+        guard image(for: url) == nil else { return }
+        Task.detached(priority: .utility) { [weak self] in
+            guard let self else { return }
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                guard !Task.isCancelled, let loaded = UIImage(data: data) else { return }
+                self.insert(loaded, for: url)
+            } catch {}
+        }
+    }
 }

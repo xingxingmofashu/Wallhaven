@@ -34,8 +34,10 @@ struct HomeView: View {
                 wallpapers: viewModel.wallpapers,
                 isLoadingMore: viewModel.isLoadingMore,
                 onLoadMore: { viewModel.loadMore() },
-                onSelect: { selectedWallpaper = $0 },
-                onSelectIndex: { selectedWallpaperIndex = $0 }
+                onSelect: { wallpaper in
+                    selectedWallpaperIndex = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id })
+                    selectedWallpaper = wallpaper
+                }
             )
 
         case .failed(let error):

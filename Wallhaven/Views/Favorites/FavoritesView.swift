@@ -52,10 +52,13 @@ struct FavoritesView: View {
     // MARK: - Grid
 
     private var gridView: some View {
-        GridView(
-            wallpapers: favorites.map(\.asWallpaper),
-            onSelect: { selectedWallpaper = $0 },
-            onSelectIndex: { selectedWallpaperIndex = $0 },
+        let wallpapers = favorites.map(\.asWallpaper)
+        return GridView(
+            wallpapers: wallpapers,
+            onSelect: { wallpaper in
+                selectedWallpaperIndex = wallpapers.firstIndex(where: { $0.id == wallpaper.id })
+                selectedWallpaper = wallpaper
+            },
             contextMenu: { wallpaper in
                 AnyView(
                     Button(role: .destructive) {

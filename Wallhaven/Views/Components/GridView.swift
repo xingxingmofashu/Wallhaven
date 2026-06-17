@@ -6,7 +6,6 @@ struct GridView: View {
     let isLoadingMore: Bool
     let onLoadMore: () -> Void
     let onSelect: (Wallpaper) -> Void
-    let onSelectIndex: (Int) -> Void
     let contextMenu: ((Wallpaper) -> AnyView)?
 
     init(
@@ -14,14 +13,12 @@ struct GridView: View {
         isLoadingMore: Bool = false,
         onLoadMore: @escaping () -> Void = {},
         onSelect: @escaping (Wallpaper) -> Void = { _ in },
-        onSelectIndex: @escaping (Int) -> Void = { _ in },
         contextMenu: ((Wallpaper) -> AnyView)? = nil
     ) {
         self.wallpapers = wallpapers
         self.isLoadingMore = isLoadingMore
         self.onLoadMore = onLoadMore
         self.onSelect = onSelect
-        self.onSelectIndex = onSelectIndex
         self.contextMenu = contextMenu
     }
 
@@ -69,9 +66,6 @@ struct GridView: View {
 
                 Button {
                     onSelect(wallpaper)
-                    if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
-                        onSelectIndex(idx)
-                    }
                 } label: {
                     CellView(wallpaper: wallpaper)
                         .frame(width: columnWidth, height: cellHeight)

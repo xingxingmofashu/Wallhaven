@@ -3,79 +3,77 @@
 ## Build & verify
 
 ```bash
-# Only working build command (macOS 26.x host, Xcode 26.5)
+# Quick simulator build (run after any Swift change before committing)
 xcodebuild -scheme Wallhaven \
   -sdk iphonesimulator \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
   build 2>&1 | grep -E "error:|Build succeeded|Build FAILED"
+
+# Unsigned IPA for sideloading (AltStore etc.)
+./build.sh
+
+# Build signed + install to connected iPhone
+./install.sh
 ```
 
-- `-destination 'platform=iOS Simulator,name=...'` is required — generic destination and "My Mac" both fail on this machine.
-- No test targets exist yet; build success is the only automated check.
-- After any Swift change, run the build above before committing.
+- `-destination` is required — generic and "My Mac" both fail.
+- No test targets; build success is the only check.
+- `build.sh` uses `CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO` (unsigned).
+- `install.sh` uses `-allowProvisioningUpdates` (automatic signing) + `devicectl`.
 
 ## Project structure
 
 ```
 Wallhaven/                  ← PBXFileSystemSynchronizedRootGroup (auto-synced)
-  Models/                   Wallpaper, UserSettings, Favorite, LoadState
+  App/                      ContentView.swift
+  Models/                   Wallpaper, Favorite, UserSettings, HasDimensions
     Search/                 SearchFilters, SearchResponse
-  Services/                 WallhavenFetch (actor), WallhavenError, Cache/ (CacheImage, CacheImageLoader, CacheAsyncImage)
+  Services/                 WallhavenFetch (actor), WallhavenError
+    Cache/                  CacheImage, CacheImageLoader, CacheAsyncImage
+  Utilities/                FlowLayout (Layout), LoadState, ShareSheetView
   ViewModels/               @Observable ViewModels, one per screen
   Views/
-    Components/             CellView, GridView, ErrorView, NoResultsView
-    Home / Search / Detail / Favorites / Settings / ContentView
-  Docs/API.md               API reference
-  en.lproj/Localizable.strings
-  zh-Hans.lproj/Localizable.strings
+    Components/             CellView, GridView, ErrorView, NoResultsView, LoadingView
+    Home / Search / Detail / Favorites / Settings
+  WallhavenApp.swift        @main, SwiftData ModelContainer
 ```
 
-Any file placed inside `Wallhaven/` is automatically picked up by Xcode — no `.pbxproj` edits needed for new Swift files.
+Files inside `Wallhaven/` are auto-synced by Xcode — no `.pbxproj` edits for new Swift files.
 
 ## Key constraints
 
-**Deployment target: iOS 26.5** — `IPHONEOS_DEPLOYMENT_TARGET = 26.5`. Do not use APIs gated behind availability checks unless they are available on 26.5.
-
-**Swift concurrency** — `SWIFT_APPROACHABLE_CONCURRENCY = YES` is active. `SWIFT_DEFAULT_ACTOR_ISOLATION` is **not set** — types are not implicitly `@MainActor`. ViewModels are explicitly annotated `@MainActor`. `WallhavenFetch` is an `actor` with its own isolation.
-
-**`GENERATE_INFOPLIST_FILE = YES`** — there is no hand-written `Info.plist`. Add privacy keys or entitlements via `INFOPLIST_KEY_*` entries in both the Debug and Release `XCBuildConfiguration` blocks inside `project.pbxproj`.
-
-**Photo save permission** — `INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription` is already set in both configurations.
-
-**Localization** — `SWIFT_EMIT_LOC_STRINGS = YES` is set in both Debug and Release. `knownRegions = (en, Base, "zh-Hans")`. `SwiftUI` `Text("string literal")` auto-looks up in `Localizable.strings`. For non-literal strings (e.g. computed properties), use `NSLocalizedString("key", comment: "")` explicitly.
+- Deployment target: `26.4` (set in pbxproj). Do not use APIs gated behind availability checks above 26.4.
+- `GENERATE_INFOPLIST_FILE = YES` — no hand-written Info.plist. Add privacy keys via `INFOPLIST_KEY_*` in both Debug/Release blocks in `project.pbxproj`.
+- `NSPhotoLibraryAddUsageDescription` already set in both configs (Chinese locale).
+- `SWIFT_APPROACHABLE_CONCURRENCY = YES`. `SWIFT_DEFAULT_ACTOR_ISOLATION` **not set** — types are not implicitly `@MainActor`. ViewModels are explicitly `@MainActor`. `WallhavenFetch` is an `actor`.
+- Localization: `knownRegions = (en, Base, "zh-Hans")`. `SWIFT_EMIT_LOC_STRINGS = YES`. `Text("literal")` auto-lookup; computed strings need `NSLocalizedString`.
 
 ## Architecture
 
-- **MVVM** with `@Observable` (not `ObservableObject`).
-- `WallhavenFetch` is an `actor` — call its methods with `await`.
-- API base URL: configurable via `UserDefaults("wallhaven_api_base_url")` with fallback `https://wallhaven.cc/api/v1`.
-- API key stored in `UserDefaults` under key `"wallhaven_api_key"`; read by both `WallhavenFetch` (actor) and `SettingsViewModel`.
-- Local favorites persist via **SwiftData** (`FavoriteWallpaper` model). The `ModelContainer` is configured in `WallhavenApp.swift` and injected as `.modelContainer(...)` on the root scene.
-- Image caching: `CacheImage` (NSCache, 150 MB limit). Use `CacheAsyncImage` (defined in `Services/Cache/AsyncImage.swift`) instead of the system `AsyncImage` everywhere.
-- `NavigationState` (`@Observable`) manages cross-tab navigation: `selectedTab`, `searchQuery`, `shouldSearch`. Injected via `.environment()` from `ContentView`.
+- MVVM with `@Observable` (not ObservableObject).
+- `WallhavenFetch.shared` is an actor singleton — `await` all its methods.
+- API base URL: `UserDefaults("wallhaven_api_base_url")` → fallback `https://wallhaven.cc/api/v1`.
+- API key: `UserDefaults("wallhaven_api_key")`, read by both `WallhavenFetch` and `SettingsViewModel`.
+- Favorites: SwiftData (`FavoriteWallpaper` model, `@Attribute(.unique) wallpaperID`). `ModelContainer` created in `WallhavenApp.swift` with `ModelConfiguration(isStoredInMemoryOnly: false)`.
+- `FavoriteWallpaper.asWallpaper` reconstructs a `Wallpaper` from stored fields (thumbURL, fullPath, etc.). `fileSize` and `tags` are zero/nil.
+- Image caching: `CacheImage` (NSCache, 150 MB). Use `CacheAsyncImage` everywhere instead of system `AsyncImage`.
+- `NavigationState` (`@Observable`) injected via `.environment()` from `ContentView`. Drives `selectedTab`, `searchQuery`, `shouldSearch`.
 
-## Known pitfalls caught in this repo
+## Pitfalls
 
-- **Chinese curly quotes inside Swift string literals** cause a parse error. Use straight ASCII quotes or corner brackets (`「」`) inside string values.
-- Files that use `.modelContainer(for:inMemory:)` in `#Preview` must `import SwiftData` explicitly — the compiler error message ("is not available due to missing import") is misleading.
+- Chinese curly quotes (`''`) inside Swift string literals cause a parse error. Use straight ASCII quotes or corner brackets (`「」`).
+- `#Preview` with `.modelContainer(for:inMemory:)` needs explicit `import SwiftData` — compiler error is misleading.
 - Enums used with `onChange(of:)` must conform to `Equatable`.
-- `Color(hex:)` is defined once in `Views/Search/FilterSheet.swift` and is visible to the whole module. Do not add a duplicate definition elsewhere.
-- `ContentUnavailableView` in search idle/empty states overrides `.navigationTitle` via SwiftUI preference system — avoid it in views where navigation title must stay visible.
+- `Color(hex:)` defined once in `Views/Search/FilterSheet.swift` — module-visible, do not duplicate.
+- `ContentUnavailableView` overrides `.navigationTitle` via SwiftUI preference system — avoid in views where title must stay visible.
+- `FlowLayout` is a `Layout`-conforming struct (not a `View`), in `Utilities/FlowLayout.swift`.
+- `CacheAsyncImage` file and type are both named `CacheAsyncImage` (not `AsyncImage`).
 
-## API summary
+## Repo scripts
 
-Base URL: configurable, defaults to `https://wallhaven.cc/api/v1`
-Rate limit: 45 req/min → `429`. NSFW without key → `401`.
-Full parameter reference: `Wallhaven/Docs/API.md`.
+- `build.sh` — unsigned Release IPA at project root `Wallhaven.ipa`.
+- `install.sh` — signed build + `devicectl` install. Auto-detects connected iPhone via device name.
 
-## Git conventions
+## Git
 
-Commit after each logical phase. Messages used so far:
-
-```
-feat: ...      new functionality
-fix: ...       compile or runtime bug fixes
-chore: ...     config / build settings
-docs: ...      documentation only
-refactor: ...  renaming or restructuring without behavior change
-```
+Commit after each logical phase with conventional prefix: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`.

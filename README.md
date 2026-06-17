@@ -12,24 +12,48 @@ A native iOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.
 
 ## Features
 
-- **Home** — latest wallpapers in a two-column waterfall grid
+- **Home** — latest wallpapers in a two-column waterfall grid with infinite scroll
 - **Search** — keyword + filter (categories, purity, sorting, resolution, ratio, color)
 - **Detail** — full-resolution view, left/right swipe, swipe-down to dismiss, related thumbnails, info sheet, share, save to photos
 - **Favorites** — local favorites via SwiftData, context-menu to remove
-- **Settings** — API key, appearance, image cache, account preferences
+- **Settings** — API key, appearance, image cache management
 
 ## Requirements
 
-- iOS 26.5+
+- iOS 26.4+
 - Xcode 26.5+
 
 ## Installation
 
+No third-party dependencies.
+
+### From Xcode (simulator — no account required)
+
 1. Clone the repo
 2. Open `Wallhaven.xcodeproj` in Xcode
-3. Select a simulator or device and run
+3. Select an iOS Simulator and run (⌘R)
 
-No third-party dependencies.
+### From Xcode (physical device — requires Apple Developer account)
+
+1. Clone the repo
+2. Open `Wallhaven.xcodeproj` in Xcode
+3. In **Signing & Capabilities**, change **Bundle Identifier** to a unique value and select your **Team**
+4. Connect your device and run (⌘R)
+
+### From command line
+
+```bash
+# Quick simulator build
+xcodebuild -scheme Wallhaven -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' build
+
+# Unsigned IPA for sideloading (AltStore, SideStore, etc.)
+./build.sh
+
+# Signed build + install to connected iPhone
+# (requires Apple Developer account + paired device)
+./install.sh
+```
 
 ## Configuration
 
@@ -52,10 +76,12 @@ The API base URL defaults to `https://wallhaven.cc/api/v1` and can be changed in
 
 ```
 Wallhaven/
+  App/            Root ContentView with TabView
   Models/         Data models (Wallpaper, SearchFilters, Favorite, etc.)
-  Services/       WallhavenFetch, Cache
+  Services/       WallhavenFetch actor, image cache (CacheImage / CacheAsyncImage)
+  Utilities/      FlowLayout, LoadState, ShareSheetView
   ViewModels/     One @Observable VM per screen
-  Views/          SwiftUI views organized by feature
+  Views/          Feature-grouped SwiftUI views
   Docs/           API reference
 ```
 

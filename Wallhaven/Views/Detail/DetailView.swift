@@ -14,7 +14,7 @@ struct DetailView: View {
     let wallpapers: [Wallpaper]
     @State private var selectedIndex: Int
 
-    private var currentID: String { wallpapers[selectedIndex].id }
+    private var currentID: String? { wallpapers.indices.contains(selectedIndex) ? wallpapers[selectedIndex].id : nil }
 
     init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: relatedWallpapers))

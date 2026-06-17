@@ -85,15 +85,18 @@ final class DetailViewModel {
 
     func toggleFavorite(in context: ModelContext) {
         if isFavorited {
-            let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                predicate: #Predicate { $0.wallpaperID == wallpaper.id }
-            )
-            if let favoriteWallpaper = try? context.fetch(descriptor).first {
-                context.delete(favoriteWallpaper)
-                try? context.save()
-            }
+            let id = wallpaper.id
             isFavorited = false
             favoritedIDs.remove(wallpaper.id)
+            DispatchQueue.main.async {
+                let descriptor = FetchDescriptor<FavoriteWallpaper>(
+                    predicate: #Predicate { $0.wallpaperID == id }
+                )
+                if let favoriteWallpaper = try? context.fetch(descriptor).first {
+                    context.delete(favoriteWallpaper)
+                    try? context.save()
+                }
+            }
         } else {
             let favoriteWallpaper = FavoriteWallpaper(from: wallpaper)
             context.insert(favoriteWallpaper)

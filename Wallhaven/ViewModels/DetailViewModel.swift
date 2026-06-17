@@ -116,9 +116,6 @@ final class DetailViewModel {
             defer { isSavingToPhotos = false }
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
-                guard let image = UIImage(data: data) else {
-                    return
-                }
 
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
                 guard status == .authorized || status == .limited else {
@@ -126,7 +123,8 @@ final class DetailViewModel {
                 }
 
                 try await PHPhotoLibrary.shared().performChanges {
-                    PHAssetChangeRequest.creationRequestForAsset(from: image)
+                    let request = PHAssetCreationRequest.forAsset()
+                    request.addResource(with: .photo, data: data, options: nil)
                 }
             } catch {
                 return

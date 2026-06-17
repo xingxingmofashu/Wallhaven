@@ -3,7 +3,6 @@ import SwiftUI
 struct SearchView: View {
     @State private var viewModel        = SearchViewModel()
     @State private var selectedWallpaper: Wallpaper?
-    @State private var selectedWallpaperIndex: Int?
     @State private var showFilter       = false
     @Environment(NavigationState.self) private var navigationState
 
@@ -60,9 +59,10 @@ struct SearchView: View {
                 }
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
+                let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }) ?? 0
                 DetailView(
                     wallpapers: viewModel.wallpapers,
-                    startIndex: selectedWallpaperIndex ?? 0
+                    startIndex: index
                 )
             }
         }
@@ -100,10 +100,7 @@ struct SearchView: View {
                 wallpapers: viewModel.wallpapers,
                 isLoadingMore: viewModel.isLoadingMore,
                 onLoadMore: { viewModel.loadMore() },
-                onSelect: { wallpaper in
-                    selectedWallpaperIndex = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id })
-                    selectedWallpaper = wallpaper
-                }
+                onSelect: { selectedWallpaper = $0 }
             )
         }
     }

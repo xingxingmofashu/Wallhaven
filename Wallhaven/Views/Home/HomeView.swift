@@ -3,7 +3,6 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
     @State private var selectedWallpaper: Wallpaper?
-    @State private var selectedWallpaperIndex: Int?
 
     var body: some View {
         NavigationStack {
@@ -13,9 +12,10 @@ struct HomeView: View {
                 .task { viewModel.loadInitial() }
                 .refreshable { viewModel.refresh() }
                 .navigationDestination(item: $selectedWallpaper) { wallpaper in
+                    let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }) ?? 0
                     DetailView(
                         wallpapers: viewModel.wallpapers,
-                        startIndex: selectedWallpaperIndex ?? 0
+                        startIndex: index
                     )
                 }
         }
@@ -34,10 +34,7 @@ struct HomeView: View {
                 wallpapers: viewModel.wallpapers,
                 isLoadingMore: viewModel.isLoadingMore,
                 onLoadMore: { viewModel.loadMore() },
-                onSelect: { wallpaper in
-                    selectedWallpaperIndex = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id })
-                    selectedWallpaper = wallpaper
-                }
+                onSelect: { selectedWallpaper = $0 }
             )
 
         case .failed(let error):

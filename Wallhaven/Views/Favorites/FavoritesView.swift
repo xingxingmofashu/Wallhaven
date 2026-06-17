@@ -7,7 +7,6 @@ struct FavoritesView: View {
     private var favorites: [FavoriteWallpaper]
 
     @State private var selectedWallpaper: Wallpaper?
-    @State private var selectedWallpaperIndex: Int?
     @State private var showDeleteAlert  = false
 
     var body: some View {
@@ -41,9 +40,11 @@ struct FavoritesView: View {
                 Text("This will permanently delete all local favorites. This cannot be undone.")
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
+                let wallpapers = favorites.map(\.asWallpaper)
+                let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) ?? 0
                 DetailView(
-                    wallpapers: favorites.map(\.asWallpaper),
-                    startIndex: selectedWallpaperIndex ?? 0
+                    wallpapers: wallpapers,
+                    startIndex: index
                 )
             }
         }
@@ -55,15 +56,12 @@ struct FavoritesView: View {
         let wallpapers = favorites.map(\.asWallpaper)
         return GridView(
             wallpapers: wallpapers,
-            onSelect: { wallpaper in
-                selectedWallpaperIndex = wallpapers.firstIndex(where: { $0.id == wallpaper.id })
-                selectedWallpaper = wallpaper
-            },
+            onSelect: { selectedWallpaper = $0 },
             contextMenu: { wallpaper in
                 AnyView(
                     Button(role: .destructive) {
                         let wallpaperID = wallpaper.id
-                        Task { @MainActor in
+                        DispatchQueue.main.async {
                             let descriptor = FetchDescriptor<FavoriteWallpaper>(
                                 predicate: #Predicate { $0.wallpaperID == wallpaperID }
                             )

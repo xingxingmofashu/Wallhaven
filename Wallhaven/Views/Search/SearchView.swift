@@ -30,7 +30,7 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("Search")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(
                 text: $viewModel.filters.query,
                 placement: .navigationBarDrawer(displayMode: .always),
@@ -82,27 +82,11 @@ struct SearchView: View {
     // MARK: - Results
 
     private var resultsView: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Result count
-            Text(localizedResultCount)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 16)
-                .padding(.top, 4)
-
-            GridView(
-                wallpapers: viewModel.wallpapers,
-                isLoadingMore: viewModel.isLoadingMore,
-                onLoadMore: { viewModel.loadMore() },
-                onSelect: { selectedWallpaper = $0 }
-            )
-        }
-    }
-
-    private var localizedResultCount: String {
-        String(
-            format: NSLocalizedString("search.results.count", comment: ""),
-            viewModel.totalResults
+        GridView(
+            wallpapers: viewModel.wallpapers,
+            isLoadingMore: viewModel.isLoadingMore,
+            onLoadMore: { viewModel.loadMore() },
+            onSelect: { selectedWallpaper = $0 }
         )
     }
 }

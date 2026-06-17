@@ -8,6 +8,7 @@ xcuserdata/
 # Build artifacts
 DerivedData/
 build/
+*.ipa
 
 # Swift Package Manager
 .build/

@@ -42,10 +42,15 @@ struct FavoritesView: View {
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
                 let wallpapers = favorites.map(\.asWallpaper)
                 let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) ?? 0
-                DetailView(
-                    wallpapers: wallpapers,
-                    startIndex: index
-                )
+                if wallpapers.indices.contains(index) {
+                    DetailView(wallpapers: wallpapers, startIndex: index)
+                }
+            }
+            .onChange(of: favorites) { _, newFavorites in
+                guard let selected = selectedWallpaper,
+                      !newFavorites.contains(where: { $0.wallpaperID == selected.id })
+                else { return }
+                selectedWallpaper = nil
             }
         }
     }

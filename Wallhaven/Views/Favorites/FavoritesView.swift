@@ -46,12 +46,6 @@ struct FavoritesView: View {
                     DetailView(wallpapers: wallpapers, startIndex: index)
                 }
             }
-            .onChange(of: favorites) { _, newFavorites in
-                guard let selected = selectedWallpaper,
-                      !newFavorites.contains(where: { $0.wallpaperID == selected.id })
-                else { return }
-                selectedWallpaper = nil
-            }
         }
     }
 

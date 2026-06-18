@@ -100,7 +100,7 @@ struct DetailView: View {
     }
 
     private func imageView(for wallpaper: Wallpaper) -> some View {
-        CacheAsyncImage(url: wallpaper.fullURL) { image in
+        CacheAsyncImage(url: wallpaper.fullURL, showLoading: false) { image in
             image
                 .resizable()
                 .scaledToFit()
@@ -108,12 +108,14 @@ struct DetailView: View {
             CacheAsyncImage(url: wallpaper.thumbnailURL) { thumb in
                 thumb
                     .resizable()
-                    .scaledToFit()
+                    .scaledToFill()
+                    .blur(radius: 20, opaque: true)
             } placeholder: {
                 Rectangle()
                     .fill(Color(.systemGray5))
-                    .aspectRatio(wallpaper.aspectRatio, contentMode: .fit)
             }
+            .aspectRatio(wallpaper.aspectRatio, contentMode: .fit)
+            .clipShape(Rectangle())
         }
     }
 

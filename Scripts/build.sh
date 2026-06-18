@@ -3,7 +3,7 @@ set -e
 
 SCHEME="Wallhaven"
 BUILD_DIR="/tmp/Wallhaven_Build"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 IPA_OUTPUT="$SCRIPT_DIR/Wallhaven.ipa"
 
 echo "Cleaning..."

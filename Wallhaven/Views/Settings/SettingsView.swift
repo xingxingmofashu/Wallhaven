@@ -4,6 +4,8 @@ struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""
+    @State private var showUsernameField = false
+    @State private var tempUsername      = ""
     @State private var showClearCacheAlert = false
     @State private var showClearedToast   = false
     @AppStorage("app_appearance") private var appAppearance = 0
@@ -13,6 +15,7 @@ struct SettingsView: View {
             Form {
                 generalSection
                 apiSection
+                userSettingsSection
                 cacheSection
                 aboutSection
             }
@@ -20,6 +23,9 @@ struct SettingsView: View {
             .task {
                 tempAPIKey = viewModel.apiKey
                 applyAppearance(appAppearance)
+            }
+            .onChange(of: viewModel.hasApiKey) { _, _ in
+                Task { await viewModel.fetchUserSettings() }
             }
             .overlay(alignment: .bottom) {
                 if showClearedToast {
@@ -134,10 +140,75 @@ struct SettingsView: View {
                     .font(.subheadline)
                 }
             }
+            HStack {
+                Text("Username")
+                Spacer()
+                if showUsernameField {
+                    TextField("wallhaven.cc username", text: $tempUsername)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .multilineTextAlignment(.trailing)
+                    Button("Save") {
+                        viewModel.wallhavenUsername = tempUsername.trimmingCharacters(in: .whitespaces)
+                        showUsernameField = false
+                    }
+                    .fontWeight(.semibold)
+                } else {
+                    Text(viewModel.wallhavenUsername.isEmpty ? "Not set" : viewModel.wallhavenUsername)
+                        .foregroundStyle(.secondary)
+                    Button(viewModel.wallhavenUsername.isEmpty ? "Set" : "Change") {
+                        tempUsername = viewModel.wallhavenUsername
+                        showUsernameField = true
+                    }
+                    .font(.subheadline)
+                }
+            }
         } header: {
             Text("Wallhaven API")
         } footer: {
             Text("API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.")
+        }
+    }
+
+    // MARK: - Website Settings Section
+
+    private var userSettingsSection: some View {
+        Section("Website Settings") {
+            if viewModel.isLoadingSettings {
+                LoadingView(message: "Loading…")
+            } else if let settings = viewModel.userSettings {
+                LabeledContent("Thumb Size", value: settings.thumbSize)
+                LabeledContent("Per Page", value: settings.perPage)
+                LabeledContent("Purity", value: settings.purity.joined(separator: ", "))
+                LabeledContent("Categories", value: settings.categories.joined(separator: ", "))
+                if !settings.resolutions.isEmpty {
+                    LabeledContent("Resolutions", value: settings.resolutions.joined(separator: ", "))
+                }
+                if !settings.aspectRatios.isEmpty {
+                    LabeledContent("Aspect Ratios", value: settings.aspectRatios.joined(separator: ", "))
+                }
+                LabeledContent("Toplist Range", value: settings.toplistRange)
+                if !settings.tagBlacklist.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Tag Blacklist").font(.subheadline).foregroundStyle(.secondary)
+                        ForEach(settings.tagBlacklist, id: \.self) { tag in
+                            Text(tag).font(.caption)
+                        }
+                    }
+                }
+            } else if let error = viewModel.settingsError {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Failed to load settings")
+                        .foregroundStyle(.red)
+                    Text(error.localizedDescription)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Button("Load Settings") {
+                    Task { await viewModel.fetchUserSettings() }
+                }
+            }
         }
     }
 

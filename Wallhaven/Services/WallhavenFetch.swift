@@ -61,6 +61,41 @@ actor WallhavenFetch {
         return response.data
     }
 
+    // MARK: - User Settings
+
+    func userSettings() async throws -> UserSettings {
+        var items: [URLQueryItem] = []
+        if let key = apiKey {
+            items.append(URLQueryItem(name: "apikey", value: key))
+        }
+        let url = try buildURL(path: "/settings", queryItems: items)
+        let response: UserSettingsResponse = try await fetch(url: url)
+        return response.data
+    }
+
+    // MARK: - Collections
+
+    func collections() async throws -> [WHCollection] {
+        var items: [URLQueryItem] = []
+        if let key = apiKey {
+            items.append(URLQueryItem(name: "apikey", value: key))
+        }
+        let url = try buildURL(path: "/collections", queryItems: items)
+        let response: CollectionsResponse = try await fetch(url: url)
+        return response.data
+    }
+
+    func collectionWallpapers(username: String, collectionId: Int, page: Int = 1) async throws -> SearchResponse {
+        var items: [URLQueryItem] = [
+            URLQueryItem(name: "page", value: "\(page)")
+        ]
+        if let key = apiKey {
+            items.append(URLQueryItem(name: "apikey", value: key))
+        }
+        let url = try buildURL(path: "/collections/\(username)/\(collectionId)", queryItems: items)
+        return try await fetch(url: url)
+    }
+
     // MARK: - Private Helpers
 
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) throws -> URL {

@@ -18,6 +18,10 @@ struct ContentView: View {
                 .tabItem { Label("Favorites", systemImage: "heart") }
                 .tag(NavigationState.Tab.favorites)
 
+            CollectionsView()
+                .tabItem { Label("Collections", systemImage: "folder") }
+                .tag(NavigationState.Tab.collections)
+
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(NavigationState.Tab.settings)

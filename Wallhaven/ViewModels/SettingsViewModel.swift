@@ -20,6 +20,34 @@ final class SettingsViewModel {
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url") }
     }
 
+    // MARK: - Wallhaven Username
+
+    var wallhavenUsername: String {
+        get { UserDefaults.standard.string(forKey: "wallhaven_username") ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: "wallhaven_username") }
+    }
+
+    // MARK: - User Settings (from API)
+
+    var userSettings: UserSettings?
+    var isLoadingSettings = false
+    var settingsError: Error?
+
+    func fetchUserSettings() async {
+        guard hasApiKey else {
+            userSettings = nil
+            return
+        }
+        isLoadingSettings = true
+        settingsError = nil
+        do {
+            userSettings = try await WallhavenFetch.shared.userSettings()
+        } catch {
+            settingsError = error
+        }
+        isLoadingSettings = false
+    }
+
     // MARK: - Cache
 
     func clearImageCache() {

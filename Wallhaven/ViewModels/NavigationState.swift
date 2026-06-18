@@ -7,7 +7,7 @@ final class NavigationState {
     var shouldSearch = false
 
     enum Tab: Hashable {
-        case home, search, favorites, settings
+        case home, search, favorites, collections, settings
     }
 
     func searchTag(_ tag: String) {

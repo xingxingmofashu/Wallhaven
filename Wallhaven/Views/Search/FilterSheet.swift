@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct FilterSheetView: View {
+struct FilterSheet: View {
     @Binding var filters: SearchFilters
     let onApply: () -> Void
 
@@ -168,5 +168,5 @@ extension Color {
 }
 
 #Preview {
-    FilterSheetView(filters: .constant(SearchFilters()), onApply: {})
+    FilterSheet(filters: .constant(SearchFilters()), onApply: {})
 }

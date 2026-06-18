@@ -4,7 +4,7 @@ import SwiftUI
 final class CacheImageLoader {
     var image: UIImage?
     var isLoading = false
-    var failed    = false
+    var hasFailed = false
 
     private var currentURL: URL?
     private var task: Task<Void, Never>?
@@ -20,7 +20,7 @@ final class CacheImageLoader {
         }
 
         isLoading = true
-        failed    = false
+        hasFailed = false
 
         task = Task {
             defer { isLoading = false }
@@ -31,11 +31,11 @@ final class CacheImageLoader {
                     CacheImage.shared.insert(loadedImage, for: url)
                     image = loadedImage
                 } else {
-                    failed = true
+                    hasFailed = true
                 }
             } catch {
                 guard !Task.isCancelled else { return }
-                failed = true
+                hasFailed = true
             }
         }
     }

@@ -27,7 +27,7 @@ struct CacheAsyncImage<Content: View, Placeholder: View>: View {
                     .overlay {
                         if loader.isLoading {
                             ProgressView()
-                        } else if loader.failed {
+                        } else if loader.hasFailed {
                             Image(systemName: "photo.badge.exclamationmark")
                                 .foregroundStyle(.secondary)
                         }

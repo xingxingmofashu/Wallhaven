@@ -58,7 +58,7 @@ struct SettingsView: View {
             .tint(.primary)
 
             NavigationLink {
-                AppearanceView(appearance: $appAppearance, onAppear: applyAppearance)
+                AppearanceView(appearance: $appAppearance, onSelect: applyAppearance)
             } label: {
                 HStack {
                     Text("Appearance")
@@ -187,7 +187,7 @@ struct SettingsView: View {
 
 struct AppearanceView: View {
     @Binding var appearance: Int
-    let onAppear: (Int) -> Void
+    let onSelect: (Int) -> Void
 
     private let options = ["Automatic", "Dark", "Light"]
 
@@ -196,7 +196,7 @@ struct AppearanceView: View {
             ForEach(0..<3, id: \.self) { index in
                 Button {
                     appearance = index
-                    onAppear(index)
+                    onSelect(index)
                 } label: {
                     HStack {
                         Text(options[index])

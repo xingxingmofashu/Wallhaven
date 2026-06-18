@@ -6,14 +6,26 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            HomeContentView(
-                loadState: viewModel.loadState,
-                wallpapers: viewModel.wallpapers,
-                isLoadingMore: viewModel.isLoadingMore,
-                onLoadMore: { viewModel.loadMore() },
-                onRefresh: { viewModel.refresh() },
-                onSelect: { selectedWallpaper = $0 }
-            )
+            Group {
+                switch viewModel.loadState {
+                case .idle, .loading:
+                    LoadingView()
+
+                case .loaded:
+                    GridView(
+                        wallpapers: viewModel.wallpapers,
+                        isLoadingMore: viewModel.isLoadingMore,
+                        onLoadMore: { viewModel.loadMore() },
+                        onSelect: { selectedWallpaper = $0 }
+                    )
+
+                case .failed(let error):
+                    ErrorView(
+                        message: (error as? LocalizedError)?.errorDescription ?? "Unknown error",
+                        retryAction: { viewModel.refresh() }
+                    )
+                }
+            }
             .navigationTitle("Wallhaven")
             .task { viewModel.loadInitial() }
             .refreshable { viewModel.refresh() }

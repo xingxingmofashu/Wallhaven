@@ -32,7 +32,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 ## View conventions
 
 - **Section/** — One file per Form `Section` when interactive; data-driven sections stay bundled.
-- **Content/** — Sub-views for tab/state switches (e.g., `Home/Content/HomeContentView.swift`).
+- **Content/** — Sub-views for tab/state switches (e.g., `Favorites/Tab/`).
 - **Toolbar/** — `@ToolbarContentBuilder` types (e.g., `Detail/Toolbar/DetailTopToolbar.swift`).
 - Extracted views receive data + closures (never ViewModel bindings).
 - `Wallhaven/` is a **PBXFileSystemSynchronizedRootGroup** — new files on disk are auto-synced; no `.pbxproj` edits.

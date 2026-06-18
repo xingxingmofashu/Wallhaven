@@ -10,6 +10,21 @@ struct DetailInfoSheetView: View {
     var body: some View {
         NavigationStack {
             List {
+                if let uploader = wallpaper.uploader {
+                    Section("Uploader") {
+                        HStack {
+                            Image(systemName: "person.circle.fill")
+                                .foregroundStyle(.secondary)
+                            Text(uploader.username)
+                            Text("·")
+                                .foregroundStyle(.secondary)
+                            Text(uploader.group)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
                 Section("Details") {
                     ForEach(formattedInfo, id: \.label) { item in
                         HStack {
@@ -57,20 +72,6 @@ struct DetailInfoSheetView: View {
                     }
                 }
 
-                if let uploader = wallpaper.uploader {
-                    Section("Uploader") {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .foregroundStyle(.secondary)
-                            Text(uploader.username)
-                            Text("·")
-                                .foregroundStyle(.secondary)
-                            Text(uploader.group)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
             }
             .navigationTitle("Info")
             .navigationBarTitleDisplayMode(.inline)

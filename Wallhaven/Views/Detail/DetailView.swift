@@ -11,6 +11,7 @@ struct DetailView: View {
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
     @State private var showCollectionPicker = false
+    @State private var showFullscreen = false
     @State private var scrollPosition: Int?
     @State private var wallpapers: [Wallpaper]
     @State private var selectedIndex: Int
@@ -38,44 +39,60 @@ struct DetailView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            if showFullscreen {
+                Color.black.ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture { showFullscreen = false }
 
-            VStack(spacing: 0) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 0) {
-                        ForEach(Array(wallpapers.enumerated()), id: \.element.id) { index, wallpaper in
-                            imageView(for: wallpaper)
-                                .containerRelativeFrame(.horizontal)
-                                .id(index)
-                        }
-                    }
-                    .scrollTargetLayout()
+                if let fullURL = currentWallpaper.fullURL, let uiImage = CacheImage.shared.image(for: fullURL) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
                 }
-                .scrollTargetBehavior(.paging)
-                .scrollPosition(id: $scrollPosition)
+            } else {
+                Color(.systemBackground).ignoresSafeArea()
 
-                DetailThumbnailView(
-                    relatedWallpapers: viewModel.relatedWallpapers,
-                    currentID: currentID,
-                    favoritedIDs: viewModel.favoritedIDs,
-                    selectedIndex: selectedIndex,
-                    onSelect: { wallpaper in
-                        if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
-                            scrollPosition = idx
-                        } else {
-                            wallpapers = [wallpaper]
-                            scrollPosition = 0
-                            viewModel.selectRelated(wallpaper)
+                VStack(spacing: 0) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 0) {
+                            ForEach(Array(wallpapers.enumerated()), id: \.element.id) { index, wallpaper in
+                                imageView(for: wallpaper)
+                                    .containerRelativeFrame(.horizontal)
+                                    .id(index)
+                                    .onTapGesture { showFullscreen = true }
+                            }
                         }
+                        .scrollTargetLayout()
                     }
-                )
-                    .frame(height: 44)
-                    .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
+                    .scrollTargetBehavior(.paging)
+                    .scrollPosition(id: $scrollPosition)
+
+                    DetailThumbnailView(
+                        relatedWallpapers: viewModel.relatedWallpapers,
+                        currentID: currentID,
+                        favoritedIDs: viewModel.favoritedIDs,
+                        selectedIndex: selectedIndex,
+                        onSelect: { wallpaper in
+                            if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
+                                scrollPosition = idx
+                            } else {
+                                wallpapers = [wallpaper]
+                                scrollPosition = 0
+                                viewModel.selectRelated(wallpaper)
+                            }
+                        }
+                    )
+                        .frame(height: 44)
+                        .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
+                }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: showFullscreen)
+        .statusBar(hidden: showFullscreen)
         .simultaneousGesture(
             DragGesture(minimumDistance: 20)
                 .onEnded { value in
+                    guard !showFullscreen else { return }
                     let vertical = value.translation.height
                     let horizontal = value.translation.width
                     if vertical > 80 && abs(horizontal) < abs(vertical) {
@@ -86,20 +103,22 @@ struct DetailView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            DetailTopToolbar(
-                onDismiss: { dismiss() },
-                wallpaperURL: viewModel.wallpaper.url
-            )
-            DetailBottomToolbar(
-                isFavorited: viewModel.isFavorited,
-                isInCollection: viewModel.isInCollection,
-                isDownloading: viewModel.isDownloading,
-                onShare: { showShareSheet = true },
-                onToggleFavorite: { viewModel.toggleFavorite(in: modelContext) },
-                onInfo: { showInfoSheet = true },
-                onAddToCollection: handleAddToCollection,
-                onSaveToPhotos: { viewModel.saveToPhotos() }
-            )
+            if !showFullscreen {
+                DetailTopToolbar(
+                    onDismiss: { dismiss() },
+                    wallpaperURL: viewModel.wallpaper.url
+                )
+                DetailBottomToolbar(
+                    isFavorited: viewModel.isFavorited,
+                    isInCollection: viewModel.isInCollection,
+                    isDownloading: viewModel.isDownloading,
+                    onShare: { showShareSheet = true },
+                    onToggleFavorite: { viewModel.toggleFavorite(in: modelContext) },
+                    onInfo: { showInfoSheet = true },
+                    onAddToCollection: handleAddToCollection,
+                    onSaveToPhotos: { viewModel.saveToPhotos() }
+                )
+            }
         }
         .onChange(of: scrollPosition) { _, newValue in
             guard let index = newValue, wallpapers.indices.contains(index), index != selectedIndex else { return }

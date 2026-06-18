@@ -8,14 +8,14 @@ struct CollectionsView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if !viewModel.hasUsername {
-                    ContentUnavailableView(
-                        "Username Not Set",
-                        systemImage: "person.crop.circle.badge.questionmark",
-                        description: Text("Set your wallhaven.cc username in Settings to view collections.")
-                    )
-                } else if viewModel.isLoading {
+                if viewModel.isLoading {
                     LoadingView()
+                } else if viewModel.needsAPIKey {
+                    ContentUnavailableView(
+                        "API Key Required",
+                        systemImage: "key",
+                        description: Text("Set your Wallhaven API Key in Settings to view collections.")
+                    )
                 } else if let error = viewModel.error {
                     ErrorView(message: error.localizedDescription) {
                         Task { await viewModel.loadCollections() }
@@ -31,11 +31,7 @@ struct CollectionsView: View {
                 }
             }
             .navigationTitle("Collections")
-            .task {
-                if viewModel.hasUsername {
-                    await viewModel.loadCollections()
-                }
-            }
+            .task { await viewModel.loadCollections() }
         }
     }
 
@@ -43,10 +39,7 @@ struct CollectionsView: View {
         List {
             ForEach(viewModel.collections) { collection in
                 NavigationLink {
-                    CollectionWallpapersView(
-                        collection: collection,
-                        username: viewModel.username
-                    )
+                    CollectionWallpapersView(collection: collection)
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "folder.fill")
@@ -84,7 +77,6 @@ struct CollectionsView: View {
 
 private struct CollectionWallpapersView: View {
     let collection: WHCollection
-    let username: String
 
     @State private var wallpapers: [Wallpaper] = []
     @State private var currentPage = 1
@@ -136,7 +128,6 @@ private struct CollectionWallpapersView: View {
         hasMore = true
         do {
             let response = try await WallhavenFetch.shared.collectionWallpapers(
-                username: username,
                 collectionId: collection.id,
                 page: 1
             )
@@ -155,7 +146,6 @@ private struct CollectionWallpapersView: View {
         let nextPage = currentPage + 1
         do {
             let response = try await WallhavenFetch.shared.collectionWallpapers(
-                username: username,
                 collectionId: collection.id,
                 page: nextPage
             )

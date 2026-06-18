@@ -32,7 +32,7 @@ struct FavoritesView: View {
                 Group {
                     switch selectedTab {
                     case .favorites:
-                        FavoritesContent(
+                        FavoritesTab(
                             wallpapers: favorites.map(\.asWallpaper),
                             onSelect: { selectedWallpaper = $0 },
                             removeFavorite: { wallpaperID in
@@ -48,7 +48,7 @@ struct FavoritesView: View {
                             }
                         )
                     case .collections:
-                        CollectionsContent()
+                        CollectionsTab()
                     }
                 }
             }

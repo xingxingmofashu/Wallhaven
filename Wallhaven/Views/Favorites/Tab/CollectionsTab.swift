@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct CollectionsContent: View {
+struct CollectionsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \WallhavenCollection.sortOrder)
     private var collections: [WallhavenCollection]

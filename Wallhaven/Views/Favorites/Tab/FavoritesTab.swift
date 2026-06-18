@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct FavoritesContent: View {
+struct FavoritesTab: View {
     let wallpapers: [Wallpaper]
     let onSelect: (Wallpaper) -> Void
     let removeFavorite: (String) -> Void

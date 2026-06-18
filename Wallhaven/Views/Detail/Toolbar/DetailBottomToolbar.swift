@@ -44,7 +44,7 @@ struct DetailBottomToolbar: ToolbarContent {
             Button {
                 onAddToCollection()
             } label: {
-                Image(systemName: isInCollection ? "star.circle.fill" : "star.circle")
+                Image(systemName: isInCollection ? "star.fill" : "star")
                     .font(.title3)
                     .foregroundStyle(isInCollection ? .yellow : .primary)
             }

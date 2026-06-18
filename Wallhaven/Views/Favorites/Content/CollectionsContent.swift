@@ -1,48 +1,73 @@
 import SwiftUI
+import SwiftData
 
 struct CollectionsContent: View {
-    let hasUsername: Bool
-    let isLoading: Bool
-    let needsAPIKey: Bool
-    let error: Error?
-    let collections: [WHCollection]
-    let username: String
-    let onRetry: () -> Void
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \WallhavenCollection.sortOrder)
+    private var collections: [WallhavenCollection]
+    @Query private var allItems: [CollectionItem]
+
+    @State private var showCreateAlert = false
+    @State private var newCollectionName = ""
+
+    private let collectionsVM = CollectionsViewModel()
 
     var body: some View {
-        if !hasUsername {
-            ContentUnavailableView(
-                "Username Not Set",
-                systemImage: "person.crop.circle.badge.questionmark",
-                description: Text("Set your wallhaven.cc username in Settings to view collections.")
-            )
-        } else if isLoading {
-            LoadingView()
-        } else if needsAPIKey {
-            ContentUnavailableView(
-                "API Key Required",
-                systemImage: "key",
-                description: Text("Set your Wallhaven API Key in Settings to view collections.")
-            )
-        } else if let error = error {
-            ErrorView(message: error.localizedDescription, retryAction: onRetry)
-        } else if collections.isEmpty {
-            ContentUnavailableView(
-                "No Collections",
-                systemImage: "folder",
-                description: Text("No collections found for this account.")
-            )
-        } else {
-            List {
-                ForEach(collections) { collection in
-                    NavigationLink {
-                        CollectionWallpapersView(collection: collection, username: username)
-                    } label: {
-                        CollectionRowView(collection: collection)
+        Group {
+            if collections.isEmpty {
+                ContentUnavailableView(
+                    "No Collections",
+                    systemImage: "folder",
+                    description: Text("Tap the star icon on any wallpaper to create your first collection.")
+                )
+            } else {
+                List {
+                    ForEach(collections) { collection in
+                        NavigationLink {
+                            CollectionWallpapersView(collection: collection)
+                        } label: {
+                            CollectionRowView(
+                                name: collection.name,
+                                count: allItems.filter { $0.collectionID == collection.id }.count
+                            )
+                        }
+                    }
+                    .onDelete { indexSet in
+                        for index in indexSet {
+                            let collection = collections[index]
+                            collectionsVM.deleteCollection(collection, in: modelContext)
+                        }
                     }
                 }
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showCreateAlert = true
+                } label: {
+                    Image(systemName: "folder.badge.plus")
+                }
+            }
+        }
+        .alert("New Collection", isPresented: $showCreateAlert) {
+            TextField("Name", text: $newCollectionName)
+            Button("Cancel", role: .cancel) {
+                newCollectionName = ""
+            }
+            Button("Create") {
+                let name = newCollectionName.trimmingCharacters(in: .whitespaces)
+                if !name.isEmpty {
+                    collectionsVM.createCollection(named: name, in: modelContext)
+                }
+                newCollectionName = ""
+            }
+        } message: {
+            Text("Enter a name for the new collection.")
+        }
+        .task {
+            collectionsVM.ensureDefaultCollection(in: modelContext)
         }
     }
 }
@@ -50,7 +75,8 @@ struct CollectionsContent: View {
 // MARK: - Collection Row
 
 struct CollectionRowView: View {
-    let collection: WHCollection
+    let name: String
+    let count: Int
 
     var body: some View {
         HStack(spacing: 12) {
@@ -59,21 +85,12 @@ struct CollectionRowView: View {
                 .foregroundStyle(.blue)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(collection.label)
+                Text(name)
                     .fontWeight(.medium)
-                Label("\(collection.count) wallpapers", systemImage: "photo.on.rectangle")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            if collection.isPublic == 1 {
-                Label("Public", systemImage: "globe")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                Label("Private", systemImage: "lock.fill")
+                Label(
+                    String(format: NSLocalizedString("%d wallpapers", comment: "Number of wallpapers in a collection"), count),
+                    systemImage: "photo.on.rectangle"
+                )
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

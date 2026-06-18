@@ -9,7 +9,6 @@ struct FavoritesView: View {
     private var favorites: [FavoriteWallpaper]
 
     @State private var selectedTab = TabSection.favorites
-    @State private var collectionsVM = CollectionsViewModel()
     @State private var selectedWallpaper: Wallpaper?
     @State private var showDeleteAlert = false
 
@@ -49,15 +48,7 @@ struct FavoritesView: View {
                             }
                         )
                     case .collections:
-                        CollectionsContent(
-                            hasUsername: collectionsVM.hasUsername,
-                            isLoading: collectionsVM.isLoading,
-                            needsAPIKey: collectionsVM.needsAPIKey,
-                            error: collectionsVM.error,
-                            collections: collectionsVM.collections,
-                            username: collectionsVM.username,
-                            onRetry: { Task { await collectionsVM.loadCollections() } }
-                        )
+                        CollectionsContent()
                     }
                 }
             }
@@ -88,11 +79,6 @@ struct FavoritesView: View {
                 let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) ?? 0
                 if wallpapers.indices.contains(index) {
                     DetailView(wallpapers: wallpapers, startIndex: index)
-                }
-            }
-            .onChange(of: selectedTab) { _, newValue in
-                if newValue == .collections {
-                    Task { await collectionsVM.loadCollections() }
                 }
             }
         }

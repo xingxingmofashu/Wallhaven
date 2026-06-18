@@ -1,22 +1,16 @@
 import SwiftUI
+import SwiftData
 
 struct CollectionWallpapersView: View {
-    @State private var viewModel: CollectionWallpapersViewModel
-    @State private var selectedWallpaper: Wallpaper?
+    @Environment(\.modelContext) private var modelContext
+    let collection: WallhavenCollection
 
-    init(collection: WHCollection, username: String) {
-        _viewModel = State(initialValue: CollectionWallpapersViewModel(collection: collection, username: username))
-    }
+    @State private var wallpapers: [Wallpaper] = []
+    @State private var selectedWallpaper: Wallpaper?
 
     var body: some View {
         Group {
-            if viewModel.isLoading {
-                LoadingView()
-            } else if let error = viewModel.error {
-                ErrorView(message: error.localizedDescription) {
-                    Task { await viewModel.loadFirstPage() }
-                }
-            } else if viewModel.wallpapers.isEmpty {
+            if wallpapers.isEmpty {
                 ContentUnavailableView(
                     "Empty Collection",
                     systemImage: "folder",
@@ -24,21 +18,57 @@ struct CollectionWallpapersView: View {
                 )
             } else {
                 GridView(
-                    wallpapers: viewModel.wallpapers,
-                    isLoadingMore: viewModel.isLoadingMore,
-                    onLoadMore: { Task { await viewModel.loadMore() } },
-                    onSelect: { selectedWallpaper = $0 }
+                    wallpapers: wallpapers,
+                    onSelect: { selectedWallpaper = $0 },
+                    contextMenu: { wallpaper in
+                        AnyView(
+                            Button(role: .destructive) {
+                                removeFromCollection(wallpaperID: wallpaper.id)
+                            } label: {
+                                Label("Remove from Collection", systemImage: "star.slash")
+                            }
+                        )
+                    }
                 )
             }
         }
-        .navigationTitle(viewModel.collection.label)
+        .navigationTitle(collection.name)
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.loadFirstPage() }
+        .task {
+            loadWallpapers()
+        }
         .navigationDestination(item: $selectedWallpaper) { wallpaper in
-            if let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
-               viewModel.wallpapers.indices.contains(index)
+            if let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
+               wallpapers.indices.contains(index)
             {
-                DetailView(wallpapers: viewModel.wallpapers, startIndex: index)
+                DetailView(wallpapers: wallpapers, startIndex: index)
+            }
+        }
+    }
+
+    private func loadWallpapers() {
+        let collectionID = collection.id
+        let descriptor = FetchDescriptor<CollectionItem>(
+            predicate: #Predicate { $0.collectionID == collectionID },
+            sortBy: [SortDescriptor(\.addedAt, order: .reverse)]
+        )
+        if let items = try? modelContext.fetch(descriptor) {
+            wallpapers = items.map(\.asWallpaper)
+        }
+    }
+
+    private func removeFromCollection(wallpaperID: String) {
+        let collectionID = collection.id
+        DispatchQueue.main.async {
+            let descriptor = FetchDescriptor<CollectionItem>(
+                predicate: #Predicate {
+                    $0.wallpaperID == wallpaperID && $0.collectionID == collectionID
+                }
+            )
+            if let item = try? modelContext.fetch(descriptor).first {
+                modelContext.delete(item)
+                try? modelContext.save()
+                loadWallpapers()
             }
         }
     }

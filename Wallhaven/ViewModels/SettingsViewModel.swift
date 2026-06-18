@@ -20,13 +20,6 @@ final class SettingsViewModel {
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url") }
     }
 
-    // MARK: - Wallhaven Username
-
-    var wallhavenUsername: String {
-        get { UserDefaults.standard.string(forKey: "wallhaven_username") ?? "" }
-        set { UserDefaults.standard.set(newValue, forKey: "wallhaven_username") }
-    }
-
     // MARK: - User Settings (from API)
 
     var userSettings: UserSettings? { UserSettingsStore.shared.settings }

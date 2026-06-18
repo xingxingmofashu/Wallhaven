@@ -21,9 +21,11 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - `WallhavenFetch.shared` is an **actor** — `await` all calls.
 - `FavoriteWallpaper` is SwiftData `@Model` (`@Attribute(.unique) wallpaperID`). `ModelContainer` in `WallhavenApp.swift`.
 - **No `SWIFT_DEFAULT_ACTOR_ISOLATION`** — types not implicitly `@MainActor`.
-- `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio` computed property. Both `Wallpaper` and `FavoriteWallpaper` conform.
+- `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio` computed property. `Wallpaper`, `FavoriteWallpaper`, and `CollectionItem` all conform.
 - Image cache: `CacheImage` (NSCache, 150 MB), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere.
 - Favorites tab: segmented picker (Favorites / Collections).
+- Collections are **local only** — `WallhavenCollection` (folder) + `CollectionItem` (membership). No API calls.
+- Star button saves wallpaper to a collection. If only "Default" → silent; if 2+ collections → picker sheet.
 - `NavigationState` (`@Observable`, `@MainActor`) injected via `@Environment` for shared search-tag flow.
 - `UserSettingsStore.shared` (`@Observable` singleton) caches `GET /settings`; loaded in `ContentView.task`.
 
@@ -56,6 +58,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - `.searchable` + `.large` `.navigationBarTitleDisplayMode` causes title to disappear after canceling search (iOS 26 quirk, no clean fix).
 - API `per_page` is `Int` unauthenticated but `String` with API key. `Meta` uses `LenientInt` to decode both. Do not change `perPage` to plain `Int`.
 - API may return `[""]` instead of `[]` for `resolutions`/`aspectRatios`/`tagBlacklist`. Use `nonEmptyResolutions`, `nonEmptyAspectRatios`, `nonEmptyTagBlacklist`.
+- `#Predicate` must capture local constants, not access model properties directly (e.g., `let id = collection.id; #Predicate { $0.collectionID == id }`). Fails with `PredicateExpressions.Equal` type error otherwise.
 
 ## Git
 

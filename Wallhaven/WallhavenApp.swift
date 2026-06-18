@@ -5,7 +5,11 @@ import SwiftData
 struct WallhavenApp: App {
 
     private let modelContainer: ModelContainer = {
-        let schema = Schema([FavoriteWallpaper.self])
+        let schema = Schema([
+            FavoriteWallpaper.self,
+            WallhavenCollection.self,
+            CollectionItem.self
+        ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [config])

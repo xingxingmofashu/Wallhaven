@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DetailBottomToolbar: ToolbarContent {
     let isFavorited: Bool
+    let isInCollection: Bool
     let onShare: () -> Void
     let onToggleFavorite: () -> Void
     let onInfo: () -> Void
@@ -43,9 +44,9 @@ struct DetailBottomToolbar: ToolbarContent {
             Button {
                 onAddToCollection()
             } label: {
-                Image(systemName: "star")
+                Image(systemName: isInCollection ? "star.fill" : "star")
                     .font(.title3)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(isInCollection ? .yellow : .primary)
             }
         }
 

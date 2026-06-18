@@ -1,34 +1,35 @@
 import Foundation
+import SwiftData
 
 @Observable
 @MainActor
 final class CollectionsViewModel {
 
-    var collections: [WHCollection] = []
-    var isLoading = false
-    var error: Error?
-    var needsAPIKey = false
-    var username = ""
-
-    var hasUsername: Bool { !username.isEmpty }
-
-    init() {
-        username = UserDefaults.standard.string(forKey: "wallhaven_username") ?? ""
+    func createCollection(named name: String, in context: ModelContext) {
+        let collection = WallhavenCollection(name: name)
+        context.insert(collection)
+        try? context.save()
     }
 
-    func loadCollections() async {
-        username = UserDefaults.standard.string(forKey: "wallhaven_username") ?? ""
-        isLoading = true
-        error = nil
-        needsAPIKey = false
-        do {
-            collections = try await WallhavenFetch.shared.collections()
-        } catch WallhavenError.unauthorized {
-            needsAPIKey = true
-            error = WallhavenError.unauthorized
-        } catch {
-            self.error = error
+    func deleteCollection(_ collection: WallhavenCollection, in context: ModelContext) {
+        let collectionID = collection.id
+        let itemsDescriptor = FetchDescriptor<CollectionItem>(
+            predicate: #Predicate { $0.collectionID == collectionID }
+        )
+        if let items = try? context.fetch(itemsDescriptor) {
+            for item in items {
+                context.delete(item)
+            }
         }
-        isLoading = false
+        context.delete(collection)
+        try? context.save()
+    }
+
+    func ensureDefaultCollection(in context: ModelContext) {
+        let descriptor = FetchDescriptor<WallhavenCollection>()
+        guard let existing = try? context.fetch(descriptor), existing.isEmpty else { return }
+        let defaultCollection = WallhavenCollection(name: "Default", sortOrder: 0)
+        context.insert(defaultCollection)
+        try? context.save()
     }
 }

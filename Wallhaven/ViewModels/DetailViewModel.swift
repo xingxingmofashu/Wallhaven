@@ -13,6 +13,7 @@ final class DetailViewModel {
     var hasLoadedDetail = false
     var isLoadingDetail = false
     var isFavorited = false
+    var isInCollection = false
     var favoritedIDs: Set<String> = []
 
     // MARK: - Related Wallpapers
@@ -73,7 +74,15 @@ final class DetailViewModel {
             predicate: #Predicate { $0.wallpaperID == wallpaper.id }
         )
         isFavorited = (try? context.fetchCount(descriptor)) ?? 0 > 0
+        refreshCollectionStatus(in: context)
         loadFavoriteStatuses(in: context)
+    }
+
+    func refreshCollectionStatus(in context: ModelContext) {
+        let descriptor = FetchDescriptor<CollectionItem>(
+            predicate: #Predicate { $0.wallpaperID == wallpaper.id }
+        )
+        isInCollection = (try? context.fetchCount(descriptor)) ?? 0 > 0
     }
 
     func loadFavoriteStatuses(in context: ModelContext) {

@@ -100,7 +100,7 @@ struct DetailView: View {
     }
 
     private func imageView(for wallpaper: Wallpaper) -> some View {
-        CacheAsyncImage(url: wallpaper.fullURL, showLoading: false) { image in
+        CacheAsyncImage(url: wallpaper.fullURL) { image in
             image
                 .resizable()
                 .scaledToFit()

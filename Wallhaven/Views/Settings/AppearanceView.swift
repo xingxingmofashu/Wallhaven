@@ -2,7 +2,6 @@ import SwiftUI
 
 struct AppearanceView: View {
     @Binding var appearance: Int
-    let onSelect: (Int) -> Void
 
     private let options = ["Automatic", "Dark", "Light"]
 
@@ -11,7 +10,7 @@ struct AppearanceView: View {
             ForEach(0..<3, id: \.self) { index in
                 Button {
                     appearance = index
-                    onSelect(index)
+                    applyAppearance(index)
                 } label: {
                     HStack {
                         Text(options[index])
@@ -27,5 +26,15 @@ struct AppearanceView: View {
         }
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { applyAppearance(appearance) }
+    }
+
+    private func applyAppearance(_ value: Int) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        switch value {
+        case 1:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .dark }
+        case 2:  scene.windows.forEach { $0.overrideUserInterfaceStyle = .light }
+        default: scene.windows.forEach { $0.overrideUserInterfaceStyle = .unspecified }
+        }
     }
 }

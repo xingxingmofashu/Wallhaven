@@ -2,9 +2,9 @@ import SwiftUI
 
 struct CacheSectionView: View {
     let onClear: () -> Void
-    let onCacheCleared: () -> Void
 
     @State private var showAlert = false
+    @State private var showToast  = false
 
     var body: some View {
         Section("Cache") {
@@ -14,7 +14,11 @@ struct CacheSectionView: View {
             .alert("Clear Cache", isPresented: $showAlert) {
                 Button("Clear", role: .destructive) {
                     onClear()
-                    onCacheCleared()
+                    showToast = true
+                    Task {
+                        try? await Task.sleep(for: .seconds(2))
+                        withAnimation { showToast = false }
+                    }
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
@@ -22,5 +26,18 @@ struct CacheSectionView: View {
             }
             .foregroundColor(.red)
         }
+        .overlay(alignment: .bottom) {
+            if showToast {
+                Label("Cache Cleared", systemImage: "checkmark.circle.fill")
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.green)
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
+                    .padding(.bottom, -30)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.default, value: showToast)
     }
 }

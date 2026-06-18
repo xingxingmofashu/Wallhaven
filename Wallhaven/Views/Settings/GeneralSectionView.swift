@@ -2,7 +2,6 @@ import SwiftUI
 
 struct GeneralSectionView: View {
     @Binding var appearance: Int
-    let onAppearanceChange: (Int) -> Void
 
     var body: some View {
         Section {
@@ -24,7 +23,7 @@ struct GeneralSectionView: View {
             .tint(.primary)
 
             NavigationLink {
-                AppearanceView(appearance: $appearance, onSelect: onAppearanceChange)
+                AppearanceView(appearance: $appearance)
             } label: {
                 HStack {
                     Text("Appearance")

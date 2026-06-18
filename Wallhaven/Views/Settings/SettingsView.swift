@@ -15,7 +15,6 @@ struct SettingsView: View {
             Form {
                 generalSection
                 apiSection
-                userSettingsSection
                 cacheSection
                 aboutSection
             }
@@ -165,40 +164,28 @@ struct SettingsView: View {
                     .font(.subheadline)
                 }
             }
+
+            NavigationLink {
+                UserSettingsView()
+            } label: {
+                HStack {
+                    Text("User Settings")
+                    Spacer()
+                    if viewModel.hasApiKey {
+                        Text("Configured")
+                            .foregroundStyle(.green, .secondary)
+                            .font(.subheadline)
+                    } else {
+                        Text("Not Available")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
+                }
+            }
         } header: {
             Text("Wallhaven API")
         } footer: {
             Text("API Key and username can be found in your wallhaven.cc account settings. API Key enables NSFW content and personal preferences.")
-        }
-    }
-
-    // MARK: - User Settings Section
-
-    private var userSettingsSection: some View {
-        Section("User Settings") {
-            if viewModel.isLoadingSettings {
-                LoadingView(message: "Loading…")
-            } else if let settings = viewModel.userSettings {
-                LabeledContent("Thumb Size", value: settings.thumbSize)
-                LabeledContent("Per Page", value: settings.perPage)
-                LabeledContent("Purity", value: settings.purity.joined(separator: ", "))
-                LabeledContent("Categories", value: settings.categories.joined(separator: ", "))
-                if !settings.resolutions.isEmpty {
-                    LabeledContent("Resolutions", value: settings.resolutions.joined(separator: ", "))
-                }
-                if !settings.aspectRatios.isEmpty {
-                    LabeledContent("Aspect Ratios", value: settings.aspectRatios.joined(separator: ", "))
-                }
-                LabeledContent("Toplist Range", value: settings.toplistRange)
-                if !settings.tagBlacklist.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Tag Blacklist").font(.subheadline).foregroundStyle(.secondary)
-                        ForEach(settings.tagBlacklist, id: \.self) { tag in
-                            Text(tag).font(.caption)
-                        }
-                    }
-                }
-            }
         }
     }
 

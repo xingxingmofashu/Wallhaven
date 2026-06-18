@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class WallhavenCollection {
+final class CollectionFolder {
     @Attribute(.unique) var id: UUID
     var name: String
     var createdAt: Date

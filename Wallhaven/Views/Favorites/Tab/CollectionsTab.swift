@@ -3,16 +3,16 @@ import SwiftData
 
 struct CollectionsTab: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \WallhavenCollection.sortOrder)
-    private var collections: [WallhavenCollection]
+    @Query(sort: \CollectionFolder.sortOrder)
+    private var collections: [CollectionFolder]
     @Query private var allItems: [CollectionItem]
 
     @State private var showCreateAlert = false
     @State private var showRenameAlert = false
     @State private var newCollectionName = ""
     @State private var renameText = ""
-    @State private var renameCollection: WallhavenCollection?
-    @State private var selectedCollection: WallhavenCollection?
+    @State private var renameCollection: CollectionFolder?
+    @State private var selectedCollection: CollectionFolder?
 
     @State private var wallpapers: [Wallpaper] = []
     @State private var selectedWallpaper: Wallpaper?
@@ -126,7 +126,7 @@ struct CollectionsTab: View {
 
     // MARK: - Wallpapers View
 
-    private func wallpapersView(for collection: WallhavenCollection) -> some View {
+    private func wallpapersView(for collection: CollectionFolder) -> some View {
         Group {
             if wallpapers.isEmpty {
                 ContentUnavailableView(
@@ -170,7 +170,7 @@ struct CollectionsTab: View {
         }
     }
 
-    private func loadWallpapers(for collection: WallhavenCollection) {
+    private func loadWallpapers(for collection: CollectionFolder) {
         let collectionID = collection.id
         let descriptor = FetchDescriptor<CollectionItem>(
             predicate: #Predicate { $0.collectionID == collectionID },

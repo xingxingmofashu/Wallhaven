@@ -6,8 +6,8 @@ struct DetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(NavigationState.self) private var navigationState
-    @Query(sort: \WallhavenCollection.sortOrder)
-    private var collections: [WallhavenCollection]
+    @Query(sort: \CollectionFolder.sortOrder)
+    private var collections: [CollectionFolder]
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
     @State private var showCollectionPicker = false
@@ -135,7 +135,7 @@ struct DetailView: View {
                     showCollectionPicker = false
                 },
                 onCreateNew: { name in
-                    let newCollection = WallhavenCollection(name: name)
+                    let newCollection = CollectionFolder(name: name)
                     modelContext.insert(newCollection)
                     try? modelContext.save()
                     addToCollection(collectionID: newCollection.id)
@@ -160,7 +160,7 @@ struct DetailView: View {
             viewModel.isInCollection = false
         } else {
             if collections.isEmpty {
-                let defaultCollection = WallhavenCollection(name: "Default")
+                let defaultCollection = CollectionFolder(name: "Default")
                 modelContext.insert(defaultCollection)
                 try? modelContext.save()
                 addToCollection(collectionID: defaultCollection.id)
@@ -215,7 +215,7 @@ struct DetailView: View {
 // MARK: - Collection Picker Sheet
 
 struct CollectionPickerSheet: View {
-    let collections: [WallhavenCollection]
+    let collections: [CollectionFolder]
     let onSelect: (UUID) -> Void
     let onCreateNew: (String) -> Void
 

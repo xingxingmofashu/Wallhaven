@@ -6,12 +6,12 @@ import SwiftData
 final class CollectionsViewModel {
 
     func createCollection(named name: String, in context: ModelContext) {
-        let collection = WallhavenCollection(name: name)
+        let collection = CollectionFolder(name: name)
         context.insert(collection)
         try? context.save()
     }
 
-    func deleteCollection(_ collection: WallhavenCollection, in context: ModelContext) {
+    func deleteCollection(_ collection: CollectionFolder, in context: ModelContext) {
         let collectionID = collection.id
         let itemsDescriptor = FetchDescriptor<CollectionItem>(
             predicate: #Predicate { $0.collectionID == collectionID }
@@ -25,15 +25,15 @@ final class CollectionsViewModel {
         try? context.save()
     }
 
-    func renameCollection(_ collection: WallhavenCollection, to name: String, in context: ModelContext) {
+    func renameCollection(_ collection: CollectionFolder, to name: String, in context: ModelContext) {
         collection.name = name
         try? context.save()
     }
 
     func ensureDefaultCollection(in context: ModelContext) {
-        let descriptor = FetchDescriptor<WallhavenCollection>()
+        let descriptor = FetchDescriptor<CollectionFolder>()
         guard let existing = try? context.fetch(descriptor), existing.isEmpty else { return }
-        let defaultCollection = WallhavenCollection(name: "Default", sortOrder: 0)
+        let defaultCollection = CollectionFolder(name: "Default", sortOrder: 0)
         context.insert(defaultCollection)
         try? context.save()
     }

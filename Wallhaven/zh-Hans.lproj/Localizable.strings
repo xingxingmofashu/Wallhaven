@@ -52,6 +52,12 @@
 "Change" = "修改";
 "Set" = "设置";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key 可在 wallhaven.cc 账号设置中获取，用于启用 NSFW 内容和账号偏好。";
+"API Key and username can be found in your wallhaven.cc account settings. API Key enables NSFW content and personal preferences." = "API Key 和用户名可在 wallhaven.cc 账号设置中找到。API Key 用于启用 NSFW 内容和个性化设置。";
+"Username" = "用户名";
+"wallhaven.cc username" = "wallhaven.cc 用户名";
+"Not set" = "未设置";
+"Username Not Set" = "未设置用户名";
+"Set your wallhaven.cc username in Settings to view collections." = "请在设置中填写你的 wallhaven.cc 用户名以查看收藏集。";
 "Default URL" = "默认 URL";
 "Cache" = "缓存";
 "Clear Image Cache" = "清除图片缓存";

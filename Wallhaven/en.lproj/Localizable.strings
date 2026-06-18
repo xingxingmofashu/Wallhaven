@@ -52,6 +52,12 @@
 "Change" = "Change";
 "Set" = "Set";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.";
+"API Key and username can be found in your wallhaven.cc account settings. API Key enables NSFW content and personal preferences." = "API Key and username can be found in your wallhaven.cc account settings. API Key enables NSFW content and personal preferences.";
+"Username" = "Username";
+"wallhaven.cc username" = "wallhaven.cc username";
+"Not set" = "Not set";
+"Username Not Set" = "Username Not Set";
+"Set your wallhaven.cc username in Settings to view collections." = "Set your wallhaven.cc username in Settings to view collections.";
 "Default URL" = "Default URL";
 "Cache" = "Cache";
 "Clear Image Cache" = "Clear Image Cache";

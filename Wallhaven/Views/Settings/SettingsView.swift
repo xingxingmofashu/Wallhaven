@@ -4,6 +4,8 @@ struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""
+    @State private var showUsernameField = false
+    @State private var tempUsername      = ""
     @State private var showClearCacheAlert = false
     @State private var showClearedToast   = false
     @AppStorage("app_appearance") private var appAppearance = 0
@@ -138,10 +140,33 @@ struct SettingsView: View {
                     .font(.subheadline)
                 }
             }
+            HStack {
+                Text("Username")
+                Spacer()
+                if showUsernameField {
+                    TextField("wallhaven.cc username", text: $tempUsername)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .multilineTextAlignment(.trailing)
+                    Button("Save") {
+                        viewModel.wallhavenUsername = tempUsername.trimmingCharacters(in: .whitespaces)
+                        showUsernameField = false
+                    }
+                    .fontWeight(.semibold)
+                } else {
+                    Text(viewModel.wallhavenUsername.isEmpty ? "Not set" : viewModel.wallhavenUsername)
+                        .foregroundStyle(.secondary)
+                    Button(viewModel.wallhavenUsername.isEmpty ? "Set" : "Change") {
+                        tempUsername = viewModel.wallhavenUsername
+                        showUsernameField = true
+                    }
+                    .font(.subheadline)
+                }
+            }
         } header: {
             Text("Wallhaven API")
         } footer: {
-            Text("API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.")
+            Text("API Key and username can be found in your wallhaven.cc account settings. API Key enables NSFW content and personal preferences.")
         }
     }
 

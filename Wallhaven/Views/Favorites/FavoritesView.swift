@@ -115,7 +115,13 @@ struct FavoritesView: View {
 
     @ViewBuilder
     private var collectionsContent: some View {
-        if collectionsVM.isLoading {
+        if !collectionsVM.hasUsername {
+            ContentUnavailableView(
+                "Username Not Set",
+                systemImage: "person.crop.circle.badge.questionmark",
+                description: Text("Set your wallhaven.cc username in Settings to view collections.")
+            )
+        } else if collectionsVM.isLoading {
             LoadingView()
         } else if collectionsVM.needsAPIKey {
             ContentUnavailableView(
@@ -142,7 +148,7 @@ struct FavoritesView: View {
         List {
             ForEach(collectionsVM.collections) { collection in
                 NavigationLink {
-                    CollectionWallpapersView(collection: collection)
+                    CollectionWallpapersView(collection: collection, username: collectionsVM.username)
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "folder.fill")
@@ -181,6 +187,7 @@ struct FavoritesView: View {
 
 private struct CollectionWallpapersView: View {
     let collection: WHCollection
+    let username: String
 
     @State private var wallpapers: [Wallpaper] = []
     @State private var currentPage = 1
@@ -232,6 +239,7 @@ private struct CollectionWallpapersView: View {
         hasMore = true
         do {
             let response = try await WallhavenFetch.shared.collectionWallpapers(
+                username: username,
                 collectionId: collection.id,
                 page: 1
             )
@@ -249,6 +257,7 @@ private struct CollectionWallpapersView: View {
         let nextPage = currentPage + 1
         do {
             let response = try await WallhavenFetch.shared.collectionWallpapers(
+                username: username,
                 collectionId: collection.id,
                 page: nextPage
             )

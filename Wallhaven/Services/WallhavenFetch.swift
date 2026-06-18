@@ -85,14 +85,14 @@ actor WallhavenFetch {
         return response.data
     }
 
-    func collectionWallpapers(collectionId: Int, page: Int = 1) async throws -> SearchResponse {
+    func collectionWallpapers(username: String, collectionId: Int, page: Int = 1) async throws -> SearchResponse {
         var items: [URLQueryItem] = [
             URLQueryItem(name: "page", value: "\(page)")
         ]
         if let key = apiKey {
             items.append(URLQueryItem(name: "apikey", value: key))
         }
-        let url = try buildURL(path: "/collections/\(collectionId)", queryItems: items)
+        let url = try buildURL(path: "/collections/\(username)/\(collectionId)", queryItems: items)
         return try await fetch(url: url)
     }
 

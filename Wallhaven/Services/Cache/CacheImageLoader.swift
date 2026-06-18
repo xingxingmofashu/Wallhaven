@@ -1,6 +1,8 @@
-import SwiftUI
+import Observation
+import UIKit
 
 @Observable
+@MainActor
 final class CacheImageLoader {
     var image: UIImage?
     var isLoading = false

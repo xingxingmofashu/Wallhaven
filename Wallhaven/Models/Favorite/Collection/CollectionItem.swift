@@ -1,0 +1,61 @@
+import Foundation
+import SwiftData
+
+@Model
+final class CollectionItem: HasDimensions {
+    var wallpaperID: String
+    var collectionID: UUID
+    var addedAt: Date
+
+    var thumbURL: String
+    var fullPath: String
+    var resolution: String
+    var purity: String
+    var category: String
+    var ratio: String
+    var fileType: String
+    var colors: [String]
+    var dimensionX: Int
+    var dimensionY: Int
+
+    init(from wallpaper: Wallpaper, collectionID: UUID) {
+        self.wallpaperID = wallpaper.id
+        self.collectionID = collectionID
+        self.addedAt = Date()
+        self.thumbURL = wallpaper.thumbnails.large
+        self.fullPath = wallpaper.path
+        self.resolution = wallpaper.resolution
+        self.purity = wallpaper.purity
+        self.category = wallpaper.category
+        self.ratio = wallpaper.ratio
+        self.fileType = wallpaper.fileType
+        self.colors = wallpaper.colors
+        self.dimensionX = wallpaper.dimensionX
+        self.dimensionY = wallpaper.dimensionY
+    }
+
+    var asWallpaper: Wallpaper {
+        Wallpaper(
+            id: wallpaperID,
+            url: "https://wallhaven.cc/w/\(wallpaperID)",
+            shortURL: "",
+            uploader: nil,
+            views: 0,
+            favorites: 0,
+            source: "",
+            purity: purity,
+            category: category,
+            dimensionX: dimensionX,
+            dimensionY: dimensionY,
+            resolution: resolution,
+            ratio: ratio,
+            fileSize: 0,
+            fileType: fileType,
+            createdAt: "",
+            colors: colors,
+            path: fullPath,
+            thumbnails: Thumbnails(large: thumbURL, original: "", small: ""),
+            tags: nil
+        )
+    }
+}

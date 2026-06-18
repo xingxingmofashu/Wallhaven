@@ -1,63 +1,22 @@
 import SwiftUI
 
-struct FilterSheet: View {
+struct FilterSheetSection: View {
     @Binding var filters: SearchFilters
-    let onApply: () -> Void
-
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            Form {
-                categoriesSection
-                puritySection
-                sortingSection
-                if filters.sorting == .topList { topRangeSection }
-                resolutionSection
-                ratioSection
-                colorSection
-            }
-            .navigationTitle("Filters")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Apply") {
-                        onApply()
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
-                }
-                ToolbarItem(placement: .bottomBar) {
-                    Button("Reset") { filters = SearchFilters() }
-                        .foregroundStyle(.red)
-                }
-            }
-        }
-    }
-
-    // MARK: - Sections
-
-    private var categoriesSection: some View {
         Section("Categories") {
             Toggle("General", isOn: $filters.general)
             Toggle("Anime",   isOn: $filters.anime)
             Toggle("People",  isOn: $filters.people)
         }
-    }
 
-    private var puritySection: some View {
         Section("Purity") {
             Toggle("SFW (Safe)",      isOn: $filters.sfw)
             Toggle("Sketchy",         isOn: $filters.sketchy)
             Toggle("NSFW (Adult)",    isOn: $filters.nsfw)
                 .foregroundStyle(filters.nsfw ? .red : .primary)
         }
-    }
 
-    private var sortingSection: some View {
         Section("Sorting") {
             Picker("Sort by", selection: $filters.sorting) {
                 ForEach(SearchFilters.Sorting.allCases) { sorting in
@@ -70,28 +29,24 @@ struct FilterSheet: View {
                 }
             }
         }
-    }
 
-    private var topRangeSection: some View {
-        Section("Toplist Time Range") {
-            Picker("Range", selection: $filters.topRange) {
-                ForEach(SearchFilters.TopRange.allCases) { range in
-                    Text(range.displayName).tag(range)
+        if filters.sorting == .topList {
+            Section("Toplist Time Range") {
+                Picker("Range", selection: $filters.topRange) {
+                    ForEach(SearchFilters.TopRange.allCases) { range in
+                        Text(range.displayName).tag(range)
+                    }
                 }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
         }
-    }
 
-    private var resolutionSection: some View {
         Section("Resolution") {
             TextField("Min resolution, e.g. 1920x1080", text: $filters.atLeast)
                 .keyboardType(.numbersAndPunctuation)
                 .autocorrectionDisabled()
         }
-    }
 
-    private var ratioSection: some View {
         Section("Ratio") {
             Picker("Common Ratios", selection: $filters.ratios) {
                 Text("Any").tag("")
@@ -102,13 +57,10 @@ struct FilterSheet: View {
                 Text("1:1 (Square)").tag("1x1")
             }
         }
-    }
 
-    private var colorSection: some View {
         Section("Dominant Color") {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    // Clear option
                     Circle()
                         .strokeBorder(.secondary, lineWidth: 2)
                         .frame(width: 36, height: 36)
@@ -120,7 +72,6 @@ struct FilterSheet: View {
                             }
                         }
                         .onTapGesture { filters.selectedColor = "" }
-
                     ForEach(WallhavenColor.all) { color in
                         colorCircle(color)
                     }
@@ -165,8 +116,4 @@ extension Color {
         let b = Double( rgb        & 0xFF) / 255
         self.init(red: r, green: g, blue: b)
     }
-}
-
-#Preview {
-    FilterSheet(filters: .constant(SearchFilters()), onApply: {})
 }

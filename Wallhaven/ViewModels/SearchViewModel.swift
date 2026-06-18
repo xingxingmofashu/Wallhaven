@@ -16,12 +16,21 @@ final class SearchViewModel {
     var filters: SearchFilters  = SearchFilters()
 
     private var currentPage       = 0
+    private var didApplyDefaults  = false
     private var searchTask: Task<Void, Never>?
 
     // MARK: - Search
 
+    /// Apply website defaults as initial filter values
+    func applyWebsiteDefaults() {
+        guard !didApplyDefaults, let settings = UserSettingsStore.shared.settings else { return }
+        filters.applyWebsiteDefaults(from: settings)
+        didApplyDefaults = true
+    }
+
     /// Trigger search with new query/filters (resets pagination)
     func search() {
+        applyWebsiteDefaults()
         searchTask?.cancel()
         searchTask = Task {
             await performSearch(reset: true)
@@ -30,7 +39,10 @@ final class SearchViewModel {
 
     func loadMore() {
         guard !isLoadingMore, hasNextPage else { return }
-        Task { await performSearch(reset: false) }
+        searchTask?.cancel()
+        searchTask = Task {
+            await performSearch(reset: false)
+        }
     }
 
     // MARK: - Private

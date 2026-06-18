@@ -52,6 +52,15 @@
 "Change" = "Change";
 "Set" = "Set";
 "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences." = "API Key can be found in your wallhaven.cc account settings. Enables NSFW content and personal preferences.";
+"API Key Required" = "API Key Required";
+"Not set" = "Not set";
+"User Settings" = "User Settings";
+"Configured" = "Configured";
+"Thumb Size" = "Thumb Size";
+"Per Page" = "Per Page";
+"Resolutions" = "Resolutions";
+"Aspect Ratios" = "Aspect Ratios";
+"Tag Blacklist" = "Tag Blacklist";
 "Default URL" = "Default URL";
 "Cache" = "Cache";
 "Clear Image Cache" = "Clear Image Cache";
@@ -114,3 +123,19 @@
 "Automatic" = "Automatic";
 "Dark" = "Dark";
 "Light" = "Light";
+
+"New Collection" = "New Collection";
+"Create" = "Create";
+"Enter a name for the new collection." = "Enter a name for the new collection.";
+"No Collections" = "No Collections";
+"Tap the star icon on any wallpaper to create your first collection." = "Tap the star icon on any wallpaper to create your first collection.";
+"%d wallpapers" = "%d wallpapers";
+"Empty Collection" = "Empty Collection";
+"No wallpapers in this collection." = "No wallpapers in this collection.";
+"Remove from Collection" = "Remove from Collection";
+"Add to Collection" = "Add to Collection";
+"Collection name" = "Collection name";
+"Rename" = "Rename";
+"Rename Collection" = "Rename Collection";
+"Enter a new name for this collection." = "Enter a new name for this collection.";
+"Delete" = "Delete";

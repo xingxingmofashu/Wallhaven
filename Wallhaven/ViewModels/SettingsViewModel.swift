@@ -20,6 +20,12 @@ final class SettingsViewModel {
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url") }
     }
 
+    // MARK: - User Settings (from API)
+
+    func fetchUserSettings() async {
+        await UserSettingsStore.shared.load()
+    }
+
     // MARK: - Cache
 
     func clearImageCache() {

@@ -1,0 +1,31 @@
+import Foundation
+
+struct UserSettingsResponse: Codable {
+    let data: UserSettings
+}
+
+struct UserSettings: Codable {
+    let thumbSize: String
+    let perPage: String
+    let purity: [String]
+    let categories: [String]
+    let resolutions: [String]
+    let aspectRatios: [String]
+    let toplistRange: String
+    let tagBlacklist: [String]
+    let userBlacklist: [String]
+
+    var nonEmptyResolutions: [String]  { resolutions.filter { !$0.isEmpty } }
+    var nonEmptyAspectRatios: [String] { aspectRatios.filter { !$0.isEmpty } }
+    var nonEmptyTagBlacklist: [String] { tagBlacklist.filter { !$0.isEmpty } }
+
+    enum CodingKeys: String, CodingKey {
+        case thumbSize = "thumb_size"
+        case perPage = "per_page"
+        case purity, categories, resolutions
+        case aspectRatios = "aspect_ratios"
+        case toplistRange = "toplist_range"
+        case tagBlacklist = "tag_blacklist"
+        case userBlacklist = "user_blacklist"
+    }
+}

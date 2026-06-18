@@ -6,13 +6,20 @@ struct DetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(NavigationState.self) private var navigationState
+    @Query(sort: \CollectionFolder.sortOrder)
+    private var collections: [CollectionFolder]
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
+    @State private var showCollectionPicker = false
     @State private var scrollPosition: Int?
     @State private var wallpapers: [Wallpaper]
     @State private var selectedIndex: Int
 
     private var currentID: String? { wallpapers.indices.contains(selectedIndex) ? wallpapers[selectedIndex].id : nil }
+
+    private var currentWallpaper: Wallpaper {
+        wallpapers.indices.contains(selectedIndex) ? wallpapers[selectedIndex] : wallpapers[0]
+    }
 
     init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: relatedWallpapers))
@@ -47,7 +54,21 @@ struct DetailView: View {
                 .scrollTargetBehavior(.paging)
                 .scrollPosition(id: $scrollPosition)
 
-                relatedThumbnailList
+                DetailThumbnailView(
+                    relatedWallpapers: viewModel.relatedWallpapers,
+                    currentID: currentID,
+                    favoritedIDs: viewModel.favoritedIDs,
+                    selectedIndex: selectedIndex,
+                    onSelect: { wallpaper in
+                        if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
+                            scrollPosition = idx
+                        } else {
+                            wallpapers = [wallpaper]
+                            scrollPosition = 0
+                            viewModel.selectRelated(wallpaper)
+                        }
+                    }
+                )
                     .frame(height: 44)
                     .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
             }
@@ -65,8 +86,19 @@ struct DetailView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            topToolbar
-            bottomToolbar
+            DetailTopToolbar(
+                onDismiss: { dismiss() },
+                wallpaperURL: viewModel.wallpaper.url
+            )
+            DetailBottomToolbar(
+                isFavorited: viewModel.isFavorited,
+                isInCollection: viewModel.isInCollection,
+                onShare: { showShareSheet = true },
+                onToggleFavorite: { viewModel.toggleFavorite(in: modelContext) },
+                onInfo: { showInfoSheet = true },
+                onAddToCollection: handleAddToCollection,
+                onSaveToPhotos: { viewModel.saveToPhotos() }
+            )
         }
         .onChange(of: scrollPosition) { _, newValue in
             guard let index = newValue, wallpapers.indices.contains(index), index != selectedIndex else { return }
@@ -84,8 +116,67 @@ struct DetailView: View {
             ShareSheet(items: viewModel.shareItems)
         }
         .sheet(isPresented: $showInfoSheet) {
-            infoSheet
+            DetailInfoSheetView(
+                wallpaper: viewModel.wallpaper,
+                formattedInfo: viewModel.formattedInfo,
+                tags: viewModel.wallpaper.tags ?? [],
+                onSearchTag: { tag in
+                    dismiss()
+                    navigationState.searchTag(tag)
+                },
+                onDone: { showInfoSheet = false }
+            )
         }
+        .sheet(isPresented: $showCollectionPicker) {
+            CollectionPickerSheet(
+                collections: collections,
+                onSelect: { collectionID in
+                    addToCollection(collectionID: collectionID)
+                    showCollectionPicker = false
+                },
+                onCreateNew: { name in
+                    let newCollection = CollectionFolder(name: name)
+                    modelContext.insert(newCollection)
+                    try? modelContext.save()
+                    addToCollection(collectionID: newCollection.id)
+                    showCollectionPicker = false
+                }
+            )
+        }
+    }
+
+    // MARK: - Collection Logic
+
+    private func handleAddToCollection() {
+        let wallpaperID = currentWallpaper.id
+        if viewModel.isInCollection {
+            let descriptor = FetchDescriptor<CollectionItem>(
+                predicate: #Predicate { $0.wallpaperID == wallpaperID }
+            )
+            if let item = try? modelContext.fetch(descriptor).first {
+                modelContext.delete(item)
+                try? modelContext.save()
+            }
+            viewModel.isInCollection = false
+        } else {
+            if collections.isEmpty {
+                let defaultCollection = CollectionFolder(name: "Default")
+                modelContext.insert(defaultCollection)
+                try? modelContext.save()
+                addToCollection(collectionID: defaultCollection.id)
+            } else if collections.count == 1 {
+                addToCollection(collectionID: collections[0].id)
+            } else {
+                showCollectionPicker = true
+            }
+        }
+    }
+
+    private func addToCollection(collectionID: UUID) {
+        let item = CollectionItem(from: currentWallpaper, collectionID: collectionID)
+        modelContext.insert(item)
+        try? modelContext.save()
+        viewModel.isInCollection = true
     }
 
     // MARK: - Image View
@@ -119,212 +210,60 @@ struct DetailView: View {
         }
     }
 
-    // MARK: - Related Thumbnail List
+}
 
-    private var relatedThumbnailList: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(viewModel.relatedWallpapers) { wallpaper in
-                        Button {
-                            if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
-                                scrollPosition = idx
-                            } else {
-                                wallpapers = [wallpaper]
-                                scrollPosition = 0
-                                viewModel.selectRelated(wallpaper)
-                            }
-                        } label: {
-                            CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                            } placeholder: {
-                                Rectangle()
-                                    .fill(Color(.systemGray5))
-                            }
-                            .frame(width: 60, height: 42)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(wallpaper.id == currentID ? Color.accentColor : Color.clear, lineWidth: 2)
-                            )
-                            .overlay(alignment: .topTrailing) {
-                                if viewModel.favoritedIDs.contains(wallpaper.id) {
-                                    Image(systemName: "heart.fill")
-                                        .font(.system(size: 8))
-                                        .foregroundStyle(.pink)
-                                        .padding(3)
-                                }
-                            }
-                            .id(wallpaper.id)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, 12)
-            }
-            .onChange(of: selectedIndex) { _, _ in
-                withAnimation {
-                    proxy.scrollTo(currentID, anchor: .center)
-                }
-            }
-            .onAppear {
-                proxy.scrollTo(currentID, anchor: .center)
-            }
-        }
-    }
+// MARK: - Collection Picker Sheet
 
-    // MARK: - Top Toolbar
+struct CollectionPickerSheet: View {
+    let collections: [CollectionFolder]
+    let onSelect: (UUID) -> Void
+    let onCreateNew: (String) -> Void
 
-    @ToolbarContentBuilder
-    private var topToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.primary)
-            }
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button("Open in Browser", systemImage: "safari") {
-                    if let url = URL(string: viewModel.wallpaper.url) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                Button("Copy Link", systemImage: "doc.on.doc") {
-                    UIPasteboard.general.string = viewModel.wallpaper.url
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
+    @State private var showCreateField = false
+    @State private var newName = ""
+    @Environment(\.dismiss) private var dismiss
 
-    // MARK: - Bottom Toolbar
-
-    @ToolbarContentBuilder
-    private var bottomToolbar: some ToolbarContent {
-        ToolbarItem(placement: .bottomBar) {
-            Button {
-                showShareSheet = true
-            } label: {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-
-        ToolbarItemGroup(placement: .status) {
-            Button {
-                viewModel.toggleFavorite(in: modelContext)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
-                    .font(.title3)
-                    .foregroundStyle(viewModel.isFavorited ? .pink : .primary)
-                    .contentTransition(.symbolEffect(.replace))
-            }
-            .symbolEffect(.bounce, value: viewModel.isFavorited)
-
-            Button {
-                showInfoSheet = true
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-
-        ToolbarItem(placement: .bottomBar) {
-            Button {
-                viewModel.saveToPhotos()
-            } label: {
-                Image(systemName: "arrow.down.circle")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
-
-    // MARK: - Info Sheet
-
-    private var infoSheet: some View {
+    var body: some View {
         NavigationStack {
             List {
-                Section("Details") {
-                    ForEach(viewModel.formattedInfo, id: \.label) { item in
+                ForEach(collections) { collection in
+                    Button {
+                        onSelect(collection.id)
+                    } label: {
                         HStack {
-                            Text(item.label)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text(item.value)
+                            Image(systemName: "folder.fill")
+                                .foregroundStyle(.blue)
+                            Text(collection.name)
                                 .foregroundStyle(.primary)
+                            Spacer()
                         }
                     }
                 }
 
-                if !viewModel.wallpaper.colors.isEmpty {
-                    Section("Colors") {
-                        HStack(spacing: 10) {
-                            ForEach(viewModel.wallpaper.colors, id: \.self) { hex in
-                                let cleanHex = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
-                                Circle()
-                                    .fill(Color(hex: cleanHex))
-                                    .frame(width: 30, height: 30)
-                                    .overlay(Circle().strokeBorder(Color(.systemGray4), lineWidth: 0.5))
+                if showCreateField {
+                    HStack {
+                        TextField("Collection name", text: $newName)
+                        Button("Save") {
+                            let name = newName.trimmingCharacters(in: .whitespaces)
+                            if !name.isEmpty {
+                                onCreateNew(name)
                             }
                         }
+                        .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
-                }
-
-                if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
-                    Section("Tags") {
-                        FlowLayout(spacing: 6) {
-                            ForEach(tags) { tag in
-                                Button {
-                                    dismiss()
-                                    navigationState.searchTag(tag.name)
-                                } label: {
-                                    Text("#\(tag.name)")
-                                        .font(.caption)
-                                        .foregroundStyle(.blue)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color(.secondarySystemBackground))
-                                        .clipShape(Capsule())
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                }
-
-                if let uploader = viewModel.wallpaper.uploader {
-                    Section("Uploader") {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .foregroundStyle(.secondary)
-                            Text(uploader.username)
-                            Text("·")
-                                .foregroundStyle(.secondary)
-                            Text(uploader.group)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                } else {
+                    Button {
+                        showCreateField = true
+                    } label: {
+                        Label("New Collection", systemImage: "folder.badge.plus")
                     }
                 }
             }
-            .navigationTitle("Info")
+            .navigationTitle("Add to Collection")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { showInfoSheet = false }
+                    Button("Cancel") { dismiss() }
                 }
             }
         }

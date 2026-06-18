@@ -55,16 +55,19 @@ struct SearchView: View {
                 }
             }
             .sheet(isPresented: $showFilter) {
-                FilterSheet(filters: $viewModel.filters) {
+                FilterSheetView(filters: $viewModel.filters) {
                     viewModel.search()
                 }
             }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
-                let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }) ?? 0
-                DetailView(
-                    wallpapers: viewModel.wallpapers,
-                    startIndex: index
-                )
+                if let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
+                   viewModel.wallpapers.indices.contains(index)
+                {
+                    DetailView(
+                        wallpapers: viewModel.wallpapers,
+                        startIndex: index
+                    )
+                }
             }
         }
     }

@@ -14,11 +14,19 @@ final class HomeViewModel {
     private var currentPage     = 1
 
     private var filters = SearchFilters()
+    private var didApplyDefaults = false
+
+    private func applyWebsiteDefaults() {
+        guard !didApplyDefaults, let settings = UserSettingsStore.shared.settings else { return }
+        filters.applyWebsiteDefaults(from: settings)
+        didApplyDefaults = true
+    }
 
     // MARK: - Load
 
     func loadInitial() {
         guard case .idle = loadState else { return }
+        applyWebsiteDefaults()
         Task { await fetchFirstPage() }
     }
 

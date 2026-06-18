@@ -1,26 +1,61 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Favorites & Collections
+
 struct FavoritesView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \FavoriteWallpaper.addedAt, order: .reverse)
     private var favorites: [FavoriteWallpaper]
 
+    @State private var selectedTab = TabSection.favorites
     @State private var selectedWallpaper: Wallpaper?
-    @State private var showDeleteAlert  = false
+    @State private var showDeleteAlert = false
+
+    enum TabSection: String, CaseIterable {
+        case favorites   = "Favorites"
+        case collections = "Collections"
+    }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if favorites.isEmpty {
-                    emptyView
-                } else {
-                    gridView
+            VStack(spacing: 0) {
+                Picker("Section", selection: $selectedTab) {
+                    ForEach(TabSection.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
+                Group {
+                    switch selectedTab {
+                    case .favorites:
+                        FavoritesTab(
+                            wallpapers: favorites.map(\.asWallpaper),
+                            onSelect: { selectedWallpaper = $0 },
+                            removeFavorite: { wallpaperID in
+                                DispatchQueue.main.async {
+                                    let descriptor = FetchDescriptor<FavoriteWallpaper>(
+                                        predicate: #Predicate { $0.wallpaperID == wallpaperID }
+                                    )
+                                    if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
+                                        modelContext.delete(favoriteWallpaper)
+                                        try? modelContext.save()
+                                    }
+                                }
+                            }
+                        )
+                    case .collections:
+                        CollectionsTab()
+                    }
                 }
             }
             .navigationTitle("Favorites")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if !favorites.isEmpty {
+                if selectedTab == .favorites && !favorites.isEmpty {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             showDeleteAlert = true
@@ -48,47 +83,4 @@ struct FavoritesView: View {
             }
         }
     }
-
-    // MARK: - Grid
-
-    private var gridView: some View {
-        let wallpapers = favorites.map(\.asWallpaper)
-        return GridView(
-            wallpapers: wallpapers,
-            onSelect: { selectedWallpaper = $0 },
-            contextMenu: { wallpaper in
-                AnyView(
-                    Button(role: .destructive) {
-                        let wallpaperID = wallpaper.id
-                        DispatchQueue.main.async {
-                            let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                                predicate: #Predicate { $0.wallpaperID == wallpaperID }
-                            )
-                            if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
-                                modelContext.delete(favoriteWallpaper)
-                                try? modelContext.save()
-                            }
-                        }
-                    } label: {
-                        Label("Remove from Favorites", systemImage: "heart.slash")
-                    }
-                )
-            }
-        )
-    }
-
-    // MARK: - Empty
-
-    private var emptyView: some View {
-        ContentUnavailableView(
-            "No Favorites Yet",
-            systemImage: "heart",
-            description: Text("Tap the heart icon on any wallpaper detail to save it here.")
-        )
-    }
-}
-
-#Preview {
-    FavoritesView()
-        .modelContainer(for: FavoriteWallpaper.self, inMemory: true)
 }

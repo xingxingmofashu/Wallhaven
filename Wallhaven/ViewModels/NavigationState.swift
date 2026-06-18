@@ -1,6 +1,7 @@
 import Foundation
 
 @Observable
+@MainActor
 final class NavigationState {
     var selectedTab: Tab = .home
     var searchQuery = ""

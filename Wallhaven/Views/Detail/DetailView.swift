@@ -48,13 +48,13 @@ struct DetailView: View {
                             imageView(for: wallpaper)
                                 .containerRelativeFrame(.horizontal)
                                 .id(index)
-                                .onTapGesture { showFullscreen = true }
                         }
                     }
                     .scrollTargetLayout()
                 }
                 .scrollTargetBehavior(.paging)
                 .scrollPosition(id: $scrollPosition)
+                .simultaneousGesture(TapGesture().onEnded { showFullscreen.toggle() })
 
                 DetailThumbnailView(
                     relatedWallpapers: viewModel.relatedWallpapers,
@@ -75,12 +75,6 @@ struct DetailView: View {
                     .opacity(showFullscreen ? 0 : (viewModel.relatedWallpapers.isEmpty ? 0 : 1))
             }
 
-            if showFullscreen {
-                Color.black.opacity(0.001)
-                    .contentShape(Rectangle())
-                    .onTapGesture { showFullscreen = false }
-                    .ignoresSafeArea()
-            }
         }
         .animation(.easeInOut(duration: 0.25), value: showFullscreen)
         .statusBar(hidden: showFullscreen)

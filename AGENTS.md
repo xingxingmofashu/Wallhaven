@@ -29,6 +29,9 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - `HasDimensions` uses `dimensionX`/`dimensionY` (from API snake_case keys); default `aspectRatio` computed property.
 - Image cache: `CacheImage` (NSCache, 150 MB), `CacheImageLoader` (`@Observable`), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere instead of system `AsyncImage`.
 - `NavigationState` (`@Observable`) holds `selectedTab`, `searchQuery`, `shouldSearch`; injected via `@Environment` for shared search-tag flow.
+- `UserSettingsStore.shared` (`@Observable` singleton) — caches `GET /settings` response; loaded in `ContentView.task`, observed by `SearchViewModel`/`HomeViewModel`/`SettingsView`.
+- `SearchFilters.applyWebsiteDefaults(from:)` applies fetched `UserSettings` as initial filter values (categories, purity, resolutions, ratios, topRange).
+- Favorites tab uses a segmented picker (Favorites / Collections). `CollectionsViewModel` handles API key vs 401 vs loaded states via `needsAPIKey`.
 
 ## Project structure
 
@@ -38,15 +41,19 @@ Files under `Wallhaven/` are in a **PBXFileSystemSynchronizedRootGroup** — new
 Wallhaven/
   App/                  ContentView (TabView root)
   Models/
-    Wallpaper.swift, Favorite.swift (SwiftData)
+    Wallpaper.swift, Favorite.swift (SwiftData), Collection.swift, UserSettings.swift
     Search/             SearchFilters, SearchResponse
-  Services/             WallhavenFetch (actor), WallhavenError
+  Services/             WallhavenFetch (actor), WallhavenError, UserSettingsStore
     Cache/              CacheImage, CacheImageLoader, CacheAsyncImage
   Utilities/            FlowLayout (Layout), LoadState, ShareSheet
-  ViewModels/           One @Observable @MainActor VM per screen, NavigationState
+  ViewModels/           One @Observable @MainActor VM per screen, NavigationState, CollectionsViewModel
   Views/
     Components/         CellView, GridView, ErrorView, NoResultsView, LoadingView
-    Home/Search/Detail/Favorites/Settings/
+    Home/Search/Detail/
+    Favorites/          FavoritesView (merged: Favorites + Collections via segmented picker)
+    Settings/           SettingsView (orchestrator)
+      Sections/         One file per Form Section: GeneralSectionView, APISectionView, CacheSectionView, AboutSectionView
+    Settings/(root)     AppearanceView, UserSettingsView (NavigationLink destinations)
 ```
 
 ## Key constraints
@@ -70,6 +77,8 @@ Wallhaven/
 - `Color(hex:)` extension defined in `Views/Search/FilterSheet.swift` — module-visible, do not duplicate.
 - `.searchable` + `.large` `.navigationBarTitleDisplayMode` causes title to disappear after canceling search. This is a known iOS 26 quirk — no clean fix found.
 - API returns `per_page` as `Int` unauthenticated but `String` when an API key is set. `Meta` uses `LenientInt` (a private helper) to decode both forms. Do not change `perPage` back to plain `Int`.
+- API may return `[""]` (array with empty string) instead of `[]` for resolutions/aspectRatios/tagBlacklist. `UserSettings` has `nonEmptyResolutions`, `nonEmptyAspectRatios`, `nonEmptyTagBlacklist` computed properties that filter empties. Use those instead of raw arrays.
+- `UserDefaults` keys: `wallhaven_api_key`, `wallhaven_api_base_url`, `wallhaven_username`, `app_appearance`.
 
 ## Git
 

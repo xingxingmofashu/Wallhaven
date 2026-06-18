@@ -9,7 +9,7 @@ struct FilterSheetView: View {
     var body: some View {
         NavigationStack {
             Form {
-                FilterSheetSectionView(filters: $filters)
+                FilterSheetSection(filters: $filters)
             }
             .navigationTitle("Filters")
             .navigationBarTitleDisplayMode(.inline)

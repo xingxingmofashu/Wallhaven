@@ -54,7 +54,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - Chinese curly quotes (`''`) inside Swift string literals cause a parse error. Use ASCII quotes or `「」`.
 - `FlowLayout` is a `Layout`-conforming struct (in `Utilities/`), not a `View`.
 - `CacheAsyncImage` file and type are both named `CacheAsyncImage`.
-- `Color(hex:)` defined in `Views/Search/FilterSheetSectionView.swift` — module-visible, do not duplicate.
+- `Color(hex:)` defined in `Views/Search/Section/FilterSheetSection.swift` — module-visible, do not duplicate.
 - `.searchable` + `.large` `.navigationBarTitleDisplayMode` causes title to disappear after canceling search (iOS 26 quirk, no clean fix).
 - API `per_page` is `Int` unauthenticated but `String` with API key. `Meta` uses `LenientInt` to decode both. Do not change `perPage` to plain `Int`.
 - API may return `[""]` instead of `[]` for `resolutions`/`aspectRatios`/`tagBlacklist`. Use `nonEmptyResolutions`, `nonEmptyAspectRatios`, `nonEmptyTagBlacklist`.

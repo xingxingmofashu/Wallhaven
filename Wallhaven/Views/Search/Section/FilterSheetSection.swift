@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct FilterSheetSectionView: View {
+struct FilterSheetSection: View {
     @Binding var filters: SearchFilters
 
     var body: some View {

@@ -31,14 +31,9 @@ final class SettingsViewModel {
 
     var userSettings: UserSettings? { UserSettingsStore.shared.settings }
     var isLoadingSettings: Bool     { UserSettingsStore.shared.isLoading }
-    var settingsError: Error?
 
     func fetchUserSettings() async {
-        settingsError = nil
         await UserSettingsStore.shared.load()
-        if UserSettingsStore.shared.settings == nil {
-            // Only set error if settings still nil after load attempt
-        }
     }
 
     // MARK: - Cache

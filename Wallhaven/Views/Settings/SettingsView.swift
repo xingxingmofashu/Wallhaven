@@ -23,6 +23,7 @@ struct SettingsView: View {
             .task {
                 tempAPIKey = viewModel.apiKey
                 applyAppearance(appAppearance)
+                await viewModel.fetchUserSettings()
             }
             .onChange(of: viewModel.hasApiKey) { _, _ in
                 Task { await viewModel.fetchUserSettings() }
@@ -196,18 +197,6 @@ struct SettingsView: View {
                             Text(tag).font(.caption)
                         }
                     }
-                }
-            } else if let error = viewModel.settingsError {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Failed to load settings")
-                        .foregroundStyle(.red)
-                    Text(error.localizedDescription)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                Button("Load Settings") {
-                    Task { await viewModel.fetchUserSettings() }
                 }
             }
         }

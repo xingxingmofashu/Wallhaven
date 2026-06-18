@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Build IPA
-    runs-on: macos-16
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 

@@ -23,6 +23,7 @@ struct ContentView: View {
                 .tag(NavigationState.Tab.settings)
         }
         .environment(navigationState)
+        .task { await UserSettingsStore.shared.load() }
     }
 }
 

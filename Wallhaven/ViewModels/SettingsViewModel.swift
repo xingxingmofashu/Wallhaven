@@ -29,23 +29,16 @@ final class SettingsViewModel {
 
     // MARK: - User Settings (from API)
 
-    var userSettings: UserSettings?
-    var isLoadingSettings = false
+    var userSettings: UserSettings? { UserSettingsStore.shared.settings }
+    var isLoadingSettings: Bool     { UserSettingsStore.shared.isLoading }
     var settingsError: Error?
 
     func fetchUserSettings() async {
-        guard hasApiKey else {
-            userSettings = nil
-            return
-        }
-        isLoadingSettings = true
         settingsError = nil
-        do {
-            userSettings = try await WallhavenFetch.shared.userSettings()
-        } catch {
-            settingsError = error
+        await UserSettingsStore.shared.load()
+        if UserSettingsStore.shared.settings == nil {
+            // Only set error if settings still nil after load attempt
         }
-        isLoadingSettings = false
     }
 
     // MARK: - Cache

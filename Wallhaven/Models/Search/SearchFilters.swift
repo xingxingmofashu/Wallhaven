@@ -136,6 +136,32 @@ struct SearchFilters: Equatable {
     }
 }
 
+// MARK: - Website Defaults
+
+extension SearchFilters {
+    mutating func applyWebsiteDefaults(from settings: UserSettings) {
+        if !settings.categories.isEmpty {
+            general = settings.categories.contains("general")
+            anime   = settings.categories.contains("anime")
+            people  = settings.categories.contains("people")
+        }
+        if !settings.purity.isEmpty {
+            sfw     = settings.purity.contains("sfw")
+            sketchy = settings.purity.contains("sketchy")
+            nsfw    = settings.purity.contains("nsfw")
+        }
+        if let range = TopRange(rawValue: settings.toplistRange) {
+            topRange = range
+        }
+        if !settings.resolutions.isEmpty {
+            resolutions = settings.resolutions.joined(separator: ",")
+        }
+        if !settings.aspectRatios.isEmpty {
+            ratios = settings.aspectRatios.joined(separator: ",")
+        }
+    }
+}
+
 // MARK: - Available Colors
 
 struct WallhavenColor: Identifiable, Hashable {

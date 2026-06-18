@@ -10,7 +10,7 @@ usage() {
 
 if [ $# -lt 1 ]; then usage; fi
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PBXPROJ="$SCRIPT_DIR/Wallhaven.xcodeproj/project.pbxproj"
 
 # Read current MARKETING_VERSION (Debug or Release, both are the same)

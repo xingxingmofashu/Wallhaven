@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCHEME="Wallhaven"
 BUILD_DIR="/tmp/Wallhaven_Install_Build"
 TEMP_DIR="/tmp/Wallhaven_Install_IPA"

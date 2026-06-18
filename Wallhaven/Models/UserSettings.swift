@@ -15,6 +15,10 @@ struct UserSettings: Codable {
     let tagBlacklist: [String]
     let userBlacklist: [String]
 
+    var nonEmptyResolutions: [String]  { resolutions.filter { !$0.isEmpty } }
+    var nonEmptyAspectRatios: [String] { aspectRatios.filter { !$0.isEmpty } }
+    var nonEmptyTagBlacklist: [String] { tagBlacklist.filter { !$0.isEmpty } }
+
     enum CodingKeys: String, CodingKey {
         case thumbSize = "thumb_size"
         case perPage = "per_page"

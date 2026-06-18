@@ -153,11 +153,11 @@ extension SearchFilters {
         if let range = TopRange(rawValue: settings.toplistRange) {
             topRange = range
         }
-        if !settings.resolutions.isEmpty {
-            resolutions = settings.resolutions.joined(separator: ",")
+        if !settings.nonEmptyResolutions.isEmpty {
+            resolutions = settings.nonEmptyResolutions.joined(separator: ",")
         }
-        if !settings.aspectRatios.isEmpty {
-            ratios = settings.aspectRatios.joined(separator: ",")
+        if !settings.nonEmptyAspectRatios.isEmpty {
+            ratios = settings.nonEmptyAspectRatios.joined(separator: ",")
         }
     }
 }

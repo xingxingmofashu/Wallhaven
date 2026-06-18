@@ -29,25 +29,25 @@ struct UserSettingsView: View {
                 LabeledContent("Toplist Range", value: settings.toplistRange)
             }
 
-            if !settings.resolutions.isEmpty {
+            if !settings.nonEmptyResolutions.isEmpty {
                 Section("Resolutions") {
-                    ForEach(settings.resolutions, id: \.self) { res in
+                    ForEach(settings.nonEmptyResolutions, id: \.self) { res in
                         Text(res)
                     }
                 }
             }
 
-            if !settings.aspectRatios.isEmpty {
+            if !settings.nonEmptyAspectRatios.isEmpty {
                 Section("Aspect Ratios") {
-                    ForEach(settings.aspectRatios, id: \.self) { ratio in
+                    ForEach(settings.nonEmptyAspectRatios, id: \.self) { ratio in
                         Text(ratio)
                     }
                 }
             }
 
-            if !settings.tagBlacklist.isEmpty {
+            if !settings.nonEmptyTagBlacklist.isEmpty {
                 Section("Tag Blacklist") {
-                    ForEach(settings.tagBlacklist, id: \.self) { tag in
+                    ForEach(settings.nonEmptyTagBlacklist, id: \.self) { tag in
                         Text(tag)
                     }
                 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CacheSectionView: View {
+struct CacheSection: View {
     let onClear: () -> Void
 
     @State private var showAlert = false

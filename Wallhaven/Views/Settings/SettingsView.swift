@@ -7,10 +7,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                GeneralSectionView(appearance: $appAppearance)
-                APISectionView(viewModel: viewModel)
-                CacheSectionView(onClear: viewModel.clearImageCache)
-                AboutSectionView(version: viewModel.appVersion, buildNumber: viewModel.buildNumber)
+                GeneralSection(appearance: $appAppearance)
+                APISection(viewModel: viewModel)
+                CacheSection(onClear: viewModel.clearImageCache)
+                AboutSection(version: viewModel.appVersion, buildNumber: viewModel.buildNumber)
             }
             .navigationTitle("Settings")
             .task { await viewModel.fetchUserSettings() }

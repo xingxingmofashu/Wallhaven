@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct GeneralSectionView: View {
+struct GeneralSection: View {
     @Binding var appearance: Int
 
     var body: some View {

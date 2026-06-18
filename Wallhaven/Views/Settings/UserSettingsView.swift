@@ -7,7 +7,7 @@ struct UserSettingsView: View {
                 LoadingView()
             } else if let settings = UserSettingsStore.shared.settings {
                 List {
-                    UserSettingsSectionView(settings: settings)
+                    UserSettingsSection(settings: settings)
                 }
             } else {
                 ContentUnavailableView(

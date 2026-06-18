@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct AboutSectionView: View {
+struct AboutSection: View {
     let version: String
     let buildNumber: String
 

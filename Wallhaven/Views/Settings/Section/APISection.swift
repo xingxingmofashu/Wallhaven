@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct APISectionView: View {
+struct APISection: View {
     let viewModel: SettingsViewModel
 
     @State private var showAPIKeyField = false

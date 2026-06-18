@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct UserSettingsSectionView: View {
+struct UserSettingsSection: View {
     let settings: UserSettings
 
     var body: some View {

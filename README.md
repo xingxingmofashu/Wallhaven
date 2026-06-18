@@ -1,3 +1,5 @@
+[**English**](README.md) | [**中文**](README.zh.md)
+
 # Wallhaven
 
 A native iOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.cc/help/api).

@@ -39,52 +39,47 @@ struct DetailView: View {
 
     var body: some View {
         ZStack {
+            (showFullscreen ? Color.black : Color(.systemBackground)).ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 0) {
+                        ForEach(Array(wallpapers.enumerated()), id: \.element.id) { index, wallpaper in
+                            imageView(for: wallpaper)
+                                .containerRelativeFrame(.horizontal)
+                                .id(index)
+                                .onTapGesture { showFullscreen = true }
+                        }
+                    }
+                    .scrollTargetLayout()
+                }
+                .scrollTargetBehavior(.paging)
+                .scrollPosition(id: $scrollPosition)
+
+                DetailThumbnailView(
+                    relatedWallpapers: viewModel.relatedWallpapers,
+                    currentID: currentID,
+                    favoritedIDs: viewModel.favoritedIDs,
+                    selectedIndex: selectedIndex,
+                    onSelect: { wallpaper in
+                        if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
+                            scrollPosition = idx
+                        } else {
+                            wallpapers = [wallpaper]
+                            scrollPosition = 0
+                            viewModel.selectRelated(wallpaper)
+                        }
+                    }
+                )
+                    .frame(height: 44)
+                    .opacity(showFullscreen ? 0 : (viewModel.relatedWallpapers.isEmpty ? 0 : 1))
+            }
+
             if showFullscreen {
-                Color.black.ignoresSafeArea()
+                Color.black.opacity(0.001)
                     .contentShape(Rectangle())
                     .onTapGesture { showFullscreen = false }
-
-                if let fullURL = currentWallpaper.fullURL, let uiImage = CacheImage.shared.image(for: fullURL) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFit()
-                }
-            } else {
-                Color(.systemBackground).ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 0) {
-                            ForEach(Array(wallpapers.enumerated()), id: \.element.id) { index, wallpaper in
-                                imageView(for: wallpaper)
-                                    .containerRelativeFrame(.horizontal)
-                                    .id(index)
-                                    .onTapGesture { showFullscreen = true }
-                            }
-                        }
-                        .scrollTargetLayout()
-                    }
-                    .scrollTargetBehavior(.paging)
-                    .scrollPosition(id: $scrollPosition)
-
-                    DetailThumbnailView(
-                        relatedWallpapers: viewModel.relatedWallpapers,
-                        currentID: currentID,
-                        favoritedIDs: viewModel.favoritedIDs,
-                        selectedIndex: selectedIndex,
-                        onSelect: { wallpaper in
-                            if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
-                                scrollPosition = idx
-                            } else {
-                                wallpapers = [wallpaper]
-                                scrollPosition = 0
-                                viewModel.selectRelated(wallpaper)
-                            }
-                        }
-                    )
-                        .frame(height: 44)
-                        .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
-                }
+                    .ignoresSafeArea()
             }
         }
         .animation(.easeInOut(duration: 0.25), value: showFullscreen)

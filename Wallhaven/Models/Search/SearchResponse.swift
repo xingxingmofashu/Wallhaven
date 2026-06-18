@@ -22,7 +22,37 @@ struct Meta: Codable {
         case perPage     = "per_page"
     }
 
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        currentPage = try container.decode(Int.self, forKey: .currentPage)
+        lastPage    = try container.decode(Int.self, forKey: .lastPage)
+        perPage     = try container.decode(LenientInt.self, forKey: .perPage).value
+        total       = try container.decode(Int.self, forKey: .total)
+        query       = try container.decodeIfPresent(QueryValue.self, forKey: .query)
+        seed        = try container.decodeIfPresent(String.self, forKey: .seed)
+    }
+
     var hasNextPage: Bool { currentPage < lastPage }
+}
+
+private struct LenientInt: Decodable {
+    let value: Int
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let intValue = try? container.decode(Int.self) {
+            value = intValue
+        } else {
+            let stringValue = try container.decode(String.self)
+            guard let intValue = Int(stringValue) else {
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Expected Int or numeric String, got '\(stringValue)'"
+                )
+            }
+            value = intValue
+        }
+    }
 }
 
 // query field may be a String or {id, tag} object

@@ -166,7 +166,7 @@ final class DetailViewModel {
 
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } catch {
-                return
+                notificationFeedback(.error)
             }
         }
     }

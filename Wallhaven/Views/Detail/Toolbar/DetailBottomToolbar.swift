@@ -25,7 +25,7 @@ struct DetailBottomToolbar: ToolbarContent {
         ToolbarItemGroup(placement: .status) {
             Button {
                 onToggleFavorite()
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                hapticFeedback()
             } label: {
                 Image(systemName: isFavorited ? "heart.fill" : "heart")
                     .font(.title3)

@@ -1,0 +1,27 @@
+disabled_rules:
+  - line_length
+  - trailing_whitespace
+  - identifier_name
+  - type_name
+  - todo
+  - nesting
+  - function_body_length
+
+opt_in_rules:
+  - unused_import
+  - redundant_self
+  - redundant_optional_initialization
+  - closure_spacing
+  - empty_count
+  - sorted_imports
+
+included:
+  - Wallhaven
+
+excluded:
+  - Wallhaven.xcodeproj
+  - build
+  - DerivedData
+
+analyzer_rules:
+  - unused_import

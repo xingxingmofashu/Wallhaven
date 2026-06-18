@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class CollectionItem: HasDimensions {
+final class CollectionItem: StoredWallpaper {
     var wallpaperID: String
     var collectionID: UUID
     var addedAt: Date
@@ -32,30 +32,5 @@ final class CollectionItem: HasDimensions {
         self.colors = wallpaper.colors
         self.dimensionX = wallpaper.dimensionX
         self.dimensionY = wallpaper.dimensionY
-    }
-
-    var asWallpaper: Wallpaper {
-        Wallpaper(
-            id: wallpaperID,
-            url: "https://wallhaven.cc/w/\(wallpaperID)",
-            shortURL: "",
-            uploader: nil,
-            views: 0,
-            favorites: 0,
-            source: "",
-            purity: purity,
-            category: category,
-            dimensionX: dimensionX,
-            dimensionY: dimensionY,
-            resolution: resolution,
-            ratio: ratio,
-            fileSize: 0,
-            fileType: fileType,
-            createdAt: "",
-            colors: colors,
-            path: fullPath,
-            thumbnails: Thumbnails(large: thumbURL, original: "", small: ""),
-            tags: nil
-        )
     }
 }

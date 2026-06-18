@@ -28,9 +28,7 @@ actor WallhavenFetch {
 
     func search(filters: SearchFilters, page: Int = 1) async throws -> SearchResponse {
         var items = filters.queryItems(page: page)
-        if let key = apiKey {
-            items.append(URLQueryItem(name: "apikey", value: key))
-        }
+        appendAPIKey(to: &items)
         let url = try buildURL(path: "/search", queryItems: items)
         return try await fetch(url: url)
     }
@@ -42,9 +40,7 @@ actor WallhavenFetch {
             URLQueryItem(name: "q", value: "like:\(id)"),
             URLQueryItem(name: "page", value: "\(page)")
         ]
-        if let key = apiKey {
-            items.append(URLQueryItem(name: "apikey", value: key))
-        }
+        appendAPIKey(to: &items)
         let url = try buildURL(path: "/search", queryItems: items)
         return try await fetch(url: url)
     }
@@ -53,9 +49,7 @@ actor WallhavenFetch {
 
     func wallpaper(id: String) async throws -> Wallpaper {
         var items: [URLQueryItem] = []
-        if let key = apiKey {
-            items.append(URLQueryItem(name: "apikey", value: key))
-        }
+        appendAPIKey(to: &items)
         let url = try buildURL(path: "/w/\(id)", queryItems: items)
         let response: WallpaperDetailResponse = try await fetch(url: url)
         return response.data
@@ -65,15 +59,18 @@ actor WallhavenFetch {
 
     func userSettings() async throws -> UserSettings {
         var items: [URLQueryItem] = []
-        if let key = apiKey {
-            items.append(URLQueryItem(name: "apikey", value: key))
-        }
+        appendAPIKey(to: &items)
         let url = try buildURL(path: "/settings", queryItems: items)
         let response: UserSettingsResponse = try await fetch(url: url)
         return response.data
     }
 
     // MARK: - Private Helpers
+
+    private func appendAPIKey(to items: inout [URLQueryItem]) {
+        guard let key = apiKey else { return }
+        items.append(URLQueryItem(name: "apikey", value: key))
+    }
 
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) throws -> URL {
         guard var comps = URLComponents(string: baseURL + path) else {

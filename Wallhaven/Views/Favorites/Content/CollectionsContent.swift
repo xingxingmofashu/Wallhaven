@@ -9,45 +9,29 @@ struct CollectionsContent: View {
 
     @State private var showCreateAlert = false
     @State private var newCollectionName = ""
+    @State private var selectedCollection: WallhavenCollection?
+
+    @State private var wallpapers: [Wallpaper] = []
+    @State private var selectedWallpaper: Wallpaper?
 
     private let collectionsVM = CollectionsViewModel()
 
     var body: some View {
         Group {
-            if collections.isEmpty {
-                ContentUnavailableView(
-                    "No Collections",
-                    systemImage: "folder",
-                    description: Text("Tap the star icon on any wallpaper to create your first collection.")
-                )
+            if let collection = selectedCollection {
+                wallpapersView(for: collection)
             } else {
-                List {
-                    ForEach(collections) { collection in
-                        NavigationLink {
-                            CollectionWallpapersView(collection: collection)
-                        } label: {
-                            CollectionRowView(
-                                name: collection.name,
-                                count: allItems.filter { $0.collectionID == collection.id }.count
-                            )
-                        }
-                    }
-                    .onDelete { indexSet in
-                        for index in indexSet {
-                            let collection = collections[index]
-                            collectionsVM.deleteCollection(collection, in: modelContext)
-                        }
-                    }
-                }
-                .listStyle(.plain)
+                collectionListView
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showCreateAlert = true
-                } label: {
-                    Image(systemName: "folder.badge.plus")
+            if selectedCollection == nil {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showCreateAlert = true
+                    } label: {
+                        Image(systemName: "folder.badge.plus")
+                    }
                 }
             }
         }
@@ -68,6 +52,117 @@ struct CollectionsContent: View {
         }
         .task {
             collectionsVM.ensureDefaultCollection(in: modelContext)
+        }
+    }
+
+    // MARK: - Collection List
+
+    private var collectionListView: some View {
+        Group {
+            if collections.isEmpty {
+                ContentUnavailableView(
+                    "No Collections",
+                    systemImage: "folder",
+                    description: Text("Tap the star icon on any wallpaper to create your first collection.")
+                )
+            } else {
+                List {
+                    ForEach(collections) { collection in
+                        Button {
+                            selectedCollection = collection
+                            loadWallpapers(for: collection)
+                        } label: {
+                            CollectionRowView(
+                                name: collection.name,
+                                count: allItems.filter { $0.collectionID == collection.id }.count
+                            )
+                        }
+                    }
+                    .onDelete { indexSet in
+                        for index in indexSet {
+                            let collection = collections[index]
+                            collectionsVM.deleteCollection(collection, in: modelContext)
+                        }
+                    }
+                }
+                .listStyle(.plain)
+            }
+        }
+        .navigationTitle("Collections")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // MARK: - Wallpapers View
+
+    private func wallpapersView(for collection: WallhavenCollection) -> some View {
+        Group {
+            if wallpapers.isEmpty {
+                ContentUnavailableView(
+                    "Empty Collection",
+                    systemImage: "folder",
+                    description: Text("No wallpapers in this collection.")
+                )
+            } else {
+                GridView(
+                    wallpapers: wallpapers,
+                    onSelect: { selectedWallpaper = $0 },
+                    contextMenu: { wallpaper in
+                        AnyView(
+                            Button(role: .destructive) {
+                                removeFromCollection(wallpaperID: wallpaper.id)
+                            } label: {
+                                Label("Remove from Collection", systemImage: "star.slash")
+                            }
+                        )
+                    }
+                )
+            }
+        }
+        .navigationTitle(collection.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    selectedCollection = nil
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+            }
+        }
+        .navigationDestination(item: $selectedWallpaper) { wallpaper in
+            if let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
+               wallpapers.indices.contains(index)
+            {
+                DetailView(wallpapers: wallpapers, startIndex: index)
+            }
+        }
+    }
+
+    private func loadWallpapers(for collection: WallhavenCollection) {
+        let collectionID = collection.id
+        let descriptor = FetchDescriptor<CollectionItem>(
+            predicate: #Predicate { $0.collectionID == collectionID },
+            sortBy: [SortDescriptor(\.addedAt, order: .reverse)]
+        )
+        if let items = try? modelContext.fetch(descriptor) {
+            wallpapers = items.map(\.asWallpaper)
+        }
+    }
+
+    private func removeFromCollection(wallpaperID: String) {
+        guard let collection = selectedCollection else { return }
+        let collectionID = collection.id
+        DispatchQueue.main.async {
+            let descriptor = FetchDescriptor<CollectionItem>(
+                predicate: #Predicate {
+                    $0.wallpaperID == wallpaperID && $0.collectionID == collectionID
+                }
+            )
+            if let item = try? modelContext.fetch(descriptor).first {
+                modelContext.delete(item)
+                try? modelContext.save()
+                loadWallpapers(for: collection)
+            }
         }
     }
 }

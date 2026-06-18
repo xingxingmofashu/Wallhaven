@@ -98,8 +98,6 @@ actor WallhavenFetch {
             let decoder = JSONDecoder()
             return try decoder.decode(T.self, from: data)
         } catch {
-            let body = String(data: data, encoding: .utf8)?.prefix(500) ?? ""
-            print("[WallhavenFetch] Decoding failed: \(error)\n  URL: \(url)\n  Body: \(body)")
             throw WallhavenError.decodingError(error)
         }
     }

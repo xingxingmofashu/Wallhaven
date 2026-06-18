@@ -8,7 +8,6 @@ struct HomeView: View {
         NavigationStack {
             content
                 .navigationTitle("Wallhaven")
-                .toolbar { toolbarItems }
                 .task { viewModel.loadInitial() }
                 .refreshable { viewModel.refresh() }
                 .navigationDestination(item: $selectedWallpaper) { wallpaper in
@@ -44,18 +43,6 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Toolbar
-
-    @ToolbarContentBuilder
-    private var toolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
-            Button {
-                viewModel.refresh()
-            } label: {
-                Image(systemName: "arrow.clockwise")
-            }
-        }
-    }
 }
 
 #Preview {

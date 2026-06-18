@@ -61,17 +61,6 @@ actor WallhavenFetch {
         return response.data
     }
 
-    // MARK: - User Settings
-
-    func userSettings() async throws -> UserSettings {
-        guard let key = apiKey else { throw WallhavenError.unauthorized }
-        let url = try buildURL(path: "/settings", queryItems: [
-            URLQueryItem(name: "apikey", value: key)
-        ])
-        let response: UserSettingsResponse = try await fetch(url: url)
-        return response.data
-    }
-
     // MARK: - Private Helpers
 
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) throws -> URL {

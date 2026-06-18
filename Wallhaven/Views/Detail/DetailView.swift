@@ -81,7 +81,7 @@ struct DetailView: View {
             preloadAdjacent(at: selectedIndex)
         }
         .sheet(isPresented: $showShareSheet) {
-            ShareSheetView(items: viewModel.shareItems)
+            ShareSheet(items: viewModel.shareItems)
         }
         .sheet(isPresented: $showInfoSheet) {
             infoSheet

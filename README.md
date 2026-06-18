@@ -1,16 +1,19 @@
-**English** | [中文](README.zh.md)
+<p align="center">
+  <img src=".github/assets/logo.png" alt="Wallhaven" width="120">
+</p>
 
-# Wallhaven
+<p align="center"><strong>Wallhaven</strong> — A native iOS wallpaper browser powered by the <a href="https://wallhaven.cc/help/api">Wallhaven API</a>.</p>
 
-A native iOS wallpaper browser powered by the [Wallhaven API](https://wallhaven.cc/help/api).
+<p align="center">
+  <a href="https://github.com/xingxingmofashu/Wallhaven"><img alt="GitHub stars" src="https://img.shields.io/github/stars/xingxingmofashu/Wallhaven?style=flat-square" /></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square" /></a>
+  <a href="https://github.com/xingxingmofashu/Wallhaven/issues"><img alt="Issues" src="https://img.shields.io/github/issues/xingxingmofashu/Wallhaven?style=flat-square" /></a>
+</p>
 
-<table align="center">
-  <tr>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Light.png" width="100%" alt="Light"></td>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Dark.png" width="100%" alt="Dark"></td>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Tinted.png" width="100%" alt="Tinted"></td>
-  </tr>
-</table>
+<p align="center">
+  <strong>English</strong> |
+  <a href="README.zh.md">简体中文</a>
+</p>
 
 ## Features
 
@@ -57,7 +60,7 @@ Builds for the iOS Simulator. No signing or developer account needed.
 #### Unsigned IPA (sideloading)
 
 ```bash
-./build.sh
+./Scripts/build.sh
 ```
 
 Produces `Wallhaven.ipa` at the repo root. Designed for sideloading via AltStore, SideStore, or similar.
@@ -70,10 +73,10 @@ Steps:
 #### Signed IPA + install to device
 
 ```bash
-./install.sh
+./Scripts/install.sh
 
 # Override the development team:
-DEVELOPMENT_TEAM=XXXXXXXXXX ./install.sh
+DEVELOPMENT_TEAM=XXXXXXXXXX ./Scripts/install.sh
 ```
 
 Requires an Apple Developer account and a connected, paired iPhone. Produces `Wallhaven.ipa` and installs via `devicectl`.
@@ -124,7 +127,7 @@ Wallhaven/
     Detail/             Wallpaper detail (viewer, toolbars, info sheet)
     Favorites/          Favorites tab (segmented picker, collections, rename/delete)
     Settings/           Settings tab (sections: general, API, cache, about)
-  Docs/                 Wallhaven API v1 reference
+  Document/             Wallhaven API v1 reference
 ```
 
 ## License

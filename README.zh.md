@@ -1,16 +1,19 @@
-[English](README.md) | **中文**
+<p align="center">
+  <img src=".github/assets/logo.png" alt="Wallhaven" width="120">
+</p>
 
-# Wallhaven
+<p align="center"><strong>Wallhaven</strong> — 基于 <a href="https://wallhaven.cc/help/api">Wallhaven API</a> 的原生 iOS 壁纸浏览器。</p>
 
-基于 [Wallhaven API](https://wallhaven.cc/help/api) 的原生 iOS 壁纸浏览器。
+<p align="center">
+  <a href="https://github.com/xingxingmofashu/Wallhaven"><img alt="GitHub stars" src="https://img.shields.io/github/stars/xingxingmofashu/Wallhaven?style=flat-square" /></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square" /></a>
+  <a href="https://github.com/xingxingmofashu/Wallhaven/issues"><img alt="Issues" src="https://img.shields.io/github/issues/xingxingmofashu/Wallhaven?style=flat-square" /></a>
+</p>
 
-<table align="center">
-  <tr>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Light.png" width="100%" alt="浅色"></td>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Dark.png" width="100%" alt="深色"></td>
-    <td align="center"><img src="Wallhaven/Assets.xcassets/AppIcon.appiconset/AppIcon-Tinted.png" width="100%" alt="染色"></td>
-  </tr>
-</table>
+<p align="center">
+  <a href="README.md">English</a> |
+  <strong>简体中文</strong>
+</p>
 
 ## 功能特性
 
@@ -18,7 +21,7 @@
 - **搜索** — 关键词 + 筛选器（类别、分级、排序、分辨率、比例、颜色）
 - **详情** — 全分辨率查看，左右滑动切换，下滑返回，相关缩略图，信息面板，分享，保存到相册
 - **收藏** — 收藏壁纸（爱心按钮），上下文菜单删除
-- **收藏集** — 本地文件夹管理壁纸（星标按钮），重命名和删除，自动创建"Default"收藏集
+- **收藏集** — 本地文件夹管理壁纸（星标按钮），重命名和删除，自动创建 "Default" 收藏集
 - **设置** — API 密钥，外观（浅色/深色/跟随系统），图片缓存管理，同步用户偏好
 
 ## 系统要求
@@ -57,7 +60,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 #### 未签名 IPA（侧载）
 
 ```bash
-./build.sh
+./Scripts/build.sh
 ```
 
 在仓库根目录生成 `Wallhaven.ipa`。适用于 AltStore、SideStore 等侧载工具。
@@ -70,10 +73,10 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 #### 签名 IPA + 安装到设备
 
 ```bash
-./install.sh
+./Scripts/install.sh
 
 # 覆盖开发团队：
-DEVELOPMENT_TEAM=XXXXXXXXXX ./install.sh
+DEVELOPMENT_TEAM=XXXXXXXXXX ./Scripts/install.sh
 ```
 
 需要 Apple Developer 账号和已连接配对的 iPhone。生成 `Wallhaven.ipa` 并通过 `devicectl` 安装。
@@ -124,7 +127,7 @@ Wallhaven/
     Detail/             壁纸详情（查看器、工具栏、信息面板）
     Favorites/          收藏标签页（分段选择器、收藏集、重命名/删除）
     Settings/           设置标签页（通用、API、缓存、关于）
-  Docs/                 Wallhaven API v1 参考
+  Document/             Wallhaven API v1 参考
 ```
 
 ## 许可

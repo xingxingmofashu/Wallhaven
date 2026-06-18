@@ -22,7 +22,7 @@ fi
 if [ -z "$DEVELOPMENT_TEAM" ]; then
   echo "Error: No development team found."
   echo "Set one in Xcode: open project → Signing & Capabilities → select Team"
-  echo "Or pass it: DEVELOPMENT_TEAM=XXXXXXXXXX ./install.sh"
+  echo "Or pass it: DEVELOPMENT_TEAM=XXXXXXXXXX ./Scripts/install.sh"
   exit 1
 fi
 

@@ -19,7 +19,7 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
       - name: Build unsigned IPA
-        run: bash build.sh
+        run: bash Scripts/build.sh
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

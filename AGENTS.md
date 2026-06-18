@@ -6,8 +6,8 @@
 xcodebuild -scheme Wallhaven -sdk iphonesimulator \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' build
 
-# Unsigned Release IPA — ./build.sh
-# Signed IPA + devicectl install — ./install.sh
+# Unsigned Release IPA — ./Scripts/build.sh
+# Signed IPA + devicectl install — ./Scripts/install.sh
 ```
 
 - No test targets, no CI, no third-party dependencies.

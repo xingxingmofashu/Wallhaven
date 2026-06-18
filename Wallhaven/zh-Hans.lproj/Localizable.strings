@@ -135,3 +135,7 @@
 "Remove from Collection" = "从收藏夹移除";
 "Add to Collection" = "添加到收藏夹";
 "Collection name" = "收藏夹名称";
+"Rename" = "重命名";
+"Rename Collection" = "重命名收藏夹";
+"Enter a new name for this collection." = "请输入收藏夹的新名称。";
+"Delete" = "删除";

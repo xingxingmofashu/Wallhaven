@@ -25,6 +25,11 @@ final class CollectionsViewModel {
         try? context.save()
     }
 
+    func renameCollection(_ collection: WallhavenCollection, to name: String, in context: ModelContext) {
+        collection.name = name
+        try? context.save()
+    }
+
     func ensureDefaultCollection(in context: ModelContext) {
         let descriptor = FetchDescriptor<WallhavenCollection>()
         guard let existing = try? context.fetch(descriptor), existing.isEmpty else { return }

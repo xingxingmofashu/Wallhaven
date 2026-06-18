@@ -8,7 +8,10 @@ struct CollectionsContent: View {
     @Query private var allItems: [CollectionItem]
 
     @State private var showCreateAlert = false
+    @State private var showRenameAlert = false
     @State private var newCollectionName = ""
+    @State private var renameText = ""
+    @State private var renameCollection: WallhavenCollection?
     @State private var selectedCollection: WallhavenCollection?
 
     @State private var wallpapers: [Wallpaper] = []
@@ -50,6 +53,21 @@ struct CollectionsContent: View {
         } message: {
             Text("Enter a name for the new collection.")
         }
+        .alert("Rename Collection", isPresented: $showRenameAlert) {
+            TextField("Name", text: $renameText)
+            Button("Cancel", role: .cancel) {
+                renameCollection = nil
+            }
+            Button("Rename") {
+                let name = renameText.trimmingCharacters(in: .whitespaces)
+                if !name.isEmpty, let collection = renameCollection {
+                    collectionsVM.renameCollection(collection, to: name, in: modelContext)
+                }
+                renameCollection = nil
+            }
+        } message: {
+            Text("Enter a new name for this collection.")
+        }
         .task {
             collectionsVM.ensureDefaultCollection(in: modelContext)
         }
@@ -76,6 +94,20 @@ struct CollectionsContent: View {
                                 name: collection.name,
                                 count: allItems.filter { $0.collectionID == collection.id }.count
                             )
+                        }
+                        .contextMenu {
+                            Button {
+                                renameText = collection.name
+                                renameCollection = collection
+                                showRenameAlert = true
+                            } label: {
+                                Label("Rename", systemImage: "pencil")
+                            }
+                            Button(role: .destructive) {
+                                collectionsVM.deleteCollection(collection, in: modelContext)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
                     .onDelete { indexSet in

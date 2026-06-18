@@ -22,9 +22,6 @@ final class SettingsViewModel {
 
     // MARK: - User Settings (from API)
 
-    var userSettings: UserSettings? { UserSettingsStore.shared.settings }
-    var isLoadingSettings: Bool     { UserSettingsStore.shared.isLoading }
-
     func fetchUserSettings() async {
         await UserSettingsStore.shared.load()
     }

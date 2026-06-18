@@ -38,7 +38,7 @@ Files under `Wallhaven/` are in a **PBXFileSystemSynchronizedRootGroup** — new
 Wallhaven/
   App/                  ContentView (TabView root)
   Models/
-    Wallpaper.swift, Favorite.swift (SwiftData), UserSettings.swift
+    Wallpaper.swift, Favorite.swift (SwiftData)
     Search/             SearchFilters, SearchResponse
   Services/             WallhavenFetch (actor), WallhavenError
     Cache/              CacheImage, CacheImageLoader, CacheAsyncImage
@@ -67,8 +67,9 @@ Wallhaven/
 - Chinese curly quotes (`''`) inside Swift string literals cause a parse error. Use straight ASCII quotes or corner brackets (`「」`).
 - `FlowLayout` is a `Layout`-conforming struct (not a `View`), in `Utilities/`.
 - `CacheAsyncImage` file and type are both named `CacheAsyncImage` (not `AsyncImage`).
-- `Color(hex:)` extension defined in `Views/Search/FilterSheetView.swift` — module-visible, do not duplicate.
+- `Color(hex:)` extension defined in `Views/Search/FilterSheet.swift` — module-visible, do not duplicate.
 - `.searchable` + `.large` `.navigationBarTitleDisplayMode` causes title to disappear after canceling search. This is a known iOS 26 quirk — no clean fix found.
+- API returns `per_page` as `Int` unauthenticated but `String` when an API key is set. `Meta` uses `LenientInt` (a private helper) to decode both forms. Do not change `perPage` back to plain `Int`.
 
 ## Git
 

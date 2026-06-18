@@ -58,6 +58,7 @@
 "Not set" = "未设置";
 "Username Not Set" = "未设置用户名";
 "Set your wallhaven.cc username in Settings to view collections." = "请在设置中填写你的 wallhaven.cc 用户名以查看收藏集。";
+"User Settings" = "用户设置";
 "Default URL" = "默认 URL";
 "Cache" = "缓存";
 "Clear Image Cache" = "清除图片缓存";

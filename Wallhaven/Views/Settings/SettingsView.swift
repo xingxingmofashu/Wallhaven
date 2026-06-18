@@ -114,6 +114,30 @@ struct SettingsView: View {
                     .lineLimit(1)
             }
 
+            HStack {
+                Text("Username")
+                Spacer()
+                if showUsernameField {
+                    TextField("wallhaven.cc username", text: $tempUsername)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .multilineTextAlignment(.trailing)
+                    Button("Save") {
+                        viewModel.wallhavenUsername = tempUsername.trimmingCharacters(in: .whitespaces)
+                        showUsernameField = false
+                    }
+                    .fontWeight(.semibold)
+                } else {
+                    Text(viewModel.wallhavenUsername.isEmpty ? "Not set" : viewModel.wallhavenUsername)
+                        .foregroundStyle(.secondary)
+                    Button(viewModel.wallhavenUsername.isEmpty ? "Set" : "Change") {
+                        tempUsername = viewModel.wallhavenUsername
+                        showUsernameField = true
+                    }
+                    .font(.subheadline)
+                }
+            }
+
             if showAPIKeyField {
                 HStack {
                     SecureField("Paste API Key", text: $tempAPIKey)
@@ -140,29 +164,6 @@ struct SettingsView: View {
                     .font(.subheadline)
                 }
             }
-            HStack {
-                Text("Username")
-                Spacer()
-                if showUsernameField {
-                    TextField("wallhaven.cc username", text: $tempUsername)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .multilineTextAlignment(.trailing)
-                    Button("Save") {
-                        viewModel.wallhavenUsername = tempUsername.trimmingCharacters(in: .whitespaces)
-                        showUsernameField = false
-                    }
-                    .fontWeight(.semibold)
-                } else {
-                    Text(viewModel.wallhavenUsername.isEmpty ? "Not set" : viewModel.wallhavenUsername)
-                        .foregroundStyle(.secondary)
-                    Button(viewModel.wallhavenUsername.isEmpty ? "Set" : "Change") {
-                        tempUsername = viewModel.wallhavenUsername
-                        showUsernameField = true
-                    }
-                    .font(.subheadline)
-                }
-            }
         } header: {
             Text("Wallhaven API")
         } footer: {
@@ -170,10 +171,10 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Website Settings Section
+    // MARK: - User Settings Section
 
     private var userSettingsSection: some View {
-        Section("Website Settings") {
+        Section("User Settings") {
             if viewModel.isLoadingSettings {
                 LoadingView(message: "Loading…")
             } else if let settings = viewModel.userSettings {

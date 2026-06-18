@@ -165,19 +165,15 @@ struct SettingsView: View {
                 }
             }
 
-            NavigationLink {
-                UserSettingsView()
-            } label: {
-                HStack {
-                    Text("User Settings")
-                    Spacer()
-                    if viewModel.hasApiKey {
+            if viewModel.hasApiKey {
+                NavigationLink {
+                    UserSettingsView()
+                } label: {
+                    HStack {
+                        Text("User Settings")
+                        Spacer()
                         Text("Configured")
                             .foregroundStyle(.green, .secondary)
-                            .font(.subheadline)
-                    } else {
-                        Text("Not Available")
-                            .foregroundStyle(.secondary)
                             .font(.subheadline)
                     }
                 }

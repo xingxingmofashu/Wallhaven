@@ -39,7 +39,10 @@ final class SearchViewModel {
 
     func loadMore() {
         guard !isLoadingMore, hasNextPage else { return }
-        Task { await performSearch(reset: false) }
+        searchTask?.cancel()
+        searchTask = Task {
+            await performSearch(reset: false)
+        }
     }
 
     // MARK: - Private

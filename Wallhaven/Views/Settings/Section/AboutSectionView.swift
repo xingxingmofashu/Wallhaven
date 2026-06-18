@@ -12,8 +12,12 @@ struct AboutSectionView: View {
                 Text("\(version) (\(buildNumber))")
                     .foregroundStyle(.secondary)
             }
-            Link("Website", destination: URL(string: "https://wallhaven.cc")!)
-            Link("Documentation", destination: URL(string: "https://wallhaven.cc/help/api")!)
+            if let url = URL(string: "https://wallhaven.cc") {
+                Link("Website", destination: url)
+            }
+            if let url = URL(string: "https://wallhaven.cc/help/api") {
+                Link("Documentation", destination: url)
+            }
         }
     }
 }

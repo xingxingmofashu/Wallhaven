@@ -1,4 +1,4 @@
-import SwiftUI
+import UIKit
 
 /// NSCache-based in-memory image cache (thread-safe)
 final class CacheImage: @unchecked Sendable {

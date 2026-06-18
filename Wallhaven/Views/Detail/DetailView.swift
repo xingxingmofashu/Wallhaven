@@ -47,7 +47,21 @@ struct DetailView: View {
                 .scrollTargetBehavior(.paging)
                 .scrollPosition(id: $scrollPosition)
 
-                relatedThumbnailList
+                DetailThumbnailView(
+                    relatedWallpapers: viewModel.relatedWallpapers,
+                    currentID: currentID,
+                    favoritedIDs: viewModel.favoritedIDs,
+                    selectedIndex: selectedIndex,
+                    onSelect: { wallpaper in
+                        if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
+                            scrollPosition = idx
+                        } else {
+                            wallpapers = [wallpaper]
+                            scrollPosition = 0
+                            viewModel.selectRelated(wallpaper)
+                        }
+                    }
+                )
                     .frame(height: 44)
                     .opacity(viewModel.relatedWallpapers.isEmpty ? 0 : 1)
             }
@@ -65,8 +79,18 @@ struct DetailView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            topToolbar
-            bottomToolbar
+            DetailTopToolbar(
+                onDismiss: { dismiss() },
+                wallpaperURL: viewModel.wallpaper.url
+            )
+            DetailBottomToolbar(
+                isFavorited: viewModel.isFavorited,
+                onShare: { showShareSheet = true },
+                onToggleFavorite: { viewModel.toggleFavorite(in: modelContext) },
+                onInfo: { showInfoSheet = true },
+                onAddToCollection: { },
+                onSaveToPhotos: { viewModel.saveToPhotos() }
+            )
         }
         .onChange(of: scrollPosition) { _, newValue in
             guard let index = newValue, wallpapers.indices.contains(index), index != selectedIndex else { return }
@@ -84,7 +108,16 @@ struct DetailView: View {
             ShareSheet(items: viewModel.shareItems)
         }
         .sheet(isPresented: $showInfoSheet) {
-            infoSheet
+            DetailInfoSheetView(
+                wallpaper: viewModel.wallpaper,
+                formattedInfo: viewModel.formattedInfo,
+                tags: viewModel.wallpaper.tags ?? [],
+                onSearchTag: { tag in
+                    dismiss()
+                    navigationState.searchTag(tag)
+                },
+                onDone: { showInfoSheet = false }
+            )
         }
     }
 
@@ -119,214 +152,4 @@ struct DetailView: View {
         }
     }
 
-    // MARK: - Related Thumbnail List
-
-    private var relatedThumbnailList: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(viewModel.relatedWallpapers) { wallpaper in
-                        Button {
-                            if let idx = wallpapers.firstIndex(where: { $0.id == wallpaper.id }) {
-                                scrollPosition = idx
-                            } else {
-                                wallpapers = [wallpaper]
-                                scrollPosition = 0
-                                viewModel.selectRelated(wallpaper)
-                            }
-                        } label: {
-                            CacheAsyncImage(url: wallpaper.thumbnailURL) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                            } placeholder: {
-                                Rectangle()
-                                    .fill(Color(.systemGray5))
-                            }
-                            .frame(width: 60, height: 42)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(wallpaper.id == currentID ? Color.accentColor : Color.clear, lineWidth: 2)
-                            )
-                            .overlay(alignment: .topTrailing) {
-                                if viewModel.favoritedIDs.contains(wallpaper.id) {
-                                    Image(systemName: "heart.fill")
-                                        .font(.system(size: 8))
-                                        .foregroundStyle(.pink)
-                                        .padding(3)
-                                }
-                            }
-                            .id(wallpaper.id)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, 12)
-            }
-            .onChange(of: selectedIndex) { _, _ in
-                withAnimation {
-                    proxy.scrollTo(currentID, anchor: .center)
-                }
-            }
-            .onAppear {
-                proxy.scrollTo(currentID, anchor: .center)
-            }
-        }
-    }
-
-    // MARK: - Top Toolbar
-
-    @ToolbarContentBuilder
-    private var topToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.primary)
-            }
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button("Open in Browser", systemImage: "safari") {
-                    if let url = URL(string: viewModel.wallpaper.url) {
-                        UIApplication.shared.open(url)
-                    }
-                }
-                Button("Copy Link", systemImage: "doc.on.doc") {
-                    UIPasteboard.general.string = viewModel.wallpaper.url
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
-
-    // MARK: - Bottom Toolbar
-
-    @ToolbarContentBuilder
-    private var bottomToolbar: some ToolbarContent {
-        ToolbarItem(placement: .bottomBar) {
-            Button {
-                showShareSheet = true
-            } label: {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-
-        ToolbarItemGroup(placement: .status) {
-            Button {
-                viewModel.toggleFavorite(in: modelContext)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: viewModel.isFavorited ? "heart.fill" : "heart")
-                    .font(.title3)
-                    .foregroundStyle(viewModel.isFavorited ? .pink : .primary)
-                    .contentTransition(.symbolEffect(.replace))
-            }
-            .symbolEffect(.bounce, value: viewModel.isFavorited)
-
-            Button {
-                showInfoSheet = true
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-
-        ToolbarItem(placement: .bottomBar) {
-            Button {
-                viewModel.saveToPhotos()
-            } label: {
-                Image(systemName: "arrow.down.circle")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
-
-    // MARK: - Info Sheet
-
-    private var infoSheet: some View {
-        NavigationStack {
-            List {
-                Section("Details") {
-                    ForEach(viewModel.formattedInfo, id: \.label) { item in
-                        HStack {
-                            Text(item.label)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text(item.value)
-                                .foregroundStyle(.primary)
-                        }
-                    }
-                }
-
-                if !viewModel.wallpaper.colors.isEmpty {
-                    Section("Colors") {
-                        HStack(spacing: 10) {
-                            ForEach(viewModel.wallpaper.colors, id: \.self) { hex in
-                                let cleanHex = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
-                                Circle()
-                                    .fill(Color(hex: cleanHex))
-                                    .frame(width: 30, height: 30)
-                                    .overlay(Circle().strokeBorder(Color(.systemGray4), lineWidth: 0.5))
-                            }
-                        }
-                    }
-                }
-
-                if let tags = viewModel.wallpaper.tags, !tags.isEmpty {
-                    Section("Tags") {
-                        FlowLayout(spacing: 6) {
-                            ForEach(tags) { tag in
-                                Button {
-                                    dismiss()
-                                    navigationState.searchTag(tag.name)
-                                } label: {
-                                    Text("#\(tag.name)")
-                                        .font(.caption)
-                                        .foregroundStyle(.blue)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(Color(.secondarySystemBackground))
-                                        .clipShape(Capsule())
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                }
-
-                if let uploader = viewModel.wallpaper.uploader {
-                    Section("Uploader") {
-                        HStack {
-                            Image(systemName: "person.circle.fill")
-                                .foregroundStyle(.secondary)
-                            Text(uploader.username)
-                            Text("·")
-                                .foregroundStyle(.secondary)
-                            Text(uploader.group)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Info")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { showInfoSheet = false }
-                }
-            }
-        }
-    }
 }

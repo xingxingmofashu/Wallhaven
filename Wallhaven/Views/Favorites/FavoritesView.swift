@@ -32,8 +32,32 @@ struct FavoritesView: View {
 
                 Group {
                     switch selectedTab {
-                    case .favorites:   favoritesContent
-                    case .collections: collectionsContent
+                    case .favorites:
+                        FavoritesContent(
+                            wallpapers: favorites.map(\.asWallpaper),
+                            onSelect: { selectedWallpaper = $0 },
+                            removeFavorite: { wallpaperID in
+                                DispatchQueue.main.async {
+                                    let descriptor = FetchDescriptor<FavoriteWallpaper>(
+                                        predicate: #Predicate { $0.wallpaperID == wallpaperID }
+                                    )
+                                    if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
+                                        modelContext.delete(favoriteWallpaper)
+                                        try? modelContext.save()
+                                    }
+                                }
+                            }
+                        )
+                    case .collections:
+                        CollectionsContent(
+                            hasUsername: collectionsVM.hasUsername,
+                            isLoading: collectionsVM.isLoading,
+                            needsAPIKey: collectionsVM.needsAPIKey,
+                            error: collectionsVM.error,
+                            collections: collectionsVM.collections,
+                            username: collectionsVM.username,
+                            onRetry: { Task { await collectionsVM.loadCollections() } }
+                        )
                     }
                 }
             }
@@ -72,201 +96,5 @@ struct FavoritesView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Favorites
-
-    @ViewBuilder
-    private var favoritesContent: some View {
-        if favorites.isEmpty {
-            ContentUnavailableView(
-                "No Favorites Yet",
-                systemImage: "heart",
-                description: Text("Tap the heart icon on any wallpaper detail to save it here.")
-            )
-        } else {
-            let wallpapers = favorites.map(\.asWallpaper)
-            GridView(
-                wallpapers: wallpapers,
-                onSelect: { selectedWallpaper = $0 },
-                contextMenu: { wallpaper in
-                    AnyView(
-                        Button(role: .destructive) {
-                            let wallpaperID = wallpaper.id
-                            DispatchQueue.main.async {
-                                let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                                    predicate: #Predicate { $0.wallpaperID == wallpaperID }
-                                )
-                                if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
-                                    modelContext.delete(favoriteWallpaper)
-                                    try? modelContext.save()
-                                }
-                            }
-                        } label: {
-                            Label("Remove from Favorites", systemImage: "heart.slash")
-                        }
-                    )
-                }
-            )
-        }
-    }
-
-    // MARK: - Collections
-
-    @ViewBuilder
-    private var collectionsContent: some View {
-        if !collectionsVM.hasUsername {
-            ContentUnavailableView(
-                "Username Not Set",
-                systemImage: "person.crop.circle.badge.questionmark",
-                description: Text("Set your wallhaven.cc username in Settings to view collections.")
-            )
-        } else if collectionsVM.isLoading {
-            LoadingView()
-        } else if collectionsVM.needsAPIKey {
-            ContentUnavailableView(
-                "API Key Required",
-                systemImage: "key",
-                description: Text("Set your Wallhaven API Key in Settings to view collections.")
-            )
-        } else if let error = collectionsVM.error {
-            ErrorView(message: error.localizedDescription) {
-                Task { await collectionsVM.loadCollections() }
-            }
-        } else if collectionsVM.collections.isEmpty {
-            ContentUnavailableView(
-                "No Collections",
-                systemImage: "folder",
-                description: Text("No collections found for this account.")
-            )
-        } else {
-            collectionsList
-        }
-    }
-
-    private var collectionsList: some View {
-        List {
-            ForEach(collectionsVM.collections) { collection in
-                NavigationLink {
-                    CollectionWallpapersView(collection: collection, username: collectionsVM.username)
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "folder.fill")
-                            .font(.title3)
-                            .foregroundStyle(.blue)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(collection.label)
-                                .fontWeight(.medium)
-                            Label("\(collection.count) wallpapers", systemImage: "photo.on.rectangle")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        if collection.isPublic == 1 {
-                            Label("Public", systemImage: "globe")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Label("Private", systemImage: "lock.fill")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
-        }
-        .listStyle(.plain)
-    }
-}
-
-// MARK: - Collection Wallpapers
-
-private struct CollectionWallpapersView: View {
-    let collection: WHCollection
-    let username: String
-
-    @State private var wallpapers: [Wallpaper] = []
-    @State private var currentPage = 1
-    @State private var isLoading = false
-    @State private var isLoadingMore = false
-    @State private var hasMore = true
-    @State private var error: Error?
-    @State private var selectedWallpaper: Wallpaper?
-
-    var body: some View {
-        Group {
-            if isLoading {
-                LoadingView()
-            } else if let error = error {
-                ErrorView(message: error.localizedDescription) {
-                    Task { await loadFirstPage() }
-                }
-            } else if wallpapers.isEmpty {
-                ContentUnavailableView(
-                    "Empty Collection",
-                    systemImage: "folder",
-                    description: Text("No wallpapers in this collection.")
-                )
-            } else {
-                GridView(
-                    wallpapers: wallpapers,
-                    isLoadingMore: isLoadingMore,
-                    onLoadMore: { Task { await loadMore() } },
-                    onSelect: { selectedWallpaper = $0 }
-                )
-            }
-        }
-        .navigationTitle(collection.label)
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await loadFirstPage() }
-        .navigationDestination(item: $selectedWallpaper) { wallpaper in
-            if let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
-               wallpapers.indices.contains(index)
-            {
-                DetailView(wallpapers: wallpapers, startIndex: index)
-            }
-        }
-    }
-
-    private func loadFirstPage() async {
-        isLoading = true
-        error = nil
-        currentPage = 1
-        hasMore = true
-        do {
-            let response = try await WallhavenFetch.shared.collectionWallpapers(
-                username: username,
-                collectionId: collection.id,
-                page: 1
-            )
-            wallpapers = response.data
-            hasMore = response.meta.hasNextPage
-        } catch {
-            self.error = error
-        }
-        isLoading = false
-    }
-
-    private func loadMore() async {
-        guard !isLoadingMore, hasMore else { return }
-        isLoadingMore = true
-        let nextPage = currentPage + 1
-        do {
-            let response = try await WallhavenFetch.shared.collectionWallpapers(
-                username: username,
-                collectionId: collection.id,
-                page: nextPage
-            )
-            wallpapers += response.data
-            hasMore = response.meta.hasNextPage
-            currentPage = nextPage
-        } catch {
-            // silently fail pagination
-        }
-        isLoadingMore = false
     }
 }

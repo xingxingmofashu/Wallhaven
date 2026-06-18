@@ -8,14 +8,16 @@ final class CollectionsViewModel {
     var isLoading = false
     var error: Error?
     var needsAPIKey = false
-
-    var username: String {
-        UserDefaults.standard.string(forKey: "wallhaven_username") ?? ""
-    }
+    var username = ""
 
     var hasUsername: Bool { !username.isEmpty }
 
+    init() {
+        username = UserDefaults.standard.string(forKey: "wallhaven_username") ?? ""
+    }
+
     func loadCollections() async {
+        username = UserDefaults.standard.string(forKey: "wallhaven_username") ?? ""
         isLoading = true
         error = nil
         needsAPIKey = false

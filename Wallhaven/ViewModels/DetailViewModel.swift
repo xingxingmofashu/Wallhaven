@@ -1,4 +1,5 @@
-import SwiftUI
+import Observation
+import OSLog
 import Photos
 import SwiftData
 
@@ -43,7 +44,7 @@ final class DetailViewModel {
         }
     }
 
-    // MARK: - Related Wallpapers
+    // MARK: - Related Wallpapers Actions
 
     func loadRelatedWallpapers() {
         guard !isLoadingRelated, relatedWallpapers.isEmpty else { return }
@@ -83,6 +84,8 @@ final class DetailViewModel {
         favoritedIDs = Set((try? context.fetch(descriptor))?.map(\.wallpaperID) ?? [])
     }
 
+    private let logger = Logger(subsystem: "com.wallhaven.app", category: "detail")
+
     func toggleFavorite(in context: ModelContext) {
         if isFavorited {
             let descriptor = FetchDescriptor<FavoriteWallpaper>(
@@ -90,14 +93,14 @@ final class DetailViewModel {
             )
             if let favoriteWallpaper = try? context.fetch(descriptor).first {
                 context.delete(favoriteWallpaper)
-                try? context.save()
+                do { try context.save() } catch { logger.error("delete favorite: \(error.localizedDescription)") }
             }
             isFavorited = false
             favoritedIDs.remove(wallpaper.id)
         } else {
             let favoriteWallpaper = FavoriteWallpaper(from: wallpaper)
             context.insert(favoriteWallpaper)
-            try? context.save()
+            do { try context.save() } catch { logger.error("save favorite: \(error.localizedDescription)") }
             isFavorited = true
             favoritedIDs.insert(wallpaper.id)
         }

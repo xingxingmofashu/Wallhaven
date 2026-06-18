@@ -1,6 +1,7 @@
 import Foundation
 
 @Observable
+@MainActor
 final class UserSettingsStore {
     static let shared = UserSettingsStore()
     private(set) var settings: UserSettings?

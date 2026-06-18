@@ -4,7 +4,13 @@ set -e
 SCHEME="Wallhaven"
 BUILD_DIR="/tmp/Wallhaven_Build"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-IPA_OUTPUT="$SCRIPT_DIR/Wallhaven.ipa"
+VERSION="${1:-}"
+SUFFIX=""
+if [ -n "$VERSION" ]; then
+  SUFFIX="_${VERSION}"
+  echo "Version: $VERSION"
+fi
+IPA_OUTPUT="$SCRIPT_DIR/Wallhaven${SUFFIX}.ipa"
 
 echo "Cleaning..."
 rm -rf "$BUILD_DIR" /tmp/Wallhaven_IPA "$IPA_OUTPUT"

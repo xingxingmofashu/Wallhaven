@@ -2,6 +2,7 @@ import Observation
 import OSLog
 import Photos
 import SwiftData
+import UIKit
 
 @Observable
 @MainActor
@@ -115,26 +116,55 @@ final class DetailViewModel {
         }
     }
 
+    // MARK: - Download Progress
+
+    var downloadingIDs: Set<String> = []
+
+    var isDownloading: Bool {
+        downloadingIDs.contains(wallpaper.id)
+    }
+
     // MARK: - Save to Photos
 
     func saveToPhotos() {
-        guard let url = wallpaper.fullURL else {
-            return
-        }
+        guard let url = wallpaper.fullURL else { return }
+        let wallpaperID = wallpaper.id
+
+        downloadingIDs.insert(wallpaperID)
 
         Task {
+            defer { downloadingIDs.remove(wallpaperID) }
             do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let data: Data
+                if let cached = CacheImage.shared.data(for: url) {
+                    data = cached
+                } else if let cached = CacheImage.shared.image(for: url),
+                          let imageData = cached.jpegData(compressionQuality: 1) ?? cached.pngData() {
+                    data = imageData
+                } else {
+                    let (asyncBytes, response) = try await URLSession.shared.bytes(from: url)
+                    let total = Int(response.expectedContentLength)
+                    var buffer = Data()
+                    buffer.reserveCapacity(total > 0 ? total : 0)
+                    for try await byte in asyncBytes {
+                        buffer.append(byte)
+                    }
+                    data = buffer
+                    CacheImage.shared.insert(data: data, for: url)
+                    if let image = UIImage(data: data) {
+                        CacheImage.shared.insert(image, for: url)
+                    }
+                }
 
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-                guard status == .authorized || status == .limited else {
-                    return
-                }
+                guard status == .authorized || status == .limited else { return }
 
                 try await PHPhotoLibrary.shared().performChanges {
                     let request = PHAssetCreationRequest.forAsset()
                     request.addResource(with: .photo, data: data, options: nil)
                 }
+
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
             } catch {
                 return
             }
@@ -163,3 +193,5 @@ final class DetailViewModel {
         ]
     }
 }
+
+

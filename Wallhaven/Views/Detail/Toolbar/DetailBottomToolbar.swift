@@ -3,6 +3,7 @@ import SwiftUI
 struct DetailBottomToolbar: ToolbarContent {
     let isFavorited: Bool
     let isInCollection: Bool
+    let isDownloading: Bool
     let onShare: () -> Void
     let onToggleFavorite: () -> Void
     let onInfo: () -> Void
@@ -51,12 +52,18 @@ struct DetailBottomToolbar: ToolbarContent {
         }
 
         ToolbarItem(placement: .bottomBar) {
-            Button {
-                onSaveToPhotos()
-            } label: {
-                Image(systemName: "arrow.down.circle")
-                    .font(.title3)
-                    .foregroundStyle(.primary)
+            if isDownloading {
+                ProgressView()
+                    .tint(.primary)
+                    .scaleEffect(0.8)
+            } else {
+                Button {
+                    onSaveToPhotos()
+                } label: {
+                    Image(systemName: "arrow.down.circle")
+                        .font(.title3)
+                        .foregroundStyle(.primary)
+                }
             }
         }
     }

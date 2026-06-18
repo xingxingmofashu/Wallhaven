@@ -93,6 +93,7 @@ struct DetailView: View {
             DetailBottomToolbar(
                 isFavorited: viewModel.isFavorited,
                 isInCollection: viewModel.isInCollection,
+                isDownloading: viewModel.isDownloading,
                 onShare: { showShareSheet = true },
                 onToggleFavorite: { viewModel.toggleFavorite(in: modelContext) },
                 onInfo: { showInfoSheet = true },

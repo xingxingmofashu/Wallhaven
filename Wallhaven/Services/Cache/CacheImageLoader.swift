@@ -31,6 +31,7 @@ final class CacheImageLoader {
                 guard !Task.isCancelled else { return }
                 if let loadedImage = UIImage(data: data) {
                     CacheImage.shared.insert(loadedImage, for: url)
+                    CacheImage.shared.insert(data: data, for: url)
                     image = loadedImage
                 } else {
                     hasFailed = true

@@ -30,9 +30,25 @@ final class HomeViewModel {
         Task { await fetchFirstPage() }
     }
 
-    func refresh() {
-        loadState = .idle
-        Task { await fetchFirstPage() }
+    func refresh() async {
+        guard case .loaded = loadState else {
+            await fetchFirstPage()
+            return
+        }
+        let oldIDs = Set(wallpapers.map(\.id))
+        currentPage = 1
+        do {
+            let response = try await WallhavenFetch.shared.search(filters: filters, page: 1)
+            let newIDs = Set(response.data.map(\.id))
+            if oldIDs != newIDs {
+                wallpapers = response.data
+            }
+            hasNextPage = response.meta.hasNextPage
+            currentPage = response.meta.currentPage
+            loadState = .loaded
+        } catch {
+            loadState = .loaded
+        }
     }
 
     func loadMore() {

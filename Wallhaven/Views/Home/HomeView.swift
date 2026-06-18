@@ -22,13 +22,13 @@ struct HomeView: View {
                 case .failed(let error):
                     ErrorView(
                         message: (error as? LocalizedError)?.errorDescription ?? "Unknown error",
-                        retryAction: { viewModel.refresh() }
+                        retryAction: { Task { await viewModel.refresh() } }
                     )
                 }
             }
             .navigationTitle("Wallhaven")
             .task { viewModel.loadInitial() }
-            .refreshable { viewModel.refresh() }
+            .refreshable { await viewModel.refresh() }
             .navigationDestination(item: $selectedWallpaper) { wallpaper in
                 if let index = viewModel.wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
                    viewModel.wallpapers.indices.contains(index)

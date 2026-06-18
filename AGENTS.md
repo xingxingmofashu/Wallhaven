@@ -3,39 +3,37 @@
 ## Build & verify
 
 ```bash
-# Simulator check (--destination required; "My Mac" fails)
 xcodebuild -scheme Wallhaven -sdk iphonesimulator \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' build
 
-# Unsigned Release IPA (sideloading) — ./build.sh
+# Unsigned Release IPA — ./build.sh
 # Signed IPA + devicectl install — ./install.sh
 ```
 
 - No test targets, no CI, no third-party dependencies.
 - `build.sh`: `CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO` → unsigned IPA at repo root.
-- `install.sh`: `DEVELOPMENT_TEAM` from pbxproj → `security find-identity` → `$DEVELOPMENT_TEAM` env var.
+- `install.sh`: reads `DEVELOPMENT_TEAM` from pbxproj → falls back to `security find-identity` → overridable via `$DEVELOPMENT_TEAM`.
 
 ## Architecture
 
 - **MVVM** with `@Observable` (not ObservableObject). ViewModels are explicitly `@MainActor`.
 - `WallhavenFetch.shared` is an **actor** — `await` all calls.
-- `FavoriteWallpaper` is SwiftData `@Model` (`@Attribute(.unique) wallpaperID`). `ModelContainer` in `WallhavenApp.swift`.
 - **No `SWIFT_DEFAULT_ACTOR_ISOLATION`** — types not implicitly `@MainActor`.
-- `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio` computed property. `Wallpaper`, `FavoriteWallpaper`, and `CollectionItem` all conform.
-- Image cache: `CacheImage` (NSCache, 150 MB), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere.
-- Favorites tab: segmented picker (Favorites / Collections).
-- Collections are **local only** — `WallhavenCollection` (folder) + `CollectionItem` (membership). No API calls.
-- Star button saves wallpaper to a collection. If only "Default" → silent; if 2+ collections → picker sheet.
+- `Wallhaven/` is a **PBXFileSystemSynchronizedRootGroup** — new files on disk auto-sync; no `.pbxproj` edits.
+- `FavoriteWallpaper`, `CollectionFolder`, `CollectionItem` are SwiftData `@Model`. `ModelContainer` in `WallhavenApp.swift` (`isStoredInMemoryOnly: false`).
+- Collections are **local only** — `CollectionFolder` (folder) + `CollectionItem` (membership). No API calls.
+- Star button (`star`/`star.fill`) saves wallpaper to a collection. If only "Default" → silent; if 2+ collections → picker sheet. Tap again removes.
 - `NavigationState` (`@Observable`, `@MainActor`) injected via `@Environment` for shared search-tag flow.
 - `UserSettingsStore.shared` (`@Observable` singleton) caches `GET /settings`; loaded in `ContentView.task`.
+- Image cache: `CacheImage` (NSCache, 150 MB), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere.
+- `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio`. `Wallpaper`, `FavoriteWallpaper`, `CollectionItem` all conform.
 
 ## View conventions
 
 - **Section/** — One file per Form `Section` when interactive; data-driven sections stay bundled.
-- **Content/** — Sub-views for tab/state switches (e.g., `Favorites/Tab/`).
+- **Tab/** — Sub-views for tab switches (e.g., `Favorites/Tab/FavoritesTab.swift`).
 - **Toolbar/** — `@ToolbarContentBuilder` types (e.g., `Detail/Toolbar/DetailTopToolbar.swift`).
 - Extracted views receive data + closures (never ViewModel bindings).
-- `Wallhaven/` is a **PBXFileSystemSynchronizedRootGroup** — new files on disk are auto-synced; no `.pbxproj` edits.
 
 ## Constraints
 
@@ -43,7 +41,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - `GENERATE_INFOPLIST_FILE = YES` — add privacy keys via `INFOPLIST_KEY_*` in pbxproj.
 - `ENABLE_USER_SCRIPT_SANDBOXING = YES` in both configurations.
 - Localization: `knownRegions = (en, Base, "zh-Hans")`, `SWIFT_EMIT_LOC_STRINGS = YES`.
-- `UserDefaults` keys: `wallhaven_api_key`, `wallhaven_api_base_url`, `wallhaven_username`, `app_appearance`.
+- `UserDefaults` keys: `wallhaven_api_key`, `wallhaven_api_base_url`, `app_appearance`.
 
 ## Pitfalls
 

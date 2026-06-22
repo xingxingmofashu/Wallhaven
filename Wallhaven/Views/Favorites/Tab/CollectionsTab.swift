@@ -12,23 +12,12 @@ struct CollectionsTab: View {
     @State private var newCollectionName = ""
     @State private var renameText = ""
     @State private var renameCollection: CollectionFolder?
-    @State private var selectedCollection: CollectionFolder?
-
-    @State private var wallpapers: [Wallpaper] = []
-    @State private var selectedWallpaper: Wallpaper?
 
     private let collectionsVM = CollectionsViewModel()
 
     var body: some View {
-        Group {
-            if let collection = selectedCollection {
-                wallpapersView(for: collection)
-            } else {
-                collectionListView
-            }
-        }
-        .toolbar {
-            if selectedCollection == nil {
+        collectionListView
+            .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showCreateAlert = true
@@ -37,40 +26,39 @@ struct CollectionsTab: View {
                     }
                 }
             }
-        }
-        .alert("New Collection", isPresented: $showCreateAlert) {
-            TextField("Name", text: $newCollectionName)
-            Button("Cancel", role: .cancel) {
-                newCollectionName = ""
-            }
-            Button("Create") {
-                let name = newCollectionName.trimmingCharacters(in: .whitespaces)
-                if !name.isEmpty {
-                    collectionsVM.createCollection(named: name, in: modelContext)
+            .alert("New Collection", isPresented: $showCreateAlert) {
+                TextField("Name", text: $newCollectionName)
+                Button("Cancel", role: .cancel) {
+                    newCollectionName = ""
                 }
-                newCollectionName = ""
-            }
-        } message: {
-            Text("Enter a name for the new collection.")
-        }
-        .alert("Rename Collection", isPresented: $showRenameAlert) {
-            TextField("Name", text: $renameText)
-            Button("Cancel", role: .cancel) {
-                renameCollection = nil
-            }
-            Button("Rename") {
-                let name = renameText.trimmingCharacters(in: .whitespaces)
-                if !name.isEmpty, let collection = renameCollection {
-                    collectionsVM.renameCollection(collection, to: name, in: modelContext)
+                Button("Create") {
+                    let name = newCollectionName.trimmingCharacters(in: .whitespaces)
+                    if !name.isEmpty {
+                        collectionsVM.createCollection(named: name, in: modelContext)
+                    }
+                    newCollectionName = ""
                 }
-                renameCollection = nil
+            } message: {
+                Text("Enter a name for the new collection.")
             }
-        } message: {
-            Text("Enter a new name for this collection.")
-        }
-        .task {
-            collectionsVM.ensureDefaultCollection(in: modelContext)
-        }
+            .alert("Rename Collection", isPresented: $showRenameAlert) {
+                TextField("Name", text: $renameText)
+                Button("Cancel", role: .cancel) {
+                    renameCollection = nil
+                }
+                Button("Rename") {
+                    let name = renameText.trimmingCharacters(in: .whitespaces)
+                    if !name.isEmpty, let collection = renameCollection {
+                        collectionsVM.renameCollection(collection, to: name, in: modelContext)
+                    }
+                    renameCollection = nil
+                }
+            } message: {
+                Text("Enter a new name for this collection.")
+            }
+            .task {
+                collectionsVM.ensureDefaultCollection(in: modelContext)
+            }
     }
 
     // MARK: - Collection List
@@ -86,10 +74,7 @@ struct CollectionsTab: View {
             } else {
                 List {
                     ForEach(collections) { collection in
-                        Button {
-                            selectedCollection = collection
-                            loadWallpapers(for: collection)
-                        } label: {
+                        NavigationLink(value: collection) {
                             CollectionRowView(
                                 name: collection.name,
                                 count: allItems.filter { $0.collectionID == collection.id }.count
@@ -122,11 +107,22 @@ struct CollectionsTab: View {
         }
         .navigationTitle("Collections")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: CollectionFolder.self) { collection in
+            CollectionWallpapersView(collection: collection)
+        }
     }
+}
 
-    // MARK: - Wallpapers View
+// MARK: - Collection Wallpapers
 
-    private func wallpapersView(for collection: CollectionFolder) -> some View {
+struct CollectionWallpapersView: View {
+    @Environment(\.modelContext) private var modelContext
+    let collection: CollectionFolder
+
+    @State private var wallpapers: [Wallpaper] = []
+    @State private var selectedWallpaper: Wallpaper?
+
+    var body: some View {
         Group {
             if wallpapers.isEmpty {
                 ContentUnavailableView(
@@ -152,15 +148,6 @@ struct CollectionsTab: View {
         }
         .navigationTitle(collection.name)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    selectedCollection = nil
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-            }
-        }
         .navigationDestination(item: $selectedWallpaper) { wallpaper in
             if let index = wallpapers.firstIndex(where: { $0.id == wallpaper.id }),
                wallpapers.indices.contains(index)
@@ -168,9 +155,12 @@ struct CollectionsTab: View {
                 DetailView(wallpapers: wallpapers, startIndex: index)
             }
         }
+        .task {
+            loadWallpapers()
+        }
     }
 
-    private func loadWallpapers(for collection: CollectionFolder) {
+    private func loadWallpapers() {
         let collectionID = collection.id
         let descriptor = FetchDescriptor<CollectionItem>(
             predicate: #Predicate { $0.collectionID == collectionID },
@@ -182,7 +172,6 @@ struct CollectionsTab: View {
     }
 
     private func removeFromCollection(wallpaperID: String) {
-        guard let collection = selectedCollection else { return }
         let collectionID = collection.id
         DispatchQueue.main.async {
             let descriptor = FetchDescriptor<CollectionItem>(
@@ -193,7 +182,7 @@ struct CollectionsTab: View {
             if let item = try? modelContext.fetch(descriptor).first {
                 modelContext.delete(item)
                 try? modelContext.save()
-                loadWallpapers(for: collection)
+                loadWallpapers()
             }
         }
     }

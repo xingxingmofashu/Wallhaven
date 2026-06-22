@@ -1,3 +1,4 @@
+import ImageIO
 import UIKit
 
 /// Two-level image cache: in-memory (NSCache) + disk (Caches/WallhavenImages/).
@@ -10,7 +11,6 @@ final class CacheImage: @unchecked Sendable {
     private let cacheLock  = NSLock()
 
     private let diskCacheURL: URL
-    private let diskQueue = DispatchQueue(label: "com.wallhaven.diskcache", qos: .utility)
     private static let maxDiskFiles = 200
 
     private init() {
@@ -38,7 +38,9 @@ final class CacheImage: @unchecked Sendable {
 
     func insert(_ image: UIImage, for url: URL) {
         cacheLock.lock(); defer { cacheLock.unlock() }
-        let cost = image.jpegData(compressionQuality: 1)?.count ?? 0
+        // Estimate cost from pixel dimensions (4 bytes per pixel for RGBA).
+        // Avoids the expensive jpegData() re-encoding that blocks the main thread.
+        let cost = Int(image.size.width * image.scale) * Int(image.size.height * image.scale) * 4
         imageCache.setObject(image, forKey: url.absoluteString as NSString, cost: cost)
     }
 
@@ -70,17 +72,12 @@ final class CacheImage: @unchecked Sendable {
         evictDiskIfNeeded()
     }
 
-    func removeDisk(for url: URL) {
-        try? FileManager.default.removeItem(at: diskFileURL(for: url))
-    }
-
     // MARK: - Combined load
 
     func cachedImage(for url: URL) -> UIImage? {
         if let mem = image(for: url) { return mem }
         if let disk = diskData(for: url) {
-            insertDisk(data: disk, for: url)
-            if let img = UIImage(data: disk) {
+            if let img = downsampledImage(from: disk) {
                 insert(img, for: url)
                 insert(data: disk, for: url)
                 return img
@@ -89,43 +86,38 @@ final class CacheImage: @unchecked Sendable {
         return nil
     }
 
-    func cachedData(for url: URL) -> Data? {
-        if let mem = data(for: url) { return mem }
-        return diskData(for: url)
-    }
-
+    /// Load image: memory -> disk -> network. Returns a display-sized (downsampled) UIImage.
     func load(url: URL) async -> UIImage? {
+        // 1. Memory hit
         if let mem = image(for: url) { return mem }
 
-        return await withCheckedContinuation { continuation in
-            diskQueue.async { [weak self] in
-                guard let self else { continuation.resume(returning: nil); return }
-                if let diskData = self.diskData(for: url) {
-                    if let img = UIImage(data: diskData) {
-                        self.insert(img, for: url)
-                        self.insert(data: diskData, for: url)
-                        continuation.resume(returning: img)
-                    } else {
-                        continuation.resume(returning: nil)
-                    }
-                    return
-                }
-                Task {
-                    let result = await self.download(url: url)
-                    continuation.resume(returning: result)
-                }
-            }
+        // 2. Disk hit (runs file I/O off the caller's context)
+        if let diskImage = await loadFromDisk(url: url) {
+            return diskImage
         }
+
+        // 3. Network download
+        return await download(url: url)
     }
 
-    func download(url: URL) async -> UIImage? {
+    private func loadFromDisk(url: URL) async -> UIImage? {
+        await Task.detached(priority: .utility) { [weak self] () -> UIImage? in
+            guard let self, let diskData = self.diskData(for: url) else { return nil }
+            guard let img = self.downsampledImage(from: diskData) else { return nil }
+            self.insert(img, for: url)
+            self.insert(data: diskData, for: url)
+            return img
+        }.value
+    }
+
+    private func download(url: URL) async -> UIImage? {
         if let mem = image(for: url) { return mem }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             insertDisk(data: data, for: url)
             insert(data: data, for: url)
-            guard !Task.isCancelled, let loaded = UIImage(data: data) else { return nil }
+            guard !Task.isCancelled, let loaded = downsampledImage(from: data) else { return nil }
             insert(loaded, for: url)
             return loaded
         } catch {
@@ -139,6 +131,39 @@ final class CacheImage: @unchecked Sendable {
             guard let self else { return }
             _ = await self.load(url: url)
         }
+    }
+
+    // MARK: - Downsampling
+
+    /// Maximum pixel width for display images. Matches largest iPhone screen width at 3x scale.
+    private static let maxDisplayPixelWidth: CGFloat = {
+        // UIScreen must be accessed on the main thread.
+        if Thread.isMainThread {
+            return UIScreen.main.bounds.width * UIScreen.main.scale
+        }
+        return DispatchQueue.main.sync {
+            UIScreen.main.bounds.width * UIScreen.main.scale
+        }
+    }()
+
+    /// Downsample raw data via ImageIO — decodes only the pixels needed for display.
+    /// Falls back to `UIImage(data:)` if ImageIO fails.
+    func downsampledImage(from data: Data) -> UIImage? {
+        let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary) else {
+            return UIImage(data: data)
+        }
+
+        let downsampleOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: Self.maxDisplayPixelWidth
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, downsampleOptions as CFDictionary) else {
+            return UIImage(data: data)
+        }
+        return UIImage(cgImage: cgImage)
     }
 
     // MARK: - Disk helpers

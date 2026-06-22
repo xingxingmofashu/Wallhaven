@@ -124,6 +124,7 @@ extension Wallpaper {
     )
 }
 
-struct WallpaperDetailResponse: Codable {
-    let data: Wallpaper
+/// Generic wrapper for `{ "data": T }` API responses.
+struct APIResponse<T: Codable>: Codable {
+    let data: T
 }

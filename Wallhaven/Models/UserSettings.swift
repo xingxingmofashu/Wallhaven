@@ -1,9 +1,5 @@
 import Foundation
 
-struct UserSettingsResponse: Codable {
-    let data: UserSettings
-}
-
 struct UserSettings: Codable {
     let thumbSize: String
     let perPage: String

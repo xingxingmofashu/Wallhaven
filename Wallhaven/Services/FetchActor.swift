@@ -37,7 +37,7 @@ actor FetchActor {
 
     func getWallpaperDetail(id: String) async throws -> Wallpaper {
         let url = try buildURL(path: "/w/\(id)")
-        let response: WallpaperDetailResponse = try await fetch(url: url)
+        let response: APIResponse<Wallpaper> = try await fetch(url: url)
         return response.data
     }
 
@@ -45,7 +45,7 @@ actor FetchActor {
 
     func getUserSettings() async throws -> UserSettings {
         let url = try buildURL(path: "/settings")
-        let response: UserSettingsResponse = try await fetch(url: url)
+        let response: APIResponse<UserSettings> = try await fetch(url: url)
         return response.data
     }
 

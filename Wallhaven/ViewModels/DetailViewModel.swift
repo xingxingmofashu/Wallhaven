@@ -31,6 +31,7 @@ final class DetailViewModel {
     // MARK: - Tasks
 
     private var detailTask: Task<Void, Never>?
+    private var relatedTask: Task<Void, Never>?
 
     // MARK: - Load Detail
 
@@ -41,8 +42,8 @@ final class DetailViewModel {
         detailTask = Task {
             defer { isLoadingDetail = false }
             do {
-                let wallpaperDetail = try await FetchActor.shared.getWallpaperDetail(id: wallpaper.id)
-                wallpaper = wallpaperDetail
+                let detail = try await FetchActor.shared.getWallpaperDetail(id: wallpaper.id)
+                wallpaper = detail
                 hasLoadedDetail = true
             } catch {
                 // Silently handle load failure, keep preview data
@@ -54,14 +55,14 @@ final class DetailViewModel {
 
     func loadRelatedWallpapers() {
         guard !isLoadingRelated, relatedWallpapers.isEmpty else { return }
-        detailTask?.cancel()
+        relatedTask?.cancel()
         isLoadingRelated = true
-        detailTask = Task {
+        relatedTask = Task {
             defer { isLoadingRelated = false }
             do {
-                var relatedFilters = SearchFilters()
-                relatedFilters.query = "like:\(wallpaper.id)"
-                let response = try await FetchActor.shared.search(filters: relatedFilters)
+                var filters = SearchFilters()
+                filters.query = "like:\(wallpaper.id)"
+                let response = try await FetchActor.shared.search(filters: filters)
                 relatedWallpapers = response.data
             } catch {
                 // Silently handle load failure
@@ -71,6 +72,7 @@ final class DetailViewModel {
 
     func selectRelated(_ wallpaper: Wallpaper) {
         detailTask?.cancel()
+        relatedTask?.cancel()
         self.wallpaper = wallpaper
         hasLoadedDetail = false
         isLoadingDetail = false
@@ -196,26 +198,7 @@ final class DetailViewModel {
         Task {
             defer { downloadingIDs.remove(wallpaperID) }
             do {
-                let data: Data
-                if let cached = CacheImage.shared.data(for: url) {
-                    data = cached
-                } else if let cached = CacheImage.shared.image(for: url),
-                          let imageData = cached.jpegData(compressionQuality: 1) ?? cached.pngData() {
-                    data = imageData
-                } else {
-                    let (asyncBytes, response) = try await URLSession.shared.bytes(from: url)
-                    let total = Int(response.expectedContentLength)
-                    var buffer = Data()
-                    buffer.reserveCapacity(total > 0 ? total : 0)
-                    for try await byte in asyncBytes {
-                        buffer.append(byte)
-                    }
-                    data = buffer
-                    CacheImage.shared.insert(data: data, for: url)
-                    if let image = UIImage(data: data) {
-                        CacheImage.shared.insert(image, for: url)
-                    }
-                }
+                let data = try await fetchOriginalData(for: url)
 
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
                 guard status == .authorized || status == .limited else {
@@ -233,6 +216,24 @@ final class DetailViewModel {
                 saveResult = .error
             }
         }
+    }
+
+    /// Fetch original (full-resolution) image data from memory cache, disk cache, or network.
+    private func fetchOriginalData(for url: URL) async throws -> Data {
+        // 1. Memory data cache (original bytes)
+        if let cached = CacheImage.shared.data(for: url) {
+            return cached
+        }
+        // 2. Disk cache (original bytes)
+        if let diskData = CacheImage.shared.diskData(for: url) {
+            CacheImage.shared.insert(data: diskData, for: url)
+            return diskData
+        }
+        // 3. Network download
+        let (data, _) = try await URLSession.shared.data(from: url)
+        CacheImage.shared.insert(data: data, for: url)
+        CacheImage.shared.insertDisk(data: data, for: url)
+        return data
     }
 
     // MARK: - Share

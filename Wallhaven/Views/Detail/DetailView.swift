@@ -120,7 +120,7 @@ struct DetailView: View {
         .onChange(of: viewModel.saveResult) { _, result in
             guard let result else { return }
             if result == .success {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                hapticFeedback()
             } else {
                 notificationFeedback(.error)
             }

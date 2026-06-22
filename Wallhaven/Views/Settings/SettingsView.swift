@@ -17,7 +17,6 @@ struct SettingsView: View {
                 AboutSection(version: SettingsViewModel.shared.appVersion, buildNumber: SettingsViewModel.shared.buildNumber)
             }
             .navigationTitle("Settings")
-            .task { await SettingsViewModel.shared.load() }
             .onChange(of: SettingsViewModel.shared.hasApiKey) { _, _ in
                 Task { await SettingsViewModel.shared.load() }
             }

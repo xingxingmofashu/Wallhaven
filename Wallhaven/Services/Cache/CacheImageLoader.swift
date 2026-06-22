@@ -16,6 +16,7 @@ final class CacheImageLoader {
         cancel()
         currentURL = url
 
+        // 1. Memory cache hit — instant
         if let cached = CacheImage.shared.image(for: url) {
             image = cached
             return
@@ -26,20 +27,16 @@ final class CacheImageLoader {
 
         task = Task {
             defer { isLoading = false }
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+
+            // 2. Disk cache hit — avoid network round-trip
+            if let loaded = await CacheImage.shared.load(url: url) {
                 guard !Task.isCancelled else { return }
-                if let loadedImage = UIImage(data: data) {
-                    CacheImage.shared.insert(loadedImage, for: url)
-                    CacheImage.shared.insert(data: data, for: url)
-                    image = loadedImage
-                } else {
-                    hasFailed = true
-                }
-            } catch {
-                guard !Task.isCancelled else { return }
-                hasFailed = true
+                image = loaded
+                return
             }
+
+            guard !Task.isCancelled else { return }
+            hasFailed = true
         }
     }
 

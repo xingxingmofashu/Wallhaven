@@ -39,17 +39,9 @@ struct FavoritesView: View {
                             wallpapers: favorites.map(\.asWallpaper),
                             onSelect: { selectedWallpaper = $0 },
                             removeFavorite: { wallpaperID in
-                                DispatchQueue.main.async {
-                                    let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                                        predicate: #Predicate {
-                                            $0.wallpaperID == wallpaperID && $0.collectionID == nil
-                                        }
-                                    )
-                                    if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
-                                        modelContext.delete(favoriteWallpaper)
-                                        modelContext.saveWithLog()
-                                    }
-                                }
+                                modelContext.deferredDelete(
+                                    where: #Predicate { $0.wallpaperID == wallpaperID && $0.collectionID == nil }
+                                )
                             }
                         )
                     case .collections:

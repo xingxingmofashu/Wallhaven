@@ -22,10 +22,6 @@ extension Color {
         }
         self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
     }
-
-    static let appBackground = Color(.systemBackground)
-    static let appGray5     = Color(.systemGray5)
-    static let appGray4     = Color(.systemGray4)
 }
 
 // MARK: - Card Style
@@ -55,7 +51,7 @@ func notificationFeedback(_ type: UINotificationFeedbackGenerator.FeedbackType) 
     UINotificationFeedbackGenerator().notificationOccurred(type)
 }
 
-// MARK: - SwiftData Save
+// MARK: - SwiftData Helpers
 
 extension ModelContext {
     func saveWithLog() {
@@ -63,6 +59,19 @@ extension ModelContext {
             try save()
         } catch {
             os_log(.error, "ModelContext save failed: %@", error.localizedDescription)
+        }
+    }
+
+    /// Delete a FavoriteWallpaper matching the given predicate, deferred to next run-loop
+    /// to avoid SwiftData mutation during context-menu dismiss.
+    func deferredDelete(where predicate: Predicate<FavoriteWallpaper>, then completion: (() -> Void)? = nil) {
+        DispatchQueue.main.async { [self] in
+            let descriptor = FetchDescriptor<FavoriteWallpaper>(predicate: predicate)
+            if let item = try? fetch(descriptor).first {
+                delete(item)
+                saveWithLog()
+            }
+            completion?()
         }
     }
 }

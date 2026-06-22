@@ -16,7 +16,8 @@ struct HomeView: View {
                         wallpapers: viewModel.wallpapers,
                         isLoadingMore: viewModel.isLoadingMore,
                         onLoadMore: { viewModel.loadMore() },
-                        onSelect: { selectedWallpaper = $0 }
+                        onSelect: { selectedWallpaper = $0 },
+                        scrollAnchor: viewModel.scrollAnchor
                     )
 
                 case .failed(let error):

@@ -7,12 +7,14 @@ struct GridView<ContextMenuContent: View>: View {
     let onLoadMore: () -> Void
     let onSelect: (Wallpaper) -> Void
     let contextMenu: ((Wallpaper) -> ContextMenuContent)?
+    let scrollAnchor: UUID?
 
     init(
         wallpapers: [Wallpaper],
         isLoadingMore: Bool = false,
         onLoadMore: @escaping () -> Void = {},
         onSelect: @escaping (Wallpaper) -> Void = { _ in },
+        scrollAnchor: UUID? = nil,
         @ViewBuilder contextMenu: @escaping (Wallpaper) -> ContextMenuContent = { _ in EmptyView() }
     ) {
         self.wallpapers = wallpapers
@@ -20,6 +22,7 @@ struct GridView<ContextMenuContent: View>: View {
         self.onLoadMore = onLoadMore
         self.onSelect = onSelect
         self.contextMenu = contextMenu
+        self.scrollAnchor = scrollAnchor
     }
 
     private let spacing: CGFloat = 8
@@ -28,23 +31,34 @@ struct GridView<ContextMenuContent: View>: View {
         GeometryReader { geo in
             let columnWidth = (geo.size.width - spacing * 3) / 2
 
-            ScrollView {
-                if columnWidth > 0 {
-                    HStack(alignment: .top, spacing: spacing) {
-                        columnWallpapers(leftWallpapers, columnWidth: columnWidth)
-                        columnWallpapers(rightWallpapers, columnWidth: columnWidth)
-                    }
-                    .padding(.horizontal, spacing)
-                    .padding(.top, spacing)
-                }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    Color.clear
+                        .frame(height: 0)
+                        .id("grid_top")
 
-                if isLoadingMore {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                    if columnWidth > 0 {
+                        HStack(alignment: .top, spacing: spacing) {
+                            columnWallpapers(leftWallpapers, columnWidth: columnWidth)
+                            columnWallpapers(rightWallpapers, columnWidth: columnWidth)
+                        }
+                        .padding(.horizontal, spacing)
+                        .padding(.top, spacing)
+                    }
+
+                    if isLoadingMore {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
+                }
+                .frame(width: geo.size.width, height: geo.size.height)
+                .onChange(of: scrollAnchor) {
+                    if scrollAnchor != nil {
+                        proxy.scrollTo("grid_top", anchor: .top)
+                    }
                 }
             }
-            .frame(width: geo.size.width, height: geo.size.height)
         }
     }
 

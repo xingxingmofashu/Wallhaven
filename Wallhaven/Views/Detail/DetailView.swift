@@ -169,23 +169,32 @@ struct DetailView: View {
     }
 
     private func imageView(for wallpaper: Wallpaper) -> some View {
-        CacheAsyncImage(url: wallpaper.fullURL) { image in
-            image
-                .resizable()
-                .scaledToFit()
-        } placeholder: {
-            CacheAsyncImage(url: wallpaper.thumbnailURL) { thumb in
-                thumb
+        AsyncImage(url: wallpaper.fullURL) { phase in
+            switch phase {
+            case .success(let image):
+                image
                     .resizable()
-                    .scaledToFill()
-                    .blur(radius: 20, opaque: true)
-            } placeholder: {
-                Rectangle()
-                    .fill(Color(.systemGray5))
+                    .scaledToFit()
+            case .failure, .empty:
+                placeholderView(for: wallpaper)
+            @unknown default:
+                placeholderView(for: wallpaper)
             }
-            .aspectRatio(wallpaper.aspectRatio, contentMode: .fit)
-            .clipShape(Rectangle())
         }
+    }
+
+    private func placeholderView(for wallpaper: Wallpaper) -> some View {
+        CacheAsyncImage(url: wallpaper.thumbnailURL) { thumb in
+            thumb
+                .resizable()
+                .scaledToFill()
+                .blur(radius: 20, opaque: true)
+        } placeholder: {
+            Rectangle()
+                .fill(Color(.systemGray5))
+        }
+        .aspectRatio(wallpaper.aspectRatio, contentMode: .fit)
+        .clipShape(Rectangle())
     }
 
 }

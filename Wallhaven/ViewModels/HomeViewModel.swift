@@ -10,6 +10,7 @@ final class HomeViewModel: HasSearchFilters {
     var loadState: LoadState    = .idle
     var isLoadingMore           = false
     var hasNextPage             = false
+    var scrollAnchor            = UUID()
 
     private var currentPage     = 1
 
@@ -44,8 +45,10 @@ final class HomeViewModel: HasSearchFilters {
                 hasNextPage = response.meta.hasNextPage
                 currentPage = response.meta.currentPage
                 loadState = .loaded
+                scrollAnchor = UUID()
             } catch {
                 loadState = .loaded
+                scrollAnchor = UUID()
             }
         }
         _ = await searchTask?.result

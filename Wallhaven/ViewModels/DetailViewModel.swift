@@ -78,7 +78,7 @@ final class DetailViewModel {
     }
 
     func refreshFavoriteStatus(in context: ModelContext) {
-        let descriptor = FetchDescriptor<StoredWallpaper>(
+        let descriptor = FetchDescriptor<FavoriteWallpaper>(
             predicate: #Predicate { $0.wallpaperID == wallpaper.id && $0.collectionID == nil }
         )
         isFavorited = (try? context.fetchCount(descriptor)) ?? 0 > 0
@@ -87,7 +87,7 @@ final class DetailViewModel {
     }
 
     func refreshCollectionStatus(in context: ModelContext) {
-        let descriptor = FetchDescriptor<StoredWallpaper>(
+        let descriptor = FetchDescriptor<FavoriteWallpaper>(
             predicate: #Predicate { $0.wallpaperID == wallpaper.id && $0.collectionID != nil }
         )
         isInCollection = (try? context.fetchCount(descriptor)) ?? 0 > 0
@@ -96,7 +96,7 @@ final class DetailViewModel {
     func loadFavoriteStatuses(in context: ModelContext) {
         let allIDs = Set([wallpaper.id] + relatedWallpapers.map(\.id))
         guard !allIDs.isEmpty else { return }
-        var descriptor = FetchDescriptor<StoredWallpaper>(
+        var descriptor = FetchDescriptor<FavoriteWallpaper>(
             predicate: #Predicate { allIDs.contains($0.wallpaperID) && $0.collectionID == nil }
         )
         favoritedIDs = Set((try? context.fetch(descriptor))?.map(\.wallpaperID) ?? [])
@@ -105,7 +105,7 @@ final class DetailViewModel {
     func handleAddToCollection(in context: ModelContext, collections: [CollectionFolder]) {
         let wallpaperID = wallpaper.id
         if isInCollection {
-            let descriptor = FetchDescriptor<StoredWallpaper>(
+            let descriptor = FetchDescriptor<FavoriteWallpaper>(
                 predicate: #Predicate { $0.wallpaperID == wallpaperID && $0.collectionID != nil }
             )
             if let item = try? context.fetch(descriptor).first {
@@ -128,7 +128,7 @@ final class DetailViewModel {
     }
 
     private func addToCollection(collectionID: UUID, in context: ModelContext) {
-        let item = StoredWallpaper(from: wallpaper, collectionID: collectionID)
+        let item = FavoriteWallpaper(from: wallpaper, collectionID: collectionID)
         context.insert(item)
         context.saveWithLog()
         isInCollection = true
@@ -143,7 +143,7 @@ final class DetailViewModel {
 
     func toggleFavorite(in context: ModelContext) {
         if isFavorited {
-            let descriptor = FetchDescriptor<StoredWallpaper>(
+            let descriptor = FetchDescriptor<FavoriteWallpaper>(
                 predicate: #Predicate { $0.wallpaperID == wallpaper.id && $0.collectionID == nil }
             )
             if let favoriteWallpaper = try? context.fetch(descriptor).first {
@@ -153,7 +153,7 @@ final class DetailViewModel {
             isFavorited = false
             favoritedIDs.remove(wallpaper.id)
         } else {
-            let favoriteWallpaper = StoredWallpaper(from: wallpaper)
+            let favoriteWallpaper = FavoriteWallpaper(from: wallpaper)
             context.insert(favoriteWallpaper)
             context.saveWithLog()
             isFavorited = true

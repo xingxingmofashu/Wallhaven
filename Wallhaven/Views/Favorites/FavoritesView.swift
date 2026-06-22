@@ -6,10 +6,10 @@ import SwiftData
 struct FavoritesView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(
-        filter: #Predicate<StoredWallpaper> { $0.collectionID == nil },
-        sort: \StoredWallpaper.addedAt, order: .reverse
+        filter: #Predicate<FavoriteWallpaper> { $0.collectionID == nil },
+        sort: \FavoriteWallpaper.addedAt, order: .reverse
     )
-    private var favorites: [StoredWallpaper]
+    private var favorites: [FavoriteWallpaper]
 
     @State private var selectedTab = TabSection.favorites
     @State private var selectedWallpaper: Wallpaper?
@@ -40,7 +40,7 @@ struct FavoritesView: View {
                             onSelect: { selectedWallpaper = $0 },
                             removeFavorite: { wallpaperID in
                                 DispatchQueue.main.async {
-                                    let descriptor = FetchDescriptor<StoredWallpaper>(
+                                    let descriptor = FetchDescriptor<FavoriteWallpaper>(
                                         predicate: #Predicate {
                                             $0.wallpaperID == wallpaperID && $0.collectionID == nil
                                         }
@@ -72,7 +72,7 @@ struct FavoritesView: View {
             }
             .alert("Clear All Favorites", isPresented: $showDeleteAlert) {
                 Button("Clear", role: .destructive) {
-                    let descriptor = FetchDescriptor<StoredWallpaper>(
+                    let descriptor = FetchDescriptor<FavoriteWallpaper>(
                         predicate: #Predicate { $0.collectionID == nil }
                     )
                     if let items = try? modelContext.fetch(descriptor) {

@@ -6,7 +6,7 @@ struct WallhavenApp: App {
 
     private let modelContainer: ModelContainer = {
         let schema = Schema([
-            StoredWallpaper.self,
+            FavoriteWallpaper.self,
             CollectionFolder.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

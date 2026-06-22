@@ -29,5 +29,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [StoredWallpaper.self, CollectionFolder.self], inMemory: true)
+        .modelContainer(for: [FavoriteWallpaper.self, CollectionFolder.self], inMemory: true)
 }

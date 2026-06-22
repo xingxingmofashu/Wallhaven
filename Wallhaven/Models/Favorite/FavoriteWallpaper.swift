@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class StoredWallpaper: HasDimensions {
+final class FavoriteWallpaper: HasDimensions {
     var wallpaperID: String
     var collectionID: UUID?
     var addedAt: Date
@@ -35,7 +35,7 @@ final class StoredWallpaper: HasDimensions {
     }
 }
 
-extension StoredWallpaper {
+extension FavoriteWallpaper {
     var asWallpaper: Wallpaper {
         Wallpaper(
             id: wallpaperID,

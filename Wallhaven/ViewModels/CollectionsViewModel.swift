@@ -13,7 +13,7 @@ final class CollectionsViewModel {
 
     func deleteCollection(_ collection: CollectionFolder, in context: ModelContext) {
         let collectionID = collection.id
-        let itemsDescriptor = FetchDescriptor<StoredWallpaper>(
+        let itemsDescriptor = FetchDescriptor<FavoriteWallpaper>(
             predicate: #Predicate { $0.collectionID == collectionID }
         )
         if let items = try? context.fetch(itemsDescriptor) {

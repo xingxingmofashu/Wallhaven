@@ -11,7 +11,8 @@ struct SettingsView: View {
                     apiBaseURL: SettingsViewModel.shared.apiBaseURL,
                     hasApiKey: SettingsViewModel.shared.hasApiKey,
                     apiKey: SettingsViewModel.shared.apiKey,
-                    onSaveKey: { SettingsViewModel.shared.apiKey = $0 }
+                    onSaveKey: { SettingsViewModel.shared.apiKey = $0 },
+                    onSaveURL: { SettingsViewModel.shared.apiBaseURL = $0.isEmpty ? FetchActor.defaultBaseURL : $0 }
                 )
                 CacheSection(onClear: SettingsViewModel.shared.clearImageCache)
                 AboutSection(version: SettingsViewModel.shared.appVersion, buildNumber: SettingsViewModel.shared.buildNumber)

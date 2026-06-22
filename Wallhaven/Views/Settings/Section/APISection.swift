@@ -5,19 +5,42 @@ struct APISection: View {
     let hasApiKey: Bool
     let apiKey: String
     let onSaveKey: (String) -> Void
+    let onSaveURL: (String) -> Void
 
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""
+    @State private var showURLField    = false
+    @State private var tempURL         = ""
 
     var body: some View {
         Section {
-            HStack {
-                Text("Default URL")
-                Spacer()
-                Text(apiBaseURL)
+            if showURLField {
+                HStack {
+                    TextField("https://wallhaven.cc/api/v1", text: $tempURL)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                    Button("Save") {
+                        onSaveURL(tempURL.trimmingCharacters(in: .whitespaces))
+                        showURLField = false
+                    }
+                    .fontWeight(.semibold)
+                }
+            } else {
+                HStack {
+                    Text("Default URL")
+                    Spacer()
+                    Text(apiBaseURL)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    Button("Edit") {
+                        tempURL = apiBaseURL
+                        showURLField = true
+                    }
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                }
+
             }
 
             if showAPIKeyField {

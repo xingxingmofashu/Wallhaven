@@ -25,19 +25,14 @@ struct CacheSection: View {
                 Text("This will clear the in-memory image cache.")
             }
             .foregroundColor(.red)
-        }
-        .overlay(alignment: .bottom) {
+
             if showToast {
                 Label("Cache Cleared", systemImage: "checkmark.circle.fill")
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color.green)
-                    .foregroundStyle(.white)
-                    .clipShape(Capsule())
-                    .padding(.bottom, -30)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .foregroundStyle(.green)
+                    .font(.subheadline)
+                    .transition(.opacity)
             }
         }
-        .animation(.default, value: showToast)
+        .animation(.easeInOut, value: showToast)
     }
 }

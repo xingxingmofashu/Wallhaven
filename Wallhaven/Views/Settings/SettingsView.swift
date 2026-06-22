@@ -8,7 +8,6 @@ struct SettingsView: View {
             Form {
                 GeneralSection(appearance: $appAppearance)
                 APISection(
-                    apiBaseURL: SettingsViewModel.shared.apiBaseURL,
                     hasApiKey: SettingsViewModel.shared.hasApiKey,
                     apiKey: SettingsViewModel.shared.apiKey,
                     onSaveKey: { SettingsViewModel.shared.apiKey = $0 },

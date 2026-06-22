@@ -61,6 +61,7 @@
 "Resolutions" = "分辨率";
 "Aspect Ratios" = "宽高比";
 "Tag Blacklist" = "标签黑名单";
+"Edit" = "编辑";
 "Default URL" = "默认 URL";
 "Cache" = "缓存";
 "Clear Image Cache" = "清除图片缓存";

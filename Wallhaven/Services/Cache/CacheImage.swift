@@ -10,9 +10,9 @@ final class CacheImage: @unchecked Sendable {
 
     private init() {
         imageCache.countLimit     = 200
-        imageCache.totalCostLimit = 1024 * 1024 * 150  // 150 MB
+        imageCache.totalCostLimit = 1024 * 1024 * 1024  // 1 GB
         dataCache.countLimit      = 100
-        dataCache.totalCostLimit  = 1024 * 1024 * 150
+        dataCache.totalCostLimit  = 1024 * 512 * 1024  // 512 MB
     }
 
     func image(for url: URL) -> UIImage? {

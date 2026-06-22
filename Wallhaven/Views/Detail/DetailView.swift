@@ -169,17 +169,12 @@ struct DetailView: View {
     }
 
     private func imageView(for wallpaper: Wallpaper) -> some View {
-        AsyncImage(url: wallpaper.fullURL) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFit()
-            case .failure, .empty:
-                placeholderView(for: wallpaper)
-            @unknown default:
-                placeholderView(for: wallpaper)
-            }
+        CacheAsyncImage(url: wallpaper.fullURL) { image in
+            image
+                .resizable()
+                .scaledToFit()
+        } placeholder: {
+            placeholderView(for: wallpaper)
         }
     }
 

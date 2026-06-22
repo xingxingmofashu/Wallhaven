@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct APISection: View {
-    let apiBaseURL: String
     let hasApiKey: Bool
     let apiKey: String
     let onSaveKey: (String) -> Void
     let onSaveURL: (String) -> Void
+
+    private var apiBaseURL: String { SettingsViewModel.shared.apiBaseURL }
 
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""

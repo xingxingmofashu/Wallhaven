@@ -19,7 +19,10 @@ final class SettingsViewModel {
     // MARK: - API Base URL
 
     var apiBaseURL: String {
-        get { UserDefaults.standard.string(forKey: "wallhaven_api_base_url") ?? FetchActor.defaultBaseURL }
+        get {
+            let stored = UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
+            return (stored?.isEmpty ?? true) ? FetchActor.defaultBaseURL : stored!
+        }
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url") }
     }
 

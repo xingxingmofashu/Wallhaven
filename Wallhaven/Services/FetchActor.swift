@@ -8,8 +8,8 @@ actor FetchActor {
     static let defaultBaseURL = "https://wallhaven.cc/api/v1"
 
     private var baseURL: String {
-        UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
-            ?? Self.defaultBaseURL
+        let stored = UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
+        return (stored?.isEmpty ?? true) ? Self.defaultBaseURL : stored!
     }
     private let session: URLSession
 

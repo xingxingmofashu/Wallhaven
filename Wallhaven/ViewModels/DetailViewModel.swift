@@ -14,6 +14,7 @@ final class DetailViewModel {
     var isFavorited = false
     var isInCollection = false
     var favoritedIDs: Set<String> = []
+    var collectedIDs: Set<String> = []
 
     // MARK: - Related Wallpapers
 
@@ -74,6 +75,7 @@ final class DetailViewModel {
         hasLoadedDetail = false
         isLoadingDetail = false
         isFavorited = favoritedIDs.contains(wallpaper.id)
+        isInCollection = collectedIDs.contains(wallpaper.id)
         loadDetailIfNeeded()
     }
 
@@ -96,10 +98,15 @@ final class DetailViewModel {
     func loadFavoriteStatuses(in context: ModelContext) {
         let allIDs = Set([wallpaper.id] + relatedWallpapers.map(\.id))
         guard !allIDs.isEmpty else { return }
-        var descriptor = FetchDescriptor<FavoriteWallpaper>(
+        let favoriteDescriptor = FetchDescriptor<FavoriteWallpaper>(
             predicate: #Predicate { allIDs.contains($0.wallpaperID) && $0.collectionID == nil }
         )
-        favoritedIDs = Set((try? context.fetch(descriptor))?.map(\.wallpaperID) ?? [])
+        favoritedIDs = Set((try? context.fetch(favoriteDescriptor))?.map(\.wallpaperID) ?? [])
+
+        let collectionDescriptor = FetchDescriptor<FavoriteWallpaper>(
+            predicate: #Predicate { allIDs.contains($0.wallpaperID) && $0.collectionID != nil }
+        )
+        collectedIDs = Set((try? context.fetch(collectionDescriptor))?.map(\.wallpaperID) ?? [])
     }
 
     func handleAddToCollection(in context: ModelContext, collections: [CollectionFolder]) {
@@ -113,6 +120,7 @@ final class DetailViewModel {
                 context.saveWithLog()
             }
             isInCollection = false
+            collectedIDs.remove(wallpaperID)
         } else {
             if collections.isEmpty {
                 let defaultCollection = CollectionFolder(name: "Default")
@@ -132,6 +140,7 @@ final class DetailViewModel {
         context.insert(item)
         context.saveWithLog()
         isInCollection = true
+        collectedIDs.insert(wallpaper.id)
     }
 
     var showCollectionPicker = false

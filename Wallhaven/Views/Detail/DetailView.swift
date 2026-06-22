@@ -47,6 +47,7 @@ struct DetailView: View {
                         ForEach(Array(wallpapers.enumerated()), id: \.element.id) { index, wallpaper in
                             imageView(for: wallpaper)
                                 .containerRelativeFrame(.horizontal)
+                                .clipped()
                                 .id(index)
                         }
                     }

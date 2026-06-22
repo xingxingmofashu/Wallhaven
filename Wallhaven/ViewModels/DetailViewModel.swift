@@ -1,5 +1,3 @@
-import Observation
-import OSLog
 import Photos
 import SwiftData
 import UIKit
@@ -104,8 +102,6 @@ final class DetailViewModel {
         favoritedIDs = Set((try? context.fetch(descriptor))?.map(\.wallpaperID) ?? [])
     }
 
-    private let logger = Logger(subsystem: "com.wallhaven.app", category: "detail")
-
     func handleAddToCollection(in context: ModelContext, collections: [CollectionFolder]) {
         let wallpaperID = wallpaper.id
         if isInCollection {
@@ -114,14 +110,14 @@ final class DetailViewModel {
             )
             if let item = try? context.fetch(descriptor).first {
                 context.delete(item)
-                do { try context.save() } catch { logger.error("save after delete: \(error.localizedDescription)") }
+                context.saveWithLog()
             }
             isInCollection = false
         } else {
             if collections.isEmpty {
                 let defaultCollection = CollectionFolder(name: "Default")
                 context.insert(defaultCollection)
-                do { try context.save() } catch { logger.error("save default collection: \(error.localizedDescription)") }
+                context.saveWithLog()
                 addToCollection(collectionID: defaultCollection.id, in: context)
             } else if collections.count == 1 {
                 addToCollection(collectionID: collections[0].id, in: context)
@@ -134,7 +130,7 @@ final class DetailViewModel {
     private func addToCollection(collectionID: UUID, in context: ModelContext) {
         let item = StoredWallpaper(from: wallpaper, collectionID: collectionID)
         context.insert(item)
-        do { try context.save() } catch { logger.error("save collection item: \(error.localizedDescription)") }
+        context.saveWithLog()
         isInCollection = true
     }
 
@@ -152,14 +148,14 @@ final class DetailViewModel {
             )
             if let favoriteWallpaper = try? context.fetch(descriptor).first {
                 context.delete(favoriteWallpaper)
-                do { try context.save() } catch { logger.error("delete favorite: \(error.localizedDescription)") }
+                context.saveWithLog()
             }
             isFavorited = false
             favoritedIDs.remove(wallpaper.id)
         } else {
             let favoriteWallpaper = StoredWallpaper(from: wallpaper)
             context.insert(favoriteWallpaper)
-            do { try context.save() } catch { logger.error("save favorite: \(error.localizedDescription)") }
+            context.saveWithLog()
             isFavorited = true
             favoritedIDs.insert(wallpaper.id)
         }

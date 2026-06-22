@@ -25,7 +25,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - Collections are **local only** — `CollectionFolder` (folder) + `StoredWallpaper` items. No API calls.
 - Star button (`star`/`star.fill`) saves wallpaper to a collection. If only "Default" → silent; if 2+ collections → picker sheet. Tap again removes.
 - `NavigationState` (`@Observable`, `@MainActor`) injected via `@Environment` for shared search-tag flow.
-- `UserSettingsStore.shared` (`@Observable` singleton) caches `GET /settings`; loaded in `ContentView.task`.
+- `SettingsViewModel.shared` (`@Observable` singleton) caches `GET /settings`; loaded in `ContentView.task`.
 - Image cache: `CacheImage` (`NSCache`, 150 MB for images + data), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere.
 - `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio`. `Wallpaper`, `StoredWallpaper` conform.
 
@@ -53,7 +53,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - Chinese curly quotes (`''`) inside Swift string literals cause a parse error. Use ASCII quotes or `「」`.
 - `FlowLayout` is a `Layout`-conforming struct (in `Utilities/`), not a `View`.
 - `CacheAsyncImage` file and type are both named `CacheAsyncImage`.
-- `Color(hex:)` etc. defined in `Utilities/Styles.swift` — module-visible, do not duplicate.
+- `Color(hex:)` etc. defined in `Utilities/Extension.swift` — module-visible, do not duplicate.
 - `.searchable` + `.large` `.navigationBarTitleDisplayMode` causes title to disappear after canceling search (iOS 26 quirk, no clean fix).
 - API `per_page` is `Int` unauthenticated but `String` with API key. `Meta` uses `LenientInt` to decode both. Do not change `perPage` to plain `Int`.
 - API may return `[""]` instead of `[]` for `resolutions`/`aspectRatios`/`tagBlacklist`. Use `nonEmptyResolutions`, `nonEmptyAspectRatios`, `nonEmptyTagBlacklist`.

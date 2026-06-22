@@ -2,7 +2,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class HomeViewModel {
+final class HomeViewModel: HasSearchFilters {
 
     // MARK: - State
 
@@ -13,15 +13,9 @@ final class HomeViewModel {
 
     private var currentPage     = 1
 
-    private var filters = SearchFilters()
-    private var didApplyDefaults = false
+    var filters = SearchFilters()
+    var didApplyDefaults = false
     private var searchTask: Task<Void, Never>?
-
-    private func applyWebsiteDefaults() {
-        guard !didApplyDefaults, let settings = UserSettingsStore.shared.settings else { return }
-        filters.applyWebsiteDefaults(from: settings)
-        didApplyDefaults = true
-    }
 
     // MARK: - Load
 

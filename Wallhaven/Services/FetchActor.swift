@@ -5,10 +5,11 @@ import Foundation
 actor FetchActor {
 
     static let shared = FetchActor()
+    static let defaultBaseURL = "https://wallhaven.cc/api/v1"
 
     private var baseURL: String {
         UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
-            ?? "https://wallhaven.cc/api/v1"
+            ?? Self.defaultBaseURL
     }
     private let session: URLSession
 

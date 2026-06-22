@@ -47,7 +47,7 @@ struct FavoritesView: View {
                                     )
                                     if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
                                         modelContext.delete(favoriteWallpaper)
-modelContext.saveWithLog()
+                                        modelContext.saveWithLog()
                                     }
                                 }
                             }

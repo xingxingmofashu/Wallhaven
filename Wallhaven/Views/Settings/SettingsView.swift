@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var viewModel = SettingsViewModel()
     @AppStorage("app_appearance") private var appAppearance = 0
 
     var body: some View {
@@ -9,18 +8,18 @@ struct SettingsView: View {
             Form {
                 GeneralSection(appearance: $appAppearance)
                 APISection(
-                    apiBaseURL: viewModel.apiBaseURL,
-                    hasApiKey: viewModel.hasApiKey,
-                    apiKey: viewModel.apiKey,
-                    onSaveKey: { viewModel.apiKey = $0 }
+                    apiBaseURL: SettingsViewModel.shared.apiBaseURL,
+                    hasApiKey: SettingsViewModel.shared.hasApiKey,
+                    apiKey: SettingsViewModel.shared.apiKey,
+                    onSaveKey: { SettingsViewModel.shared.apiKey = $0 }
                 )
-                CacheSection(onClear: viewModel.clearImageCache)
-                AboutSection(version: viewModel.appVersion, buildNumber: viewModel.buildNumber)
+                CacheSection(onClear: SettingsViewModel.shared.clearImageCache)
+                AboutSection(version: SettingsViewModel.shared.appVersion, buildNumber: SettingsViewModel.shared.buildNumber)
             }
             .navigationTitle("Settings")
-            .task { await viewModel.fetchUserSettings() }
-            .onChange(of: viewModel.hasApiKey) { _, _ in
-                Task { await viewModel.fetchUserSettings() }
+            .task { await SettingsViewModel.shared.load() }
+            .onChange(of: SettingsViewModel.shared.hasApiKey) { _, _ in
+                Task { await SettingsViewModel.shared.load() }
             }
         }
     }

@@ -3,6 +3,9 @@ import Foundation
 @Observable
 @MainActor
 final class SettingsViewModel {
+    static let shared = SettingsViewModel()
+
+    private init() {}
 
     // MARK: - API Key
 
@@ -16,14 +19,26 @@ final class SettingsViewModel {
     // MARK: - API Base URL
 
     var apiBaseURL: String {
-        get { UserDefaults.standard.string(forKey: "wallhaven_api_base_url") ?? "https://wallhaven.cc/api/v1" }
+        get { UserDefaults.standard.string(forKey: "wallhaven_api_base_url") ?? FetchActor.defaultBaseURL }
         set { UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url") }
     }
 
     // MARK: - User Settings (from API)
 
-    func fetchUserSettings() async {
-        await UserSettingsStore.shared.load()
+    private(set) var settings: UserSettings?
+    private(set) var isLoading = false
+
+    func load() async {
+        guard let key = UserDefaults.standard.string(forKey: "wallhaven_api_key"),
+              !key.isEmpty else {
+            settings = nil
+            return
+        }
+        isLoading = true
+        do {
+            settings = try await FetchActor.shared.getUserSettings()
+        } catch {}
+        isLoading = false
     }
 
     // MARK: - Cache

@@ -2,7 +2,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class SearchViewModel {
+final class SearchViewModel: HasSearchFilters {
 
     // MARK: - State
 
@@ -16,17 +16,10 @@ final class SearchViewModel {
     var filters: SearchFilters  = SearchFilters()
 
     private var currentPage       = 0
-    private var didApplyDefaults  = false
+    var didApplyDefaults          = false
     private var searchTask: Task<Void, Never>?
 
     // MARK: - Search
-
-    /// Apply website defaults as initial filter values
-    func applyWebsiteDefaults() {
-        guard !didApplyDefaults, let settings = UserSettingsStore.shared.settings else { return }
-        filters.applyWebsiteDefaults(from: settings)
-        didApplyDefaults = true
-    }
 
     /// Trigger search with new query/filters (resets pagination)
     func search() {

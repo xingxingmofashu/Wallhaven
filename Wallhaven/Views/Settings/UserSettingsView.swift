@@ -3,9 +3,9 @@ import SwiftUI
 struct UserSettingsView: View {
     var body: some View {
         Group {
-            if UserSettingsStore.shared.isLoading {
+                if SettingsViewModel.shared.isLoading {
                 LoadingView()
-            } else if let settings = UserSettingsStore.shared.settings {
+            } else if let settings = SettingsViewModel.shared.settings {
                 List {
                     UserSettingsSection(settings: settings)
                 }

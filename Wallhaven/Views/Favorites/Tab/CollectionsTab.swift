@@ -184,7 +184,7 @@ struct CollectionWallpapersView: View {
             )
             if let item = try? modelContext.fetch(descriptor).first {
                 modelContext.delete(item)
-                                modelContext.saveWithLog()
+                modelContext.saveWithLog()
                 loadWallpapers()
             }
         }

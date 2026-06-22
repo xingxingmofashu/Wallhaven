@@ -1,19 +1,19 @@
 import SwiftUI
 
 /// Reusable wallpaper grid, two-column waterfall layout
-struct GridView: View {
+struct GridView<ContextMenuContent: View>: View {
     let wallpapers: [Wallpaper]
     let isLoadingMore: Bool
     let onLoadMore: () -> Void
     let onSelect: (Wallpaper) -> Void
-    let contextMenu: ((Wallpaper) -> AnyView)?
+    let contextMenu: ((Wallpaper) -> ContextMenuContent)?
 
     init(
         wallpapers: [Wallpaper],
         isLoadingMore: Bool = false,
         onLoadMore: @escaping () -> Void = {},
         onSelect: @escaping (Wallpaper) -> Void = { _ in },
-        contextMenu: ((Wallpaper) -> AnyView)? = nil
+        @ViewBuilder contextMenu: @escaping (Wallpaper) -> ContextMenuContent = { _ in EmptyView() }
     ) {
         self.wallpapers = wallpapers
         self.isLoadingMore = isLoadingMore
@@ -75,9 +75,7 @@ struct GridView: View {
                 .buttonStyle(.plain)
                 .contentShape(Rectangle())
                 .contextMenu {
-                    if let contextMenu = contextMenu {
-                        contextMenu(wallpaper)
-                    }
+                    contextMenu?(wallpaper)
                 }
                 .onAppear {
                     if wallpaper.id == wallpapers.last?.id, !isLoadingMore {
@@ -101,5 +99,7 @@ struct GridView: View {
         isLoadingMore: false,
         onLoadMore: {},
         onSelect: { _ in }
-    )
+    ) { _ in
+        EmptyView()
+    }
 }

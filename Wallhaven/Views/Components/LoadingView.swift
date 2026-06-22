@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct LoadingView: View {
-    var message: LocalizedStringKey = "Loading…"
+    let message: LocalizedStringKey
+
+    init(_ message: LocalizedStringKey = "Loading…") {
+        self.message = message
+    }
 
     var body: some View {
         ProgressView(message)

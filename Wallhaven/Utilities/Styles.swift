@@ -1,4 +1,3 @@
-import UIKit
 import SwiftUI
 
 // MARK: - Hex Color
@@ -21,17 +20,13 @@ extension Color {
         }
         self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
     }
-}
 
-// MARK: - App Colors
-
-extension Color {
     static let appBackground = Color(.systemBackground)
     static let appGray5     = Color(.systemGray5)
     static let appGray4     = Color(.systemGray4)
 }
 
-// MARK: - Common Modifiers
+// MARK: - Card Style
 
 struct CardStyle: ViewModifier {
     func body(content: Content) -> some View {

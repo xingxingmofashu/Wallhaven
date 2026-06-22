@@ -55,13 +55,13 @@ actor FetchActor {
         if let key = apiKey {
             items.append(URLQueryItem(name: "apikey", value: key))
         }
-        guard var comps = URLComponents(string: baseURL + path) else {
+        guard var components = URLComponents(string: baseURL + path) else {
             throw FetchError.invalidURL
         }
         if !items.isEmpty {
-            comps.queryItems = items
+            components.queryItems = items
         }
-        guard let url = comps.url else {
+        guard let url = components.url else {
             throw FetchError.invalidURL
         }
         return url
@@ -74,7 +74,7 @@ actor FetchActor {
         do {
             (data, response) = try await session.data(from: url)
         } catch {
-            throw FetchError.networkError(error)
+            throw FetchError.networkError(error.localizedDescription)
         }
         try Task.checkCancellation()
 
@@ -91,7 +91,7 @@ actor FetchActor {
             let decoder = JSONDecoder()
             return try decoder.decode(T.self, from: data)
         } catch {
-            throw FetchError.decodingError(error)
+            throw FetchError.decodingError(error.localizedDescription)
         }
     }
 }
@@ -103,8 +103,8 @@ enum FetchError: LocalizedError {
     case unauthorized
     case rateLimited
     case serverError(Int)
-    case decodingError(Error)
-    case networkError(Error)
+    case decodingError(String)
+    case networkError(String)
 
     var errorDescription: String? {
         switch self {
@@ -119,15 +119,15 @@ enum FetchError: LocalizedError {
                 format: NSLocalizedString("error.server", comment: ""),
                 statusCode
             )
-        case .decodingError(let underlyingError):
+        case .decodingError(let message):
             return String(
                 format: NSLocalizedString("error.decoding", comment: ""),
-                underlyingError.localizedDescription
+                message
             )
-        case .networkError(let underlyingError):
+        case .networkError(let message):
             return String(
                 format: NSLocalizedString("error.network", comment: ""),
-                underlyingError.localizedDescription
+                message
             )
         }
     }

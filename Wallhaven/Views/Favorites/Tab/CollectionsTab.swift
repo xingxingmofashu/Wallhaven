@@ -5,7 +5,12 @@ struct CollectionsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \CollectionFolder.sortOrder)
     private var collections: [CollectionFolder]
-    @Query private var allItems: [CollectionItem]
+    @Query private var allItems: [StoredWallpaper]
+
+    private var collectionCounts: [UUID: Int] {
+        Dictionary(grouping: allItems.compactMap(\.collectionID), by: { $0 })
+            .mapValues(\.count)
+    }
 
     @State private var showCreateAlert = false
     @State private var showRenameAlert = false
@@ -77,7 +82,7 @@ struct CollectionsTab: View {
                         NavigationLink(value: collection) {
                             CollectionRowView(
                                 name: collection.name,
-                                count: allItems.filter { $0.collectionID == collection.id }.count
+                                count: collectionCounts[collection.id] ?? 0
                             )
                         }
                         .contextMenu {
@@ -135,13 +140,11 @@ struct CollectionWallpapersView: View {
                     wallpapers: wallpapers,
                     onSelect: { selectedWallpaper = $0 },
                     contextMenu: { wallpaper in
-                        AnyView(
-                            Button(role: .destructive) {
-                                removeFromCollection(wallpaperID: wallpaper.id)
-                            } label: {
-                                Label("Remove from Collection", systemImage: "star.slash")
-                            }
-                        )
+                        Button(role: .destructive) {
+                            removeFromCollection(wallpaperID: wallpaper.id)
+                        } label: {
+                            Label("Remove from Collection", systemImage: "star.slash")
+                        }
                     }
                 )
             }
@@ -162,7 +165,7 @@ struct CollectionWallpapersView: View {
 
     private func loadWallpapers() {
         let collectionID = collection.id
-        let descriptor = FetchDescriptor<CollectionItem>(
+        let descriptor = FetchDescriptor<StoredWallpaper>(
             predicate: #Predicate { $0.collectionID == collectionID },
             sortBy: [SortDescriptor(\.addedAt, order: .reverse)]
         )
@@ -174,14 +177,14 @@ struct CollectionWallpapersView: View {
     private func removeFromCollection(wallpaperID: String) {
         let collectionID = collection.id
         DispatchQueue.main.async {
-            let descriptor = FetchDescriptor<CollectionItem>(
+            let descriptor = FetchDescriptor<StoredWallpaper>(
                 predicate: #Predicate {
                     $0.wallpaperID == wallpaperID && $0.collectionID == collectionID
                 }
             )
             if let item = try? modelContext.fetch(descriptor).first {
                 modelContext.delete(item)
-                try? modelContext.save()
+                                modelContext.saveWithLog()
                 loadWallpapers()
             }
         }

@@ -10,17 +10,12 @@ struct DetailView: View {
     private var collections: [CollectionFolder]
     @State private var showShareSheet = false
     @State private var showInfoSheet = false
-    @State private var showCollectionPicker = false
     @State private var showFullscreen = false
     @State private var scrollPosition: Int?
     @State private var wallpapers: [Wallpaper]
     @State private var selectedIndex: Int
 
     private var currentID: String? { wallpapers.indices.contains(selectedIndex) ? wallpapers[selectedIndex].id : nil }
-
-    private var currentWallpaper: Wallpaper {
-        wallpapers.indices.contains(selectedIndex) ? wallpapers[selectedIndex] : wallpapers[0]
-    }
 
     init(wallpaper: Wallpaper, relatedWallpapers: [Wallpaper] = []) {
         _viewModel = State(initialValue: DetailViewModel(wallpaper: wallpaper, relatedWallpapers: relatedWallpapers))
@@ -105,7 +100,7 @@ struct DetailView: View {
                     onShare: { showShareSheet = true },
                     onToggleFavorite: { viewModel.toggleFavorite(in: modelContext) },
                     onInfo: { showInfoSheet = true },
-                    onAddToCollection: handleAddToCollection,
+                    onAddToCollection: { viewModel.handleAddToCollection(in: modelContext, collections: collections) },
                     onSaveToPhotos: { viewModel.saveToPhotos() }
                 )
             }
@@ -122,6 +117,15 @@ struct DetailView: View {
             viewModel.loadRelatedWallpapers()
             preloadAdjacent(at: selectedIndex)
         }
+        .onChange(of: viewModel.saveResult) { _, result in
+            guard let result else { return }
+            if result == .success {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } else {
+                notificationFeedback(.error)
+            }
+            viewModel.saveResult = nil
+        }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: viewModel.shareItems)
         }
@@ -137,56 +141,20 @@ struct DetailView: View {
                 onDone: { showInfoSheet = false }
             )
         }
-        .sheet(isPresented: $showCollectionPicker) {
+        .sheet(isPresented: $viewModel.showCollectionPicker) {
             CollectionPickerSheet(
                 collections: collections,
                 onSelect: { collectionID in
-                    addToCollection(collectionID: collectionID)
-                    showCollectionPicker = false
+                    viewModel.addToSpecificCollection(collectionID, in: modelContext)
                 },
                 onCreateNew: { name in
                     let newCollection = CollectionFolder(name: name)
                     modelContext.insert(newCollection)
-                    try? modelContext.save()
-                    addToCollection(collectionID: newCollection.id)
-                    showCollectionPicker = false
+                    modelContext.saveWithLog()
+                    viewModel.addToSpecificCollection(newCollection.id, in: modelContext)
                 }
             )
         }
-    }
-
-    // MARK: - Collection Logic
-
-    private func handleAddToCollection() {
-        let wallpaperID = currentWallpaper.id
-        if viewModel.isInCollection {
-            let descriptor = FetchDescriptor<CollectionItem>(
-                predicate: #Predicate { $0.wallpaperID == wallpaperID }
-            )
-            if let item = try? modelContext.fetch(descriptor).first {
-                modelContext.delete(item)
-                try? modelContext.save()
-            }
-            viewModel.isInCollection = false
-        } else {
-            if collections.isEmpty {
-                let defaultCollection = CollectionFolder(name: "Default")
-                modelContext.insert(defaultCollection)
-                try? modelContext.save()
-                addToCollection(collectionID: defaultCollection.id)
-            } else if collections.count == 1 {
-                addToCollection(collectionID: collections[0].id)
-            } else {
-                showCollectionPicker = true
-            }
-        }
-    }
-
-    private func addToCollection(collectionID: UUID) {
-        let item = CollectionItem(from: currentWallpaper, collectionID: collectionID)
-        modelContext.insert(item)
-        try? modelContext.save()
-        viewModel.isInCollection = true
     }
 
     // MARK: - Image View

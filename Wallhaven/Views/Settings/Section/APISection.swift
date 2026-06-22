@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct APISection: View {
-    let viewModel: SettingsViewModel
+    let apiBaseURL: String
+    let hasApiKey: Bool
+    let apiKey: String
+    let onSaveKey: (String) -> Void
 
     @State private var showAPIKeyField = false
     @State private var tempAPIKey      = ""
@@ -11,7 +14,7 @@ struct APISection: View {
             HStack {
                 Text("Default URL")
                 Spacer()
-                Text(viewModel.apiBaseURL)
+                Text(apiBaseURL)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -23,7 +26,7 @@ struct APISection: View {
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                     Button("Save") {
-                        viewModel.apiKey = tempAPIKey.trimmingCharacters(in: .whitespaces)
+                        onSaveKey(tempAPIKey.trimmingCharacters(in: .whitespaces))
                         showAPIKeyField  = false
                     }
                     .fontWeight(.semibold)
@@ -31,20 +34,20 @@ struct APISection: View {
             } else {
                 HStack {
                     Label(
-                        viewModel.hasApiKey ? "API Key Set" : "No API Key",
-                        systemImage: viewModel.hasApiKey ? "key.fill" : "key"
+                        hasApiKey ? "API Key Set" : "No API Key",
+                        systemImage: hasApiKey ? "key.fill" : "key"
                     )
-                    .foregroundStyle(viewModel.hasApiKey ? .green : .secondary)
+                    .foregroundStyle(hasApiKey ? .green : .secondary)
                     Spacer()
-                    Button(viewModel.hasApiKey ? "Change" : "Set") {
-                        tempAPIKey = viewModel.apiKey
+                    Button(hasApiKey ? "Change" : "Set") {
+                        tempAPIKey = apiKey
                         showAPIKeyField = true
                     }
                     .font(.subheadline)
                 }
             }
 
-            if viewModel.hasApiKey {
+            if hasApiKey {
                 NavigationLink {
                     UserSettingsView()
                 } label: {

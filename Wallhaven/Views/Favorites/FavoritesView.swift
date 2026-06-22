@@ -5,8 +5,11 @@ import SwiftData
 
 struct FavoritesView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \FavoriteWallpaper.addedAt, order: .reverse)
-    private var favorites: [FavoriteWallpaper]
+    @Query(
+        filter: #Predicate<StoredWallpaper> { $0.collectionID == nil },
+        sort: \StoredWallpaper.addedAt, order: .reverse
+    )
+    private var favorites: [StoredWallpaper]
 
     @State private var selectedTab = TabSection.favorites
     @State private var selectedWallpaper: Wallpaper?
@@ -37,12 +40,14 @@ struct FavoritesView: View {
                             onSelect: { selectedWallpaper = $0 },
                             removeFavorite: { wallpaperID in
                                 DispatchQueue.main.async {
-                                    let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                                        predicate: #Predicate { $0.wallpaperID == wallpaperID }
+                                    let descriptor = FetchDescriptor<StoredWallpaper>(
+                                        predicate: #Predicate {
+                                            $0.wallpaperID == wallpaperID && $0.collectionID == nil
+                                        }
                                     )
                                     if let favoriteWallpaper = try? modelContext.fetch(descriptor).first {
                                         modelContext.delete(favoriteWallpaper)
-                                        try? modelContext.save()
+modelContext.saveWithLog()
                                     }
                                 }
                             }
@@ -67,8 +72,15 @@ struct FavoritesView: View {
             }
             .alert("Clear All Favorites", isPresented: $showDeleteAlert) {
                 Button("Clear", role: .destructive) {
-                    try? modelContext.delete(model: FavoriteWallpaper.self)
-                    try? modelContext.save()
+                    let descriptor = FetchDescriptor<StoredWallpaper>(
+                        predicate: #Predicate { $0.collectionID == nil }
+                    )
+                    if let items = try? modelContext.fetch(descriptor) {
+                        for item in items {
+                            modelContext.delete(item)
+                        }
+                    modelContext.saveWithLog()
+                    }
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {

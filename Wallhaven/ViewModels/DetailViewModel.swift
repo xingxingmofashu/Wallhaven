@@ -80,8 +80,8 @@ final class DetailViewModel {
     }
 
     func refreshFavoriteStatus(in context: ModelContext) {
-        let descriptor = FetchDescriptor<FavoriteWallpaper>(
-            predicate: #Predicate { $0.wallpaperID == wallpaper.id }
+        let descriptor = FetchDescriptor<StoredWallpaper>(
+            predicate: #Predicate { $0.wallpaperID == wallpaper.id && $0.collectionID == nil }
         )
         isFavorited = (try? context.fetchCount(descriptor)) ?? 0 > 0
         refreshCollectionStatus(in: context)
@@ -89,8 +89,8 @@ final class DetailViewModel {
     }
 
     func refreshCollectionStatus(in context: ModelContext) {
-        let descriptor = FetchDescriptor<CollectionItem>(
-            predicate: #Predicate { $0.wallpaperID == wallpaper.id }
+        let descriptor = FetchDescriptor<StoredWallpaper>(
+            predicate: #Predicate { $0.wallpaperID == wallpaper.id && $0.collectionID != nil }
         )
         isInCollection = (try? context.fetchCount(descriptor)) ?? 0 > 0
     }
@@ -98,17 +98,57 @@ final class DetailViewModel {
     func loadFavoriteStatuses(in context: ModelContext) {
         let allIDs = Set([wallpaper.id] + relatedWallpapers.map(\.id))
         guard !allIDs.isEmpty else { return }
-        var descriptor = FetchDescriptor<FavoriteWallpaper>()
-        descriptor.predicate = #Predicate { allIDs.contains($0.wallpaperID) }
+        var descriptor = FetchDescriptor<StoredWallpaper>(
+            predicate: #Predicate { allIDs.contains($0.wallpaperID) && $0.collectionID == nil }
+        )
         favoritedIDs = Set((try? context.fetch(descriptor))?.map(\.wallpaperID) ?? [])
     }
 
     private let logger = Logger(subsystem: "com.wallhaven.app", category: "detail")
 
+    func handleAddToCollection(in context: ModelContext, collections: [CollectionFolder]) {
+        let wallpaperID = wallpaper.id
+        if isInCollection {
+            let descriptor = FetchDescriptor<StoredWallpaper>(
+                predicate: #Predicate { $0.wallpaperID == wallpaperID && $0.collectionID != nil }
+            )
+            if let item = try? context.fetch(descriptor).first {
+                context.delete(item)
+                do { try context.save() } catch { logger.error("save after delete: \(error.localizedDescription)") }
+            }
+            isInCollection = false
+        } else {
+            if collections.isEmpty {
+                let defaultCollection = CollectionFolder(name: "Default")
+                context.insert(defaultCollection)
+                do { try context.save() } catch { logger.error("save default collection: \(error.localizedDescription)") }
+                addToCollection(collectionID: defaultCollection.id, in: context)
+            } else if collections.count == 1 {
+                addToCollection(collectionID: collections[0].id, in: context)
+            } else {
+                showCollectionPicker = true
+            }
+        }
+    }
+
+    private func addToCollection(collectionID: UUID, in context: ModelContext) {
+        let item = StoredWallpaper(from: wallpaper, collectionID: collectionID)
+        context.insert(item)
+        do { try context.save() } catch { logger.error("save collection item: \(error.localizedDescription)") }
+        isInCollection = true
+    }
+
+    var showCollectionPicker = false
+
+    func addToSpecificCollection(_ collectionID: UUID, in context: ModelContext) {
+        addToCollection(collectionID: collectionID, in: context)
+        showCollectionPicker = false
+    }
+
     func toggleFavorite(in context: ModelContext) {
         if isFavorited {
-            let descriptor = FetchDescriptor<FavoriteWallpaper>(
-                predicate: #Predicate { $0.wallpaperID == wallpaper.id }
+            let descriptor = FetchDescriptor<StoredWallpaper>(
+                predicate: #Predicate { $0.wallpaperID == wallpaper.id && $0.collectionID == nil }
             )
             if let favoriteWallpaper = try? context.fetch(descriptor).first {
                 context.delete(favoriteWallpaper)
@@ -117,7 +157,7 @@ final class DetailViewModel {
             isFavorited = false
             favoritedIDs.remove(wallpaper.id)
         } else {
-            let favoriteWallpaper = FavoriteWallpaper(from: wallpaper)
+            let favoriteWallpaper = StoredWallpaper(from: wallpaper)
             context.insert(favoriteWallpaper)
             do { try context.save() } catch { logger.error("save favorite: \(error.localizedDescription)") }
             isFavorited = true
@@ -131,6 +171,13 @@ final class DetailViewModel {
 
     var isDownloading: Bool {
         downloadingIDs.contains(wallpaper.id)
+    }
+
+    var saveResult: SaveResult?
+
+    enum SaveResult {
+        case success
+        case error
     }
 
     // MARK: - Save to Photos
@@ -166,24 +213,27 @@ final class DetailViewModel {
                 }
 
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-                guard status == .authorized || status == .limited else { return }
+                guard status == .authorized || status == .limited else {
+                    saveResult = .error
+                    return
+                }
 
                 try await PHPhotoLibrary.shared().performChanges {
                     let request = PHAssetCreationRequest.forAsset()
                     request.addResource(with: .photo, data: data, options: nil)
                 }
 
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                saveResult = .success
             } catch {
-                notificationFeedback(.error)
+                saveResult = .error
             }
         }
     }
 
     // MARK: - Share
 
-    var shareItems: [Any] {
-        [wallpaper.url]
+    var shareItems: [URL] {
+        [wallpaper.url].compactMap { URL(string: $0) }
     }
 
     // MARK: - Formatted Info

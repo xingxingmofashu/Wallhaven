@@ -17,13 +17,11 @@ struct FavoritesTab: View {
                 wallpapers: wallpapers,
                 onSelect: onSelect,
                 contextMenu: { wallpaper in
-                    AnyView(
-                        Button(role: .destructive) {
-                            removeFavorite(wallpaper.id)
-                        } label: {
-                            Label("Remove from Favorites", systemImage: "heart.slash")
-                        }
-                    )
+                    Button(role: .destructive) {
+                        removeFavorite(wallpaper.id)
+                    } label: {
+                        Label("Remove from Favorites", systemImage: "heart.slash")
+                    }
                 }
             )
         }

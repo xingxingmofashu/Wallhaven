@@ -8,12 +8,12 @@ final class CollectionsViewModel {
     func createCollection(named name: String, in context: ModelContext) {
         let collection = CollectionFolder(name: name)
         context.insert(collection)
-        try? context.save()
+        context.saveWithLog()
     }
 
     func deleteCollection(_ collection: CollectionFolder, in context: ModelContext) {
         let collectionID = collection.id
-        let itemsDescriptor = FetchDescriptor<CollectionItem>(
+        let itemsDescriptor = FetchDescriptor<StoredWallpaper>(
             predicate: #Predicate { $0.collectionID == collectionID }
         )
         if let items = try? context.fetch(itemsDescriptor) {
@@ -22,12 +22,12 @@ final class CollectionsViewModel {
             }
         }
         context.delete(collection)
-        try? context.save()
+        context.saveWithLog()
     }
 
     func renameCollection(_ collection: CollectionFolder, to name: String, in context: ModelContext) {
         collection.name = name
-        try? context.save()
+        context.saveWithLog()
     }
 
     func ensureDefaultCollection(in context: ModelContext) {
@@ -35,6 +35,6 @@ final class CollectionsViewModel {
         guard let existing = try? context.fetch(descriptor), existing.isEmpty else { return }
         let defaultCollection = CollectionFolder(name: "Default", sortOrder: 0)
         context.insert(defaultCollection)
-        try? context.save()
+        context.saveWithLog()
     }
 }

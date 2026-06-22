@@ -8,7 +8,12 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 GeneralSection(appearance: $appAppearance)
-                APISection(viewModel: viewModel)
+                APISection(
+                    apiBaseURL: viewModel.apiBaseURL,
+                    hasApiKey: viewModel.hasApiKey,
+                    apiKey: viewModel.apiKey,
+                    onSaveKey: { viewModel.apiKey = $0 }
+                )
                 CacheSection(onClear: viewModel.clearImageCache)
                 AboutSection(version: viewModel.appVersion, buildNumber: viewModel.buildNumber)
             }

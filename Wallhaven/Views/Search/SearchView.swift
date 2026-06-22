@@ -14,7 +14,7 @@ struct SearchView: View {
                     idleView
 
                 case .loading:
-                    LoadingView(message: "Searching...")
+                    LoadingView("Searching...")
 
                 case .loaded:
                     if viewModel.wallpapers.isEmpty {

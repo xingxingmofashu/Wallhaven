@@ -79,7 +79,7 @@ final class HomeViewModel {
         } catch let error as FetchError {
             loadState = .failed(error)
         } catch {
-            loadState = .failed(FetchError.networkError(error))
+            loadState = .failed(FetchError.networkError(error.localizedDescription))
         }
     }
 

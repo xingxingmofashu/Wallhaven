@@ -85,7 +85,7 @@ final class SearchViewModel {
         } catch let error as FetchError {
             if reset { loadState = .failed(error) }
         } catch {
-            if reset { loadState = .failed(FetchError.networkError(error)) }
+            if reset { loadState = .failed(FetchError.networkError(error.localizedDescription)) }
         }
     }
 }

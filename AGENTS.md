@@ -11,22 +11,23 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 ```
 
 - No test targets, no CI, no third-party dependencies.
-- `build.sh`: `CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO` → unsigned IPA at repo root.
-- `install.sh`: reads `DEVELOPMENT_TEAM` from pbxproj → falls back to `security find-identity` → overridable via `$DEVELOPMENT_TEAM`.
+- `Scripts/build.sh`: `CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO` → unsigned IPA at repo root.
+- `Scripts/install.sh`: reads `DEVELOPMENT_TEAM` from pbxproj → falls back to `security find-identity` → overridable via `$DEVELOPMENT_TEAM`.
+- `Scripts/publish.sh <major|minor|patch>` — bumps version and build number in pbxproj.
 
 ## Architecture
 
 - **MVVM** with `@Observable` (not ObservableObject). ViewModels are explicitly `@MainActor`.
-- `WallhavenFetch.shared` is an **actor** — `await` all calls.
+- **Networking** — `FetchActor.shared` is an **actor** — `await` all calls. Methods: `search(filters:page:)`, `getWallpaperDetail(id:)`, `getUserSettings()`.
 - **No `SWIFT_DEFAULT_ACTOR_ISOLATION`** — types not implicitly `@MainActor`.
 - `Wallhaven/` is a **PBXFileSystemSynchronizedRootGroup** — new files on disk auto-sync; no `.pbxproj` edits.
-- `FavoriteWallpaper`, `CollectionFolder`, `CollectionItem` are SwiftData `@Model`. `ModelContainer` in `WallhavenApp.swift` (`isStoredInMemoryOnly: false`).
-- Collections are **local only** — `CollectionFolder` (folder) + `CollectionItem` (membership). No API calls.
+- **SwiftData models**: `StoredWallpaper` (favorites + collection items in one table, distinguished by `collectionID: UUID?`), `CollectionFolder`. `ModelContainer` in `WallhavenApp.swift` (`isStoredInMemoryOnly: false`).
+- Collections are **local only** — `CollectionFolder` (folder) + `StoredWallpaper` items. No API calls.
 - Star button (`star`/`star.fill`) saves wallpaper to a collection. If only "Default" → silent; if 2+ collections → picker sheet. Tap again removes.
 - `NavigationState` (`@Observable`, `@MainActor`) injected via `@Environment` for shared search-tag flow.
 - `UserSettingsStore.shared` (`@Observable` singleton) caches `GET /settings`; loaded in `ContentView.task`.
-- Image cache: `CacheImage` (NSCache, 150 MB), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere.
-- `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio`. `Wallpaper`, `FavoriteWallpaper`, `CollectionItem` all conform.
+- Image cache: `CacheImage` (`NSCache`, 150 MB for images + data), `CacheAsyncImage` (view wrapper). Use `CacheAsyncImage` everywhere.
+- `HasDimensions` protocol with `dimensionX`/`dimensionY` and default `aspectRatio`. `Wallpaper`, `StoredWallpaper` conform.
 
 ## View conventions
 
@@ -45,18 +46,20 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 
 ## Pitfalls
 
-- `#Preview` with `.modelContainer(for:inMemory:)` needs explicit `import SwiftData`.
+- `#Preview` with `.modelContainer(for:inMemory:)` needs explicit `import SwiftData`. Pass all model types.
 - `navigationDestination(item:)` closure re-executes on every parent re-render. Guard with `indices.contains`.
 - `DetailView.wallpapers` is `@State` — tapping related thumbnail replaces array in-place instead of pushing new view.
 - Favorites context-menu delete must defer SwiftData mutation after menu dismiss. Use `DispatchQueue.main.async` or `Task.sleep`.
 - Chinese curly quotes (`''`) inside Swift string literals cause a parse error. Use ASCII quotes or `「」`.
 - `FlowLayout` is a `Layout`-conforming struct (in `Utilities/`), not a `View`.
 - `CacheAsyncImage` file and type are both named `CacheAsyncImage`.
-- `Color(hex:)` defined in `Utilities/AppTheme.swift` — module-visible, do not duplicate. Also includes `appBackground`, `appGray5`, `appGray4` color aliases, `CardStyle` modifier, and `hapticFeedback()` / `notificationFeedback()` helpers.
+- `Color(hex:)` etc. defined in `Utilities/Styles.swift` — module-visible, do not duplicate.
 - `.searchable` + `.large` `.navigationBarTitleDisplayMode` causes title to disappear after canceling search (iOS 26 quirk, no clean fix).
 - API `per_page` is `Int` unauthenticated but `String` with API key. `Meta` uses `LenientInt` to decode both. Do not change `perPage` to plain `Int`.
 - API may return `[""]` instead of `[]` for `resolutions`/`aspectRatios`/`tagBlacklist`. Use `nonEmptyResolutions`, `nonEmptyAspectRatios`, `nonEmptyTagBlacklist`.
 - `#Predicate` must capture local constants, not access model properties directly (e.g., `let id = collection.id; #Predicate { $0.collectionID == id }`). Fails with `PredicateExpressions.Equal` type error otherwise.
+- `StoredWallpaper` has `collectionID: UUID?` — `nil` = favorite, non-nil = collection item. Query accordingly.
+- `FetchError` is `Sendable` only because associated values are `String`. Do not add non-`Sendable` associated types.
 
 ## Git
 

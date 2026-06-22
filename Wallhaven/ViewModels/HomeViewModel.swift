@@ -15,6 +15,7 @@ final class HomeViewModel {
 
     private var filters = SearchFilters()
     private var didApplyDefaults = false
+    private var searchTask: Task<Void, Never>?
 
     private func applyWebsiteDefaults() {
         guard !didApplyDefaults, let settings = UserSettingsStore.shared.settings else { return }
@@ -27,33 +28,39 @@ final class HomeViewModel {
     func loadInitial() {
         guard case .idle = loadState else { return }
         applyWebsiteDefaults()
-        Task { await fetchFirstPage() }
+        searchTask?.cancel()
+        searchTask = Task { await fetchFirstPage() }
     }
 
     func refresh() async {
-        guard case .loaded = loadState else {
-            await fetchFirstPage()
-            return
-        }
-        let oldIDs = Set(wallpapers.map(\.id))
-        currentPage = 1
-        do {
-            let response = try await WallhavenFetch.shared.search(filters: filters, page: 1)
-            let newIDs = Set(response.data.map(\.id))
-            if oldIDs != newIDs {
-                wallpapers = response.data
+        searchTask?.cancel()
+        searchTask = Task {
+            guard case .loaded = loadState else {
+                await fetchFirstPage()
+                return
             }
-            hasNextPage = response.meta.hasNextPage
-            currentPage = response.meta.currentPage
-            loadState = .loaded
-        } catch {
-            loadState = .loaded
+            let oldIDs = Set(wallpapers.map(\.id))
+            currentPage = 1
+            do {
+                let response = try await FetchActor.shared.search(filters: filters, page: 1)
+                let newIDs = Set(response.data.map(\.id))
+                if oldIDs != newIDs {
+                    wallpapers = response.data
+                }
+                hasNextPage = response.meta.hasNextPage
+                currentPage = response.meta.currentPage
+                loadState = .loaded
+            } catch {
+                loadState = .loaded
+            }
         }
+        _ = await searchTask?.result
     }
 
     func loadMore() {
         guard !isLoadingMore, hasNextPage else { return }
-        Task { await fetchNextPage() }
+        searchTask?.cancel()
+        searchTask = Task { await fetchNextPage() }
     }
 
     // MARK: - Private
@@ -64,15 +71,15 @@ final class HomeViewModel {
         wallpapers  = []
 
         do {
-            let response = try await WallhavenFetch.shared.search(filters: filters, page: 1)
+            let response = try await FetchActor.shared.search(filters: filters, page: 1)
             wallpapers   = response.data
             hasNextPage  = response.meta.hasNextPage
             currentPage  = response.meta.currentPage
             loadState    = .loaded
-        } catch let error as WallhavenError {
+        } catch let error as FetchError {
             loadState = .failed(error)
         } catch {
-            loadState = .failed(WallhavenError.networkError(error))
+            loadState = .failed(FetchError.networkError(error))
         }
     }
 
@@ -82,7 +89,7 @@ final class HomeViewModel {
 
         let nextPage = currentPage + 1
         do {
-            let response = try await WallhavenFetch.shared.search(filters: filters, page: nextPage)
+            let response = try await FetchActor.shared.search(filters: filters, page: nextPage)
             wallpapers  += response.data
             hasNextPage  = response.meta.hasNextPage
             currentPage  = response.meta.currentPage

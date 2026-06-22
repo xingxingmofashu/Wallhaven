@@ -33,6 +33,8 @@ final class SearchViewModel {
         applyWebsiteDefaults()
         searchTask?.cancel()
         searchTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
             await performSearch(reset: true)
         }
     }
@@ -63,7 +65,7 @@ final class SearchViewModel {
         let page = currentPage + 1
 
         do {
-            let response = try await WallhavenFetch.shared.search(filters: filters, page: page)
+            let response = try await FetchActor.shared.search(filters: filters, page: page)
 
             // Save seed for random sorting, reuse on pagination to avoid duplicates
             if filters.sorting == .random, let seed = response.meta.seed {
@@ -80,10 +82,10 @@ final class SearchViewModel {
             currentPage  = response.meta.currentPage
             totalResults = response.meta.total
             loadState    = .loaded
-        } catch let error as WallhavenError {
+        } catch let error as FetchError {
             if reset { loadState = .failed(error) }
         } catch {
-            if reset { loadState = .failed(WallhavenError.networkError(error)) }
+            if reset { loadState = .failed(FetchError.networkError(error)) }
         }
     }
 }

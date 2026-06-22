@@ -17,7 +17,7 @@ final class UserSettingsStore {
         }
         isLoading = true
         do {
-            settings = try await WallhavenFetch.shared.userSettings()
+            settings = try await FetchActor.shared.getUserSettings()
         } catch {
             // keep previous value on failure
         }

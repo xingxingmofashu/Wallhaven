@@ -29,15 +29,20 @@ final class DetailViewModel {
         self.relatedWallpapers = relatedWallpapers
     }
 
+    // MARK: - Tasks
+
+    private var detailTask: Task<Void, Never>?
+
     // MARK: - Load Detail
 
     func loadDetailIfNeeded() {
         guard !hasLoadedDetail, !isLoadingDetail else { return }
+        detailTask?.cancel()
         isLoadingDetail = true
-        Task {
+        detailTask = Task {
             defer { isLoadingDetail = false }
             do {
-                let wallpaperDetail = try await WallhavenFetch.shared.wallpaper(id: wallpaper.id)
+                let wallpaperDetail = try await FetchActor.shared.getWallpaperDetail(id: wallpaper.id)
                 wallpaper = wallpaperDetail
                 hasLoadedDetail = true
             } catch {
@@ -50,11 +55,14 @@ final class DetailViewModel {
 
     func loadRelatedWallpapers() {
         guard !isLoadingRelated, relatedWallpapers.isEmpty else { return }
+        detailTask?.cancel()
         isLoadingRelated = true
-        Task {
+        detailTask = Task {
             defer { isLoadingRelated = false }
             do {
-                let response = try await WallhavenFetch.shared.relatedWallpapers(id: wallpaper.id)
+                var relatedFilters = SearchFilters()
+                relatedFilters.query = "like:\(wallpaper.id)"
+                let response = try await FetchActor.shared.search(filters: relatedFilters)
                 relatedWallpapers = response.data
             } catch {
                 // Silently handle load failure
@@ -63,6 +71,7 @@ final class DetailViewModel {
     }
 
     func selectRelated(_ wallpaper: Wallpaper) {
+        detailTask?.cancel()
         self.wallpaper = wallpaper
         hasLoadedDetail = false
         isLoadingDetail = false

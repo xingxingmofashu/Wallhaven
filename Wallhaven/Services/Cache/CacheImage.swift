@@ -135,35 +135,54 @@ final class CacheImage: @unchecked Sendable {
 
     // MARK: - Downsampling
 
-    /// Maximum pixel width for display images. Matches largest iPhone screen width at 3x scale.
-    private static let maxDisplayPixelWidth: CGFloat = {
-        // UIScreen must be accessed on the main thread.
-        if Thread.isMainThread {
-            return UIScreen.main.bounds.width * UIScreen.main.scale
-        }
-        return DispatchQueue.main.sync {
-            UIScreen.main.bounds.width * UIScreen.main.scale
-        }
-    }()
+    /// Maximum pixel width for display images. Matches current screen width at native scale.
+    /// Computed on each access to stay correct across device rotation.
+    private static var maxDisplayPixelWidth: CGFloat {
+        // Resolve the current screen via the window scene (non-deprecated path for iOS 26+).
+        let screen: UIScreen? = {
+            if Thread.isMainThread {
+                return UIApplication.shared
+                    .connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first?
+                    .screen
+            }
+            return DispatchQueue.main.sync {
+                UIApplication.shared
+                    .connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first?
+                    .screen
+            }
+        }()
+        // Sensible fallback when no window scene is available yet.
+        return (screen?.bounds.width ?? 430) * (screen?.scale ?? 3)
+    }
 
     /// Downsample raw data via ImageIO — decodes only the pixels needed for display.
-    /// Falls back to `UIImage(data:)` if ImageIO fails.
+    /// On ImageIO failure, falls back to a manual downscale so the cache never stores
+    /// full-resolution images.
     func downsampledImage(from data: Data) -> UIImage? {
         let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
-        guard let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary) else {
-            return UIImage(data: data)
-        }
-
-        let downsampleOptions: [CFString: Any] = [
+        if let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary),
+           let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceShouldCacheImmediately: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceThumbnailMaxPixelSize: Self.maxDisplayPixelWidth
-        ]
-        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, downsampleOptions as CFDictionary) else {
-            return UIImage(data: data)
+           ] as CFDictionary) {
+            return UIImage(cgImage: cgImage)
         }
-        return UIImage(cgImage: cgImage)
+        // ImageIO path failed — decode full-res then downscale so the image cache
+        // never stores a full-resolution entry.
+        guard let full = UIImage(data: data) else { return nil }
+        let scale = full.scale
+        let pixelWidth = full.size.width * scale
+        let maxWidth = Self.maxDisplayPixelWidth
+        guard pixelWidth > maxWidth else { return full }
+        let ratio = maxWidth / pixelWidth
+        let target = CGSize(width: full.size.width * ratio, height: full.size.height * ratio)
+        return full.preparingThumbnail(of: target)
     }
 
     // MARK: - Disk helpers

@@ -68,3 +68,17 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 git commit -m "type: message"   # type: feat, fix, chore, docs, refactor
 # Do NOT push unless explicitly asked.
 ```
+
+### Branch protection — `main` requires PRs
+
+- `main` is protected: direct pushes are rejected.
+- All changes go through a pull request: create a feature branch, push it, open a PR, merge.
+- Use conventional commit subjects (`type: message`) — the release workflow auto-generates categorized changelogs from commit subjects and links `(#NNN)` PR references.
+- Do NOT push or merge unless explicitly asked.
+
+```bash
+git checkout -b feat/my-change
+# ... edit, test, commit ...
+git push -u origin feat/my-change
+gh pr create --title "type: message" --body "description"
+```

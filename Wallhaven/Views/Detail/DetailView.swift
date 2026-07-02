@@ -110,12 +110,16 @@ struct DetailView: View {
             selectedIndex = index
             viewModel.selectRelated(wallpapers[index])
             preloadAdjacent(at: index)
+            cancelDistantDownloads(currentIndex: index)
         }
         .task {
             viewModel.refreshFavoriteStatus(in: modelContext)
             viewModel.loadDetailIfNeeded()
             viewModel.loadRelatedWallpapers()
             preloadAdjacent(at: selectedIndex)
+        }
+        .onDisappear {
+            CacheImage.shared.cancelAllDownloads()
         }
         .onChange(of: viewModel.saveResult) { _, result in
             guard let result else { return }
@@ -164,6 +168,18 @@ struct DetailView: View {
             let target = index + offset
             if wallpapers.indices.contains(target), let url = wallpapers[target].fullURL {
                 CacheImage.shared.preload(url: url)
+            }
+        }
+    }
+
+    /// Cancel in-flight full-res downloads for pages that are no longer
+    /// adjacent to the current page — prevents wasted bandwidth when
+    /// swiping quickly through the paging ScrollView.
+    private func cancelDistantDownloads(currentIndex: Int) {
+        for (i, wallpaper) in wallpapers.enumerated() {
+            guard let url = wallpaper.fullURL else { continue }
+            if abs(i - currentIndex) > 1 {
+                CacheImage.shared.cancelDownload(for: url)
             }
         }
     }

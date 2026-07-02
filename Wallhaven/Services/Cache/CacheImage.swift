@@ -10,6 +10,10 @@ final class CacheImage: @unchecked Sendable {
     private let dataCache  = NSCache<NSString, NSData>()
     private let cacheLock  = NSLock()
 
+    // Tracks in-flight network downloads by URL for deduplication and cancellation.
+    private var activeDownloads: [URL: Task<UIImage?, Never>] = [:]
+    private let downloadsLock = NSLock()
+
     private let diskCacheURL: URL
     private static let maxDiskFiles = 200
 
@@ -100,8 +104,53 @@ final class CacheImage: @unchecked Sendable {
             return diskImage
         }
 
-        // 3. Network download
-        return await download(url: url)
+        // 3. Network download — tracked, deduplicated, and cancellable
+        return await trackedDownload(url: url)
+    }
+
+    /// Start or join an in-flight download for `url`. Deduplicates concurrent
+    /// requests for the same URL and allows cancellation via `cancelDownload(for:)`.
+    private func trackedDownload(url: URL) async -> UIImage? {
+        downloadsLock.lock()
+        if let existing = activeDownloads[url] {
+            downloadsLock.unlock()
+            return await existing.value
+        }
+
+        let task = Task.detached(priority: .utility) { [weak self] () -> UIImage? in
+            guard let self else { return nil }
+            return await self.download(url: url)
+        }
+        activeDownloads[url] = task
+        downloadsLock.unlock()
+
+        let result = await task.value
+
+        downloadsLock.lock()
+        activeDownloads.removeValue(forKey: url)
+        downloadsLock.unlock()
+
+        return result
+    }
+
+    /// Cancel an in-flight network download for the given URL (e.g. when the
+    /// view swipes away before the full-res image arrives).
+    func cancelDownload(for url: URL) {
+        downloadsLock.lock()
+        if let task = activeDownloads.removeValue(forKey: url) {
+            task.cancel()
+        }
+        downloadsLock.unlock()
+    }
+
+    /// Cancel all in-flight downloads. Called when leaving the detail page.
+    func cancelAllDownloads() {
+        downloadsLock.lock()
+        for (_, task) in activeDownloads {
+            task.cancel()
+        }
+        activeDownloads.removeAll()
+        downloadsLock.unlock()
     }
 
     private func loadFromDisk(url: URL) async -> UIImage? {
@@ -133,7 +182,7 @@ final class CacheImage: @unchecked Sendable {
         guard image(for: url) == nil else { return }
         Task.detached(priority: .utility) { [weak self] in
             guard let self else { return }
-            _ = await self.load(url: url)
+            _ = await self.trackedDownload(url: url)
         }
     }
 

@@ -45,6 +45,11 @@ final class CacheImageLoader {
     func cancel() {
         task?.cancel()
         task = nil
+        // Cancel the underlying network download so it doesn't keep fetching
+        // full-res data after the view has swiped away.
+        if let url = currentURL {
+            CacheImage.shared.cancelDownload(for: url)
+        }
         // Reset so a subsequent `load(url:)` for the same URL (e.g. after the
         // view reappears) actually re-evaluates the cache instead of no-oping.
         currentURL = nil

@@ -14,7 +14,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 - `Scripts/build.sh`: `CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO` → unsigned IPA at repo root.
 - `Scripts/install.sh`: reads `DEVELOPMENT_TEAM` from pbxproj → falls back to `security find-identity` → overridable via `$DEVELOPMENT_TEAM`.
 - `Scripts/publish.sh <major|minor|patch>` — bumps `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in pbxproj.
-- Codex sandbox has no simulator runtimes; run `xcodebuild` with `sandbox_permissions: "require_escalated"` and `prefix_rule: ["xcodebuild"]`.
+- Codex sandbox has no simulator runtimes; run `xcodebuild` with `sandbox_permissions: "require_escalated"` and `prefix_rule: ["xcodebuild"]`. Do **not** append `2>&1 | tail` — the pipe/redirection prevents prefix_rule matching; use `max_output_tokens` on the tool instead.
 
 ## Architecture
 

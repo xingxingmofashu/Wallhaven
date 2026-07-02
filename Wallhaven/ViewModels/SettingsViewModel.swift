@@ -26,6 +26,7 @@ final class SettingsViewModel {
         set {
             _apiKey = newValue
             UserDefaults.standard.set(newValue, forKey: "wallhaven_api_key")
+            Task { await FetchActor.shared.refreshConfiguration() }
         }
     }
 
@@ -41,6 +42,7 @@ final class SettingsViewModel {
             let resolved = newValue.isEmpty ? FetchActor.defaultBaseURL : newValue
             _apiBaseURL = resolved
             UserDefaults.standard.set(newValue, forKey: "wallhaven_api_base_url")
+            Task { await FetchActor.shared.refreshConfiguration() }
         }
     }
 

@@ -103,6 +103,7 @@
 "error.server" = "服务器错误：%d";
 "error.decoding" = "数据解析失败：%@";
 "error.network" = "网络错误：%@";
+"error.cancelled" = "请求已取消";
 
 "sorting.latest" = "最新";
 "sorting.relevance" = "相关性";

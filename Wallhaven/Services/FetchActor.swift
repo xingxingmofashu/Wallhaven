@@ -7,22 +7,31 @@ actor FetchActor {
     static let shared = FetchActor()
     static let defaultBaseURL = "https://wallhaven.cc/api/v1"
 
-    private var baseURL: String {
-        let stored = UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
-        return (stored?.isEmpty ?? true) ? Self.defaultBaseURL : stored!
-    }
     private let session: URLSession
 
-    private var apiKey: String? {
-        let key = UserDefaults.standard.string(forKey: "wallhaven_api_key")
-        return key?.isEmpty == false ? key : nil
-    }
+    // Cached to avoid reading UserDefaults on every request.
+    private var cachedBaseURL: String
+    private var cachedAPIKey: String?
+
+    private var baseURL: String { cachedBaseURL }
+    private var apiKey: String? { cachedAPIKey }
+
+    private static let decoder: JSONDecoder = JSONDecoder()
 
     private init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest  = 30
         config.timeoutIntervalForResource = 60
+        config.waitsForConnectivity       = true
         self.session = URLSession(configuration: config)
+        cachedBaseURL = Self.resolveBaseURL()
+        cachedAPIKey  = Self.resolveAPIKey()
+    }
+
+    /// Call after the user changes the API key or base URL in Settings.
+    func refreshConfiguration() {
+        cachedBaseURL = Self.resolveBaseURL()
+        cachedAPIKey  = Self.resolveAPIKey()
     }
 
     // MARK: - Search
@@ -69,11 +78,15 @@ actor FetchActor {
     }
 
     private func fetch<T: Decodable>(url: URL) async throws -> T {
+        print("[FetchActor] \(url.path)\(url.query ?? "")")
         try Task.checkCancellation()
+
         let data: Data
         let response: URLResponse
         do {
             (data, response) = try await session.data(from: url)
+        } catch is CancellationError {
+            throw FetchError.cancelled
         } catch {
             throw FetchError.networkError(error.localizedDescription)
         }
@@ -83,17 +96,33 @@ actor FetchActor {
             switch http.statusCode {
             case 200...299: break
             case 401: throw FetchError.unauthorized
-            case 429: throw FetchError.rateLimited
+            case 429:
+                // Honor Retry-After header if present, otherwise back off 2s.
+                let delay = http.value(forHTTPHeaderField: "Retry-After")
+                    .flatMap(TimeInterval.init) ?? 2
+                try? await Task.sleep(for: .seconds(min(delay, 10)))
+                throw FetchError.rateLimited
             default:  throw FetchError.serverError(http.statusCode)
             }
         }
 
         do {
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: data)
+            return try Self.decoder.decode(T.self, from: data)
         } catch {
             throw FetchError.decodingError(error.localizedDescription)
         }
+    }
+
+    // MARK: - Configuration Helpers
+
+    private static func resolveBaseURL() -> String {
+        let stored = UserDefaults.standard.string(forKey: "wallhaven_api_base_url")
+        return (stored?.isEmpty ?? true) ? defaultBaseURL : stored!
+    }
+
+    private static func resolveAPIKey() -> String? {
+        let key = UserDefaults.standard.string(forKey: "wallhaven_api_key")
+        return key?.isEmpty == false ? key : nil
     }
 }
 
@@ -106,6 +135,14 @@ enum FetchError: LocalizedError {
     case serverError(Int)
     case decodingError(String)
     case networkError(String)
+    case cancelled
+
+    var isRetryable: Bool {
+        switch self {
+        case .rateLimited, .serverError, .networkError: return true
+        default: return false
+        }
+    }
 
     var errorDescription: String? {
         switch self {
@@ -130,6 +167,8 @@ enum FetchError: LocalizedError {
                 format: NSLocalizedString("error.network", comment: ""),
                 message
             )
+        case .cancelled:
+            return NSLocalizedString("error.cancelled", comment: "")
         }
     }
 }

@@ -103,6 +103,7 @@
 "error.server" = "Server error: %d";
 "error.decoding" = "Failed to parse data: %@";
 "error.network" = "Network error: %@";
+"error.cancelled" = "Request cancelled";
 
 "sorting.latest" = "Latest";
 "sorting.relevance" = "Relevance";

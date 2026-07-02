@@ -18,12 +18,14 @@ final class SearchViewModel: HasSearchFilters {
     private var currentPage       = 0
     var didApplyDefaults          = false
     private var searchTask: Task<Void, Never>?
+    private var loadMoreTask: Task<Void, Never>?
 
     // MARK: - Search
 
     /// Trigger search with new query/filters (resets pagination)
     func search() {
         applyWebsiteDefaults()
+        loadMoreTask?.cancel()
         searchTask?.cancel()
         searchTask = Task {
             try? await Task.sleep(for: .milliseconds(300))
@@ -33,9 +35,11 @@ final class SearchViewModel: HasSearchFilters {
     }
 
     func loadMore() {
-        guard !isLoadingMore, hasNextPage else { return }
-        searchTask?.cancel()
-        searchTask = Task {
+        // Guard on `.loaded` and use a dedicated task so loadMore can't cancel
+        // an in-flight first-page fetch.
+        guard !isLoadingMore, hasNextPage, case .loaded = loadState else { return }
+        loadMoreTask?.cancel()
+        loadMoreTask = Task {
             await performSearch(reset: false)
         }
     }
@@ -49,6 +53,9 @@ final class SearchViewModel: HasSearchFilters {
             currentPage  = 0
             totalResults = 0
             hasNextPage  = false
+            // Drop any seed carried over from a previous random search so each
+            // new search gets a fresh random order instead of reusing the old one.
+            filters.seed = nil
         } else {
             isLoadingMore = true
         }

@@ -3,6 +3,7 @@ import SwiftData
 
 struct ContentView: View {
     @State private var navigationState = NavigationState()
+    @AppStorage("app_appearance") private var appAppearance = 0
 
     var body: some View {
         TabView(selection: $navigationState.selectedTab) {
@@ -23,7 +24,10 @@ struct ContentView: View {
                 .tag(NavigationState.Tab.settings)
         }
         .environment(navigationState)
-        .task { await SettingsViewModel.shared.load() }
+        .task {
+            applyAppAppearance(appAppearance)
+            await SettingsViewModel.shared.load()
+        }
     }
 }
 

@@ -18,7 +18,9 @@ struct CollectionsTab: View {
     @State private var renameText = ""
     @State private var renameCollection: CollectionFolder?
 
-    private let collectionsVM = CollectionsViewModel()
+    // `@State` keeps the (stateless) view model alive across View re-inits,
+    // avoiding a fresh allocation on every body evaluation.
+    @State private var collectionsVM = CollectionsViewModel()
 
     var body: some View {
         collectionListView

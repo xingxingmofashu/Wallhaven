@@ -22,6 +22,18 @@ final class CacheImage: @unchecked Sendable {
         imageCache.totalCostLimit = 1024 * 1024 * 1024  // 1 GB
         dataCache.countLimit      = 100
         dataCache.totalCostLimit  = 1024 * 512 * 1024   // 512 MB
+
+        // Populate the cached screen width now (init runs on the main thread
+        // via first `shared` access) and keep it fresh across rotation/scene
+        // changes, so background decoders never need a main-thread hop.
+        Self.refreshMaxDisplayPixelWidth()
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: UIDevice.orientationDidChangeNotification, object: nil, queue: .main) { _ in
+            Self.refreshMaxDisplayPixelWidth()
+        }
+        nc.addObserver(forName: UIScene.didActivateNotification, object: nil, queue: .main) { _ in
+            Self.refreshMaxDisplayPixelWidth()
+        }
     }
 
     // MARK: - Memory cache
@@ -50,9 +62,13 @@ final class CacheImage: @unchecked Sendable {
     }
 
     func removeAll() {
-        cacheLock.lock(); defer { cacheLock.unlock() }
+        // Clear memory caches under the lock, then do the (potentially slow)
+        // disk teardown outside it so cache reads aren't blocked by file I/O.
+        cacheLock.lock()
         imageCache.removeAllObjects()
         dataCache.removeAllObjects()
+        cacheLock.unlock()
+
         try? FileManager.default.removeItem(at: diskCacheURL)
         try? FileManager.default.createDirectory(at: diskCacheURL, withIntermediateDirectories: true)
     }
@@ -135,22 +151,37 @@ final class CacheImage: @unchecked Sendable {
 
     // MARK: - Downsampling
 
-    /// Maximum pixel width for display images. Matches current screen width at native scale.
-    /// Computed on each access to stay correct across device rotation.
+    /// Maximum pixel width for display images. Cached and refreshed on rotation
+    /// / scene activation so background decoders don't hop to the main thread on
+    /// every access.
     private static var maxDisplayPixelWidth: CGFloat {
+        maxWidthLock.lock(); defer { maxWidthLock.unlock() }
+        if cachedMaxDisplayPixelWidth == 0 {
+            cachedMaxDisplayPixelWidth = currentScreenMaxPixelWidth()
+        }
+        return cachedMaxDisplayPixelWidth
+    }
+
+    static func refreshMaxDisplayPixelWidth() {
+        let width = currentScreenMaxPixelWidth()
+        maxWidthLock.lock(); defer { maxWidthLock.unlock() }
+        cachedMaxDisplayPixelWidth = width
+    }
+
+    private static func currentScreenMaxPixelWidth() -> CGFloat {
         // Resolve the current screen via the window scene (non-deprecated path for iOS 26+).
         let screen: UIScreen? = {
             if Thread.isMainThread {
                 return UIApplication.shared
                     .connectedScenes
-                    .compactMap({ $0 as? UIWindowScene })
+                    .compactMap { $0 as? UIWindowScene }
                     .first?
                     .screen
             }
             return DispatchQueue.main.sync {
                 UIApplication.shared
                     .connectedScenes
-                    .compactMap({ $0 as? UIWindowScene })
+                    .compactMap { $0 as? UIWindowScene }
                     .first?
                     .screen
             }
@@ -158,6 +189,11 @@ final class CacheImage: @unchecked Sendable {
         // Sensible fallback when no window scene is available yet.
         return (screen?.bounds.width ?? 430) * (screen?.scale ?? 3)
     }
+
+    // MARK: - Cached screen width
+
+    private static let maxWidthLock = NSLock()
+    private static var cachedMaxDisplayPixelWidth: CGFloat = 0
 
     /// Downsample raw data via ImageIO — decodes only the pixels needed for display.
     /// On ImageIO failure, falls back to a manual downscale so the cache never stores

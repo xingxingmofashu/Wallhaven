@@ -18,6 +18,8 @@ final class CacheImageLoader {
 
         // 1. Memory cache hit — instant
         if let cached = CacheImage.shared.image(for: url) {
+            isLoading = false
+            hasFailed = false
             image = cached
             return
         }
@@ -43,5 +45,8 @@ final class CacheImageLoader {
     func cancel() {
         task?.cancel()
         task = nil
+        // Reset so a subsequent `load(url:)` for the same URL (e.g. after the
+        // view reappears) actually re-evaluates the cache instead of no-oping.
+        currentURL = nil
     }
 }

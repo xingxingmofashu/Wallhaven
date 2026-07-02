@@ -75,3 +75,15 @@ extension ModelContext {
         }
     }
 }
+
+// MARK: - Appearance
+
+/// Apply the saved appearance preference to every connected window scene.
+/// Loops all scenes (not just `.first`) so iPad multitasking windows are covered,
+/// and is safe to call at launch from `ContentView.task`.
+func applyAppAppearance(_ value: Int) {
+    let style: UIUserInterfaceStyle = value == 1 ? .dark : value == 2 ? .light : .unspecified
+    for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+        scene.windows.forEach { $0.overrideUserInterfaceStyle = style }
+    }
+}

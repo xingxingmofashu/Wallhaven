@@ -17,17 +17,20 @@ final class HomeViewModel: HasSearchFilters {
     var filters = SearchFilters()
     var didApplyDefaults = false
     private var searchTask: Task<Void, Never>?
+    private var loadMoreTask: Task<Void, Never>?
 
     // MARK: - Load
 
     func loadInitial() {
         guard case .idle = loadState else { return }
         applyWebsiteDefaults()
+        loadMoreTask?.cancel()
         searchTask?.cancel()
         searchTask = Task { await fetchFirstPage() }
     }
 
     func refresh() async {
+        loadMoreTask?.cancel()
         searchTask?.cancel()
         searchTask = Task {
             guard case .loaded = loadState else {
@@ -55,9 +58,12 @@ final class HomeViewModel: HasSearchFilters {
     }
 
     func loadMore() {
-        guard !isLoadingMore, hasNextPage else { return }
-        searchTask?.cancel()
-        searchTask = Task { await fetchNextPage() }
+        // Guard on `.loaded` and use a dedicated task so loadMore can't cancel
+        // an in-flight first-page fetch (which would leave the grid showing
+        // only page-2 results).
+        guard !isLoadingMore, hasNextPage, case .loaded = loadState else { return }
+        loadMoreTask?.cancel()
+        loadMoreTask = Task { await fetchNextPage() }
     }
 
     // MARK: - Private

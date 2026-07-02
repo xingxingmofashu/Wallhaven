@@ -78,7 +78,6 @@ actor FetchActor {
     }
 
     private func fetch<T: Decodable>(url: URL) async throws -> T {
-        print("[FetchActor] \(url.path)\(url.query ?? "")")
         try Task.checkCancellation()
 
         let data: Data

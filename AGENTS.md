@@ -19,7 +19,7 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 ## Architecture
 
 - **MVVM** with `@Observable` (not ObservableObject). ViewModels are `@MainActor`.
-- **Networking** — `FetchActor.shared` is an **actor** — `await` all calls. Methods: `search(filters:page:)`, `getWallpaperDetail(id:)`, `getUserSettings()`. `print("[FetchActor]")` at top of `fetch(url:)`.
+- **Networking** — `FetchActor.shared` is an **actor** — `await` all calls. Methods: `search(filters:page:)`, `getWallpaperDetail(id:)`, `getUserSettings()`.
 - **No `SWIFT_DEFAULT_ACTOR_ISOLATION`** — types not implicitly `@MainActor`.
 - `Wallhaven/` is a **PBXFileSystemSynchronizedRootGroup** — new files on disk auto-sync; no `.pbxproj` edits.
 - **SwiftData models**: `FavoriteWallpaper` (`collectionID: UUID?` — `nil` = favorite, non-nil = collection item), `CollectionFolder`. `ModelContainer` in `WallhavenApp.swift` (`isStoredInMemoryOnly: false`).

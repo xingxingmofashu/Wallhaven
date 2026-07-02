@@ -26,9 +26,11 @@ jobs:
       - name: Generate changelog
         run: |
           python3 - <<'PY'
-          import os, re, subprocess, sys
+          import os, re, subprocess
 
           current = os.environ["GITHUB_REF_NAME"]
+          repo = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}"
+
           tags = subprocess.check_output(
               ["git", "tag", "--sort=-v:refname"], text=True
           ).splitlines()
@@ -42,11 +44,11 @@ jobs:
           rng = f"{prev}..{current}" if prev else ""
 
           if rng:
-              commits = subprocess.check_output(
+              subjects = subprocess.check_output(
                   ["git", "log", rng, "--pretty=format:%s", "--no-merges"], text=True
               ).splitlines()
           else:
-              commits = subprocess.check_output(
+              subjects = subprocess.check_output(
                   ["git", "log", "--pretty=format:%s", "--no-merges"], text=True
               ).splitlines()
 
@@ -62,9 +64,10 @@ jobs:
           known = {t for t, _ in TITLES}
           sections = {t: [] for t, _ in TITLES}
 
-          pat = re.compile(r"^([a-z]+)(?:\(([^)]+)\))?(?:!)?: (.+)$")
+          pat = re.compile(r"^([a-z]+)(?:\(([^)]+)\))?(?:!)?:\s*(.+)$")
+          pr_pat = re.compile(r"\(#(\d+)\)")
 
-          for line in commits:
+          for line in subjects:
               m = pat.match(line)
               if m:
                   typ, scope, msg = m.group(1), m.group(2), m.group(3)
@@ -72,8 +75,15 @@ jobs:
                       msg = f"**{scope}** — {msg}"
               else:
                   typ, msg = "other", line
+
               if typ not in known:
                   typ = "other"
+
+              pr_match = pr_pat.search(line)
+              if pr_match:
+                  pr_num = pr_match.group(1)
+                  msg = f"{msg} ([#{pr_num}]({repo}/pull/{pr_num}))"
+
               sections[typ].append(msg)
 
           out = []
@@ -85,14 +95,14 @@ jobs:
                       out.append(f"- {msg}")
                   out.append("")
 
-          repo = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}"
           if rng:
               out.append(f"**Full Changelog**: {repo}/compare/{prev}...{current}")
 
+          result = "\n".join(out)
           with open("/tmp/changelog.md", "w") as f:
-              f.write("\n".join(out) + "\n")
+              f.write(result + "\n")
 
-          print("\n".join(out))
+          print(result)
           PY
 
       - name: Create Release

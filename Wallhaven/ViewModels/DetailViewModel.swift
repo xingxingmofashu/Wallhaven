@@ -16,6 +16,8 @@ final class DetailViewModel {
     var favoritedIDs: Set<String> = []
     var collectedIDs: Set<String> = []
 
+    var showCollectionPicker = false
+
     // MARK: - Related Wallpapers
 
     var relatedWallpapers: [Wallpaper] = []
@@ -145,8 +147,6 @@ final class DetailViewModel {
         collectedIDs.insert(wallpaper.id)
     }
 
-    var showCollectionPicker = false
-
     func addToSpecificCollection(_ collectionID: UUID, in context: ModelContext) {
         addToCollection(collectionID: collectionID, in: context)
         showCollectionPicker = false
@@ -258,5 +258,3 @@ final class DetailViewModel {
         ]
     }
 }
-
-

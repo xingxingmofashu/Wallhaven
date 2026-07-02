@@ -71,7 +71,7 @@ struct FavoritesView: View {
                         for item in items {
                             modelContext.delete(item)
                         }
-                    modelContext.saveWithLog()
+                        modelContext.saveWithLog()
                     }
                 }
                 Button("Cancel", role: .cancel) {}

@@ -54,8 +54,8 @@ struct SearchFilters: Equatable {
     }
 
     enum Order: String, CaseIterable, Identifiable {
-        case desc = "desc"
-        case asc  = "asc"
+        case desc
+        case asc
         var id: String { rawValue }
         var displayName: String {
             self == .desc

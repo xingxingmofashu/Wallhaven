@@ -90,18 +90,6 @@ final class CacheImage: @unchecked Sendable {
 
     // MARK: - Combined load
 
-    func cachedImage(for url: URL) -> UIImage? {
-        if let mem = image(for: url) { return mem }
-        if let disk = diskData(for: url) {
-            if let img = downsampledImage(from: disk) {
-                insert(img, for: url)
-                insert(data: disk, for: url)
-                return img
-            }
-        }
-        return nil
-    }
-
     /// Load image: memory -> disk -> network. Returns a display-sized (downsampled) UIImage.
     func load(url: URL) async -> UIImage? {
         // 1. Memory hit

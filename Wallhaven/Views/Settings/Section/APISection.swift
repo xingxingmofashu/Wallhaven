@@ -41,7 +41,6 @@ struct APISection: View {
                     }
                     .font(.subheadline)
                 }
-
             }
 
             if showAPIKeyField {

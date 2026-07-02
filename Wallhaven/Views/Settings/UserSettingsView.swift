@@ -3,7 +3,7 @@ import SwiftUI
 struct UserSettingsView: View {
     var body: some View {
         Group {
-                if SettingsViewModel.shared.isLoading {
+            if SettingsViewModel.shared.isLoading {
                 LoadingView()
             } else if let settings = SettingsViewModel.shared.settings {
                 List {

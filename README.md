@@ -101,10 +101,10 @@ The API base URL defaults to `https://wallhaven.cc/api/v1` and can be changed in
 ## Architecture
 
 - **MVVM** with `@Observable` (not ObservableObject). ViewModels are `@MainActor`.
-- **Networking** — `WallhavenFetch` actor with `URLSession` async/await
-- **Caching** — `NSCache`-based `CacheImage` (150 MB limit), `CacheAsyncImage` for all image loading
-- **Persistence** — SwiftData (`FavoriteWallpaper`, `CollectionFolder`, `CollectionItem`)
-- **Collections** — local-only: `CollectionFolder` groups wallpapers via `CollectionItem` memberships; no API calls
+- **Networking** — `FetchActor` actor with `URLSession` async/await, automatic retry for transient failures (429/5xx)
+- **Caching** — `NSCache`-based `CacheImage` (1 GB for images, 512 MB for raw data), `CacheAsyncImage` for all image loading with in-flight download deduplication and cancellation
+- **Persistence** — SwiftData (`FavoriteWallpaper`, `CollectionFolder`). A single `FavoriteWallpaper` model represents both favorites (`collectionID == nil`) and collection items (`collectionID` set to a folder's UUID).
+- **Collections** — local-only: `CollectionFolder` groups wallpapers via `FavoriteWallpaper` memberships; no API calls
 - **Navigation** — `NavigationState` (`@Observable`, `@Environment`) for cross-tab search tag flow
 - **Localization** — English, Simplified Chinese
 - **Layout** — custom `FlowLayout` (conforms to `Layout` protocol) for waterfall grid
@@ -116,9 +116,13 @@ Wallhaven/
   App/                  Root ContentView with TabView
   Models/
     Search/             API response types and search filters
-    Favorite/           SwiftData models (Favorite, Collection)
-  Services/             WallhavenFetch actor, image cache, UserSettingsStore
-  Utilities/            FlowLayout, LoadState, ShareSheet
+    Favorite/           SwiftData models
+      Collection/       CollectionFolder
+      FavoriteWallpaper
+  Services/
+    FetchActor.swift    Networking actor (search, detail, user settings)
+    Cache/              CacheImage (NSCache), CacheImageLoader, CacheAsyncImage
+  Utilities/            FlowLayout, LoadState, ShareSheet, Extension
   ViewModels/           One @Observable VM per screen
   Views/
     Components/         Reusable UI (CellView, GridView, ErrorView, etc.)
@@ -127,7 +131,9 @@ Wallhaven/
     Detail/             Wallpaper detail (viewer, toolbars, info sheet)
     Favorites/          Favorites tab (segmented picker, collections, rename/delete)
     Settings/           Settings tab (sections: general, API, cache, about)
-  Document/             Wallhaven API v1 reference
+  en.lproj/             English strings
+  zh-Hans.lproj/        Simplified Chinese strings
+Document/               Wallhaven API v1 reference
 ```
 
 ## License

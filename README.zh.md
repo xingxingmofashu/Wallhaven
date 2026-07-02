@@ -57,6 +57,15 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 
 无需签名或开发者账号。
 
+#### 模拟器构建并运行
+
+```bash
+./Scripts/run.sh                  # 默认: iPhone 17 Pro
+./Scripts/run.sh "iPhone 17 Pro"  # 指定模拟器名称
+```
+
+自动启动模拟器（如需要），构建 Debug `.app`，安装并启动应用。无需 Xcode 或开发者账号。
+
 #### 未签名 IPA（侧载）
 
 ```bash

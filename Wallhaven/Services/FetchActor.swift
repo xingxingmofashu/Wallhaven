@@ -17,6 +17,8 @@ actor FetchActor {
     private var apiKey: String? { cachedAPIKey }
 
     private static let decoder: JSONDecoder = JSONDecoder()
+    private static let maxRetries          = 1
+    private static let retryDelay: TimeInterval = 2
 
     private init() {
         let config = URLSessionConfiguration.default
@@ -37,8 +39,7 @@ actor FetchActor {
     // MARK: - Search
 
     func search(filters: SearchFilters, page: Int = 1) async throws -> SearchResponse {
-        let items = filters.queryItems(page: page)
-        let url = try buildURL(path: "/search", queryItems: items)
+        let url = try buildURL(path: "/search", queryItems: filters.queryItems(page: page))
         return try await fetch(url: url)
     }
 
@@ -58,7 +59,7 @@ actor FetchActor {
         return response.data
     }
 
-    // MARK: - Private Helpers
+    // MARK: - URL Building
 
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) throws -> URL {
         var items = queryItems
@@ -77,31 +78,42 @@ actor FetchActor {
         return url
     }
 
-    private func fetch<T: Decodable>(url: URL) async throws -> T {
-        try Task.checkCancellation()
+    // MARK: - Fetch with Retry
 
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await session.data(from: url)
-        } catch is CancellationError {
-            throw FetchError.cancelled
-        } catch {
-            throw FetchError.networkError(error.localizedDescription)
+    /// Fetches and decodes a Decodable response, retrying once on transient
+    /// failures (429 rate-limit, 5xx server errors, network errors).
+    private func fetch<T: Decodable>(url: URL) async throws -> T {
+        for attempt in 0...Self.maxRetries {
+            try Task.checkCancellation()
+
+            do {
+                return try await performRequest(url: url)
+            } catch is CancellationError {
+                throw FetchError.cancelled
+            } catch let error as FetchError {
+                guard error.isRetryable, attempt < Self.maxRetries else { throw error }
+                try? await Task.sleep(for: .seconds(Self.retryDelay))
+            } catch {
+                guard attempt < Self.maxRetries else {
+                    throw FetchError.networkError(error.localizedDescription)
+                }
+                try? await Task.sleep(for: .seconds(Self.retryDelay))
+            }
         }
-        try Task.checkCancellation()
+        // Unreachable — every loop path either returns or throws.
+        throw FetchError.networkError("Max retries exceeded")
+    }
+
+    /// Single network attempt: fetch data, validate HTTP status, decode.
+    private func performRequest<T: Decodable>(url: URL) async throws -> T {
+        let (data, response) = try await session.data(from: url)
 
         if let http = response as? HTTPURLResponse {
             switch http.statusCode {
             case 200...299: break
-            case 401: throw FetchError.unauthorized
-            case 429:
-                // Honor Retry-After header if present, otherwise back off 2s.
-                let delay = http.value(forHTTPHeaderField: "Retry-After")
-                    .flatMap(TimeInterval.init) ?? 2
-                try? await Task.sleep(for: .seconds(min(delay, 10)))
-                throw FetchError.rateLimited
-            default:  throw FetchError.serverError(http.statusCode)
+            case 401:       throw FetchError.unauthorized
+            case 429:       throw FetchError.rateLimited
+            default:        throw FetchError.serverError(http.statusCode)
             }
         }
 

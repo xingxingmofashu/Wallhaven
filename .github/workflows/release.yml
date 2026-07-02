@@ -14,6 +14,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
@@ -21,10 +23,82 @@ jobs:
       - name: Build unsigned IPA
         run: bash Scripts/build.sh
 
+      - name: Generate changelog
+        run: |
+          python3 - <<'PY'
+          import os, re, subprocess, sys
+
+          current = os.environ["GITHUB_REF_NAME"]
+          tags = subprocess.check_output(
+              ["git", "tag", "--sort=-v:refname"], text=True
+          ).splitlines()
+
+          try:
+              idx = tags.index(current)
+              prev = tags[idx + 1] if idx + 1 < len(tags) else ""
+          except ValueError:
+              prev = ""
+
+          rng = f"{prev}..{current}" if prev else ""
+
+          if rng:
+              commits = subprocess.check_output(
+                  ["git", "log", rng, "--pretty=format:%s", "--no-merges"], text=True
+              ).splitlines()
+          else:
+              commits = subprocess.check_output(
+                  ["git", "log", "--pretty=format:%s", "--no-merges"], text=True
+              ).splitlines()
+
+          TITLES = [
+              ("feat",     "## Features"),
+              ("fix",      "## Bug Fixes"),
+              ("refactor", "## Refactoring"),
+              ("perf",     "## Performance"),
+              ("docs",     "## Documentation"),
+              ("chore",    "## Chores"),
+              ("other",    "## Other Changes"),
+          ]
+          known = {t for t, _ in TITLES}
+          sections = {t: [] for t, _ in TITLES}
+
+          pat = re.compile(r"^([a-z]+)(?:\(([^)]+)\))?(?:!)?: (.+)$")
+
+          for line in commits:
+              m = pat.match(line)
+              if m:
+                  typ, scope, msg = m.group(1), m.group(2), m.group(3)
+                  if scope:
+                      msg = f"**{scope}** — {msg}"
+              else:
+                  typ, msg = "other", line
+              if typ not in known:
+                  typ = "other"
+              sections[typ].append(msg)
+
+          out = []
+          for typ, title in TITLES:
+              items = sections[typ]
+              if items:
+                  out.append(title)
+                  for msg in items:
+                      out.append(f"- {msg}")
+                  out.append("")
+
+          repo = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}"
+          if rng:
+              out.append(f"**Full Changelog**: {repo}/compare/{prev}...{current}")
+
+          with open("/tmp/changelog.md", "w") as f:
+              f.write("\n".join(out) + "\n")
+
+          print("\n".join(out))
+          PY
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
-          generate_release_notes: true
+          body_path: /tmp/changelog.md
           files: Wallhaven.ipa
           draft: true

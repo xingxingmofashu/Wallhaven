@@ -57,6 +57,15 @@ xcodebuild -scheme Wallhaven -sdk iphonesimulator \
 
 Builds for the iOS Simulator. No signing or developer account needed.
 
+#### Simulator build + run
+
+```bash
+./Scripts/run.sh                  # default: iPhone 17 Pro
+./Scripts/run.sh "iPhone 17 Pro"  # specify a simulator by name
+```
+
+Boots the simulator (if needed), builds a Debug `.app`, installs it, and launches the app. No Xcode or developer account required.
+
 #### Unsigned IPA (sideloading)
 
 ```bash
